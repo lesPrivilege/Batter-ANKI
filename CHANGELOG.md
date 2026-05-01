@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.3.1 — 2026-05-01 (build fix)
+
+**修复：**
+- cap sync 每次覆盖 VERSION_21，现在 patch node_modules/@capacitor/android/capacitor/build.gradle
+- 所有 android/*.gradle 统一 VERSION_17
+- APK 体积 4.7MB → 16MB（Noto Serif SC 中文字体打包）
+
 ## v0.3.0 — 2026-05-01 (design migration)
 
 **设计迁移：** anki.html → Tailwind 项目
