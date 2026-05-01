@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.example.minisrs',
+  appId: 'com.lesprivilege.minisrs',
   appName: 'MiniSRS',
   webDir: 'dist',
   server: {
