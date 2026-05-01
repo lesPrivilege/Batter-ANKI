@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.5.1 — 2026-05-01 (navigation + quick review)
+
+**改动：**
+- 全部子页面返回按钮统一为 navigate(-1)（Review, Browse, PromptGuide, ImportPage）
+- 首页 deck 卡片加快捷 Review 按钮（dueCount > 0 时显示）
+
+---
+
 ## v0.9.1 — 2026-05-01 (fixes + review all)
 
 **修复：**

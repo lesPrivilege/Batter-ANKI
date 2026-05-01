@@ -1,10 +1,11 @@
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { getCards } from '../lib/storage'
 import renderMarkdown from '../lib/renderMarkdown'
 
 export default function Browse() {
   const { id } = useParams()
+  const navigate = useNavigate()
   const [cards, setCards] = useState([])
   const [currentIndex, setCurrentIndex] = useState(0)
   const [flipped, setFlipped] = useState(false)
@@ -64,7 +65,7 @@ export default function Browse() {
       <div className="flex flex-col min-h-screen bg-bg">
         <header className="sticky top-0 z-10 flex items-center px-4 h-12
           bg-bg-card border-b border-border">
-          <Link to={`/deck/${id}`} className="text-ink-2 text-sm mr-3">←</Link>
+          <button onClick={() => navigate(-1)} className="text-ink-2 text-sm mr-3">←</button>
           <h1 className="flex-1 text-lg font-serif font-bold text-ink">Browse</h1>
         </header>
         <div className="flex-1 flex items-center justify-center text-ink-2 text-sm">
@@ -82,7 +83,7 @@ export default function Browse() {
       {/* Header */}
       <header className="sticky top-0 z-10 flex items-center justify-between px-4 h-12
         bg-bg-card border-b border-border">
-        <Link to={`/deck/${id}`} className="text-ink-2 text-sm mr-3">←</Link>
+        <button onClick={() => navigate(-1)} className="text-ink-2 text-sm mr-3">←</button>
         <span className="text-xs text-ink-2 font-serif">
           {currentIndex + 1} / {cards.length}
         </span>

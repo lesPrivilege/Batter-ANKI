@@ -1,4 +1,4 @@
-import { useParams, Link, useSearchParams } from 'react-router-dom'
+import { useParams, Link, useSearchParams, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import ReviewCard from '../components/ReviewCard'
 import { getDueCards } from '../lib/scheduler'
@@ -12,6 +12,7 @@ function predictInterval(card, quality) {
 
 export default function Review() {
   const { id } = useParams()
+  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const reviewAll = searchParams.get('all') === 'true'
   const [dueCards, setDueCards] = useState([])
@@ -44,7 +45,7 @@ export default function Review() {
       <div className="flex flex-col min-h-screen bg-bg">
         <header className="sticky top-0 z-10 flex items-center px-4 h-12
           bg-bg-card border-b border-border">
-          <Link to="/" className="text-ink-2 text-sm">←</Link>
+          <button onClick={() => navigate(-1)} className="text-ink-2 text-sm">←</button>
         </header>
         <div className="flex-1 flex flex-col items-center justify-center gap-4 p-4">
           <div className="text-4xl text-success">&#10003;</div>
@@ -80,7 +81,7 @@ export default function Review() {
       {/* Header */}
       <header className="sticky top-0 z-10 flex items-center justify-between px-4 h-12
         bg-bg-card border-b border-border">
-        <Link to="/" className="text-ink-2 text-sm">←</Link>
+        <button onClick={() => navigate(-1)} className="text-ink-2 text-sm">←</button>
         <span className="text-xs text-ink-2 font-display">
           {currentIndex + 1} / {dueCards.length}
         </span>

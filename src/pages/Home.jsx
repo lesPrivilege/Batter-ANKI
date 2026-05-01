@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import StatsBar from '../components/StatsBar'
 import { getAllDeckStats } from '../lib/scheduler'
 import { addDeck, deleteDecks, loadData } from '../lib/storage'
@@ -45,6 +45,8 @@ export default function Home() {
     setEditing(false)
     setSelected(new Set())
   }
+
+  const navigate = useNavigate()
 
   const [dark, setDark] = useState(() => {
     return localStorage.getItem('mini-srs-theme') === 'dark' ||
@@ -145,20 +147,29 @@ export default function Home() {
                   </div>
                 </button>
               ) : (
-                <Link
+                <div
                   key={deck.id}
-                  to={`/deck/${deck.id}`}
                   className="flex justify-between items-center p-4 rounded-lg border border-border bg-bg-card
                     active:bg-bg-raised transition-colors"
                 >
-                  <div>
+                  <Link to={`/deck/${deck.id}`} className="flex-1 min-w-0">
                     <div className="text-base font-ui font-medium text-ink">{deck.name}</div>
                     <div className="text-sm text-ink-2 mt-1">
                       {deck.dueCount} due &middot; {deck.totalCards} total
                     </div>
-                  </div>
-                  <span className="text-ink-2 text-sm shrink-0 ml-2">→</span>
-                </Link>
+                  </Link>
+                  {deck.dueCount > 0 ? (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); navigate(`/review/${deck.id}`) }}
+                      className="text-xs px-2 py-1 rounded bg-accent text-white shrink-0 ml-2
+                        active:scale-[0.97] transition-transform"
+                    >
+                      Review
+                    </button>
+                  ) : (
+                    <span className="text-xs text-success shrink-0 ml-2">✓</span>
+                  )}
+                </div>
               )
             ))
           )}
