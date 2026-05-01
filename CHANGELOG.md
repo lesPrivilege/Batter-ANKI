@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.9.0 — 2026-05-01 (import page)
+
+**改动：**
+- 新增 ImportPage.jsx（/import），整合文件导入和粘贴导入为独立页面
+- Home.jsx 简化为 Import + New Deck 两个按钮
+- 移除首页的 Paste 展开逻辑
+- 语言规范：按钮英文、提示中文、placeholder 英文
+
+---
+
 ## v0.8.2 — 2026-05-01 (ux cleanup)
 
 **改动：**

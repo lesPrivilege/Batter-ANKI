@@ -1,9 +1,8 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import StatsBar from '../components/StatsBar'
 import { getAllDeckStats } from '../lib/scheduler'
-import { addDeck, addCard, importData, deleteDecks, loadData } from '../lib/storage'
-import { parseMdToCards } from '../lib/mdParser'
+import { addDeck, deleteDecks, loadData } from '../lib/storage'
 
 export default function Home() {
   const [decks, setDecks] = useState([])
@@ -45,63 +44,6 @@ export default function Home() {
   const exitEdit = () => {
     setEditing(false)
     setSelected(new Set())
-  }
-
-  const unifiedFileInputRef = useRef(null)
-
-  const handleUnifiedImport = () => {
-    unifiedFileInputRef.current?.click()
-  }
-
-  const handleUnifiedFileSelected = (e) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    const ext = file.name.split('.').pop().toLowerCase()
-    const reader = new FileReader()
-    reader.onload = (ev) => {
-      if (ext === 'json') {
-        try {
-          importData(ev.target.result)
-          refresh()
-        } catch {
-          alert('Import failed: invalid JSON format')
-        }
-      } else if (ext === 'md') {
-        processMdContent(ev.target.result, file.name.replace(/\.md$/i, ''))
-      } else {
-        alert('Unsupported file type. Please select .json or .md')
-      }
-    }
-    reader.readAsText(file)
-    e.target.value = ''
-  }
-
-  const [showPasteMd, setShowPasteMd] = useState(false)
-  const [pasteMdText, setPasteMdText] = useState('')
-  const pasteTextareaRef = useRef(null)
-
-  const handlePasteMdSubmit = () => {
-    if (!pasteMdText.trim()) return
-    processMdContent(pasteMdText, 'Pasted Notes')
-    setPasteMdText('')
-    setShowPasteMd(false)
-  }
-
-  const processMdContent = (mdContent, defaultDeckName) => {
-    const cards = parseMdToCards(mdContent, defaultDeckName)
-    if (cards.length === 0) {
-      alert('未识别到卡片。请确认 .md 格式是否符合格式要求。')
-      window.location.hash = '#/prompt-guide'
-      return
-    }
-    const deckName = prompt(`Import ${cards.length} card(s). Enter deck name:`, defaultDeckName)
-    if (deckName === null) return
-    const name = deckName.trim() || defaultDeckName
-    const deck = addDeck(name)
-    for (const card of cards) {
-      addCard(deck.id, card.front, card.back, card.type, card.chapter, card.section)
-    }
-    refresh()
   }
 
   const [dark, setDark] = useState(() => {
@@ -253,56 +195,16 @@ export default function Home() {
         {/* Bottom actions — hidden in edit mode */}
         {!editing && (
           <>
-            {/* Import button */}
             <div className="px-4 pt-4">
-              <button
-                onClick={handleUnifiedImport}
-                className="w-full py-2.5 rounded-lg font-ui text-sm text-ink-2
-                  border border-border active:scale-[0.97] transition-transform"
+              <Link
+                to="/import"
+                className="block w-full py-2.5 rounded-lg font-ui text-sm text-ink-2
+                  border border-border text-center active:scale-[0.97] transition-transform"
               >
                 Import
-              </button>
+              </Link>
             </div>
 
-            {/* Paste .md button */}
-            <div className="px-4 pt-2">
-              <button
-                onClick={() => setShowPasteMd(!showPasteMd)}
-                className="w-full py-2.5 rounded-lg font-ui text-sm text-ink-2
-                  border border-border active:scale-[0.97] transition-transform"
-              >
-                {showPasteMd ? 'Cancel' : 'Paste'}
-              </button>
-            </div>
-
-            {showPasteMd && (
-              <div className="px-4 pt-2">
-                <p className="text-xs text-ink-2 mb-1.5">
-                  粘贴符合格式的 markdown · <Link to="/prompt-guide" className="text-accent">查看格式说明</Link>
-                </p>
-                <textarea
-                  ref={pasteTextareaRef}
-                  value={pasteMdText}
-                  onChange={(e) => setPasteMdText(e.target.value)}
-                  placeholder="Paste your structured markdown here..."
-                  className="w-full h-40 px-3 py-2.5 rounded-lg border border-border bg-bg-card text-ink
-                    font-ui text-sm placeholder:text-ink-2/50 resize-none
-                    focus:outline-none focus:border-accent"
-                  autoFocus
-                />
-                <button
-                  onClick={handlePasteMdSubmit}
-                  disabled={!pasteMdText.trim()}
-                  className="w-full mt-2 py-2.5 rounded-lg font-ui text-sm font-medium text-accent
-                    border border-accent active:scale-[0.97] transition-transform
-                    disabled:opacity-40"
-                >
-                  Parse & Import
-                </button>
-              </div>
-            )}
-
-            {/* + New Deck button */}
             <div className="px-4 pb-4 pt-2">
               {showNewDeck ? (
                 <form onSubmit={handleAddDeck} className="flex gap-2">
@@ -348,14 +250,6 @@ export default function Home() {
           </>
         )}
       </main>
-
-      <input
-        ref={unifiedFileInputRef}
-        type="file"
-        accept=".json,.md"
-        onChange={handleUnifiedFileSelected}
-        className="hidden"
-      />
     </div>
   )
 }
