@@ -1,5 +1,16 @@
 # Changelog
 
+## v1.0.5 — 2026-05-01 (appId + storage migration)
+
+**改动：**
+- appId: `com.lesprivilege.minisrs` → `com.lesprivilege.mnemos`（capacitor.config.ts, build.gradle, strings.xml, MainActivity.java）
+- localStorage key: `mini-srs-data` → `mnemos-data`，含一次性自动迁移（旧用户打开新版自动搬数据）
+- Java 包路径: `com/lesprivilege/minisrs/` → `com/lesprivilege/mnemos/`
+
+**注意：** appId 变更后需卸载旧版再装新版。
+
+---
+
 ## v1.0.4 — 2026-05-01 (splash screen)
 
 **新增：**

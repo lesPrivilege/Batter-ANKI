@@ -2,6 +2,6 @@
 <resources>
     <string name="app_name">Mnemos</string>
     <string name="title_activity_main">Mnemos</string>
-    <string name="package_name">com.lesprivilege.minisrs</string>
-    <string name="custom_url_scheme">com.lesprivilege.minisrs</string>
+    <string name="package_name">com.lesprivilege.mnemos</string>
+    <string name="custom_url_scheme">com.lesprivilege.mnemos</string>
 </resources>

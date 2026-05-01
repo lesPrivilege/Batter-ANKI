@@ -2,15 +2,29 @@
 // 数据结构: { decks: Deck[], cards: Card[] }
 import { localToday } from './dateUtils'
 
-const STORAGE_KEY = 'mini-srs-data'
+const STORAGE_KEY = 'mnemos-data'
+const OLD_KEY = 'mini-srs-data'
 
 function getDefaultData() {
   return { decks: [], cards: [] }
 }
 
+function migrate() {
+  const old = localStorage.getItem(OLD_KEY)
+  if (old) {
+    localStorage.setItem(STORAGE_KEY, old)
+    localStorage.removeItem(OLD_KEY)
+    return true
+  }
+  return false
+}
+
 export function loadData() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
+    let raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw && migrate()) {
+      raw = localStorage.getItem(STORAGE_KEY)
+    }
     return raw ? JSON.parse(raw) : getDefaultData()
   } catch {
     return getDefaultData()

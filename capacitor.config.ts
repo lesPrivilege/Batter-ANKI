@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.lesprivilege.minisrs',
+  appId: 'com.lesprivilege.mnemos',
   appName: 'Mnemos',
   webDir: 'dist',
   server: {

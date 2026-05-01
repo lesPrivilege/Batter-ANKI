@@ -1,4 +1,4 @@
-package com.lesprivilege.minisrs;
+package com.lesprivilege.mnemos;
 
 import com.getcapacitor.BridgeActivity;
 
