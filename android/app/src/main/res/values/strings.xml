@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">MiniSRS</string>
+    <string name="title_activity_main">MiniSRS</string>
+    <string name="package_name">com.lesprivilege.minisrs</string>
+    <string name="custom_url_scheme">com.lesprivilege.minisrs</string>
+</resources>
