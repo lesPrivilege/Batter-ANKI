@@ -2,7 +2,7 @@ import { useParams, Link, useSearchParams, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import ReviewCard from '../components/ReviewCard'
 import { getDueCards } from '../lib/scheduler'
-import { getCards, updateCardSM2 } from '../lib/storage'
+import { getCards, updateCardSM2, toggleStar } from '../lib/storage'
 import { sm2 } from '../lib/sm2'
 
 function shuffle(arr) {
@@ -26,6 +26,7 @@ export default function Review() {
   const reviewAll = searchParams.get('all') === 'true'
   const [dueCards, setDueCards] = useState([])
   const [currentIndex, setCurrentIndex] = useState(0)
+  const [stats, setStats] = useState({ again: 0, hard: 0, good: 0, easy: 0 })
 
   useEffect(() => {
     if (reviewAll) {
@@ -34,12 +35,22 @@ export default function Review() {
     } else {
       setDueCards(shuffle(getDueCards(id)))
     }
+    setStats({ again: 0, hard: 0, good: 0, easy: 0 })
   }, [id, reviewAll])
 
   const handleRate = (quality) => {
     const card = dueCards[currentIndex]
     const result = sm2(card, quality)
     updateCardSM2(card.id, result)
+
+    setStats(prev => {
+      const next = { ...prev }
+      if (quality === 1) next.again++
+      else if (quality === 2) next.hard++
+      else if (quality === 4) next.good++
+      else if (quality === 5) next.easy++
+      return next
+    })
 
     if (currentIndex + 1 < dueCards.length) {
       setCurrentIndex(currentIndex + 1)
@@ -50,6 +61,9 @@ export default function Review() {
 
   // Done screen
   if (dueCards.length === 0) {
+    const total = stats.again + stats.hard + stats.good + stats.easy
+    const correctRate = total > 0 ? Math.round((stats.good + stats.easy) / total * 100) : 0
+
     return (
       <div className="flex flex-col min-h-screen bg-bg">
         <header className="sticky top-0 z-10 flex items-center px-4 h-12
@@ -61,6 +75,15 @@ export default function Review() {
           <h1 className="text-xl font-display font-bold text-ink">
             Done
           </h1>
+          {total > 0 && (
+            <div className="text-sm text-ink-2 font-ui space-y-1 text-center">
+              <p>Total reviewed: <span className="text-ink font-medium">{total}</span></p>
+              <p>Correct rate: <span className="text-success font-medium">{correctRate}%</span></p>
+              <p className="text-xs text-ink-2">
+                Again: {stats.again} · Hard: {stats.hard} · Good: {stats.good} · Easy: {stats.easy}
+              </p>
+            </div>
+          )}
           <div className="flex gap-2 mt-2">
             <Link
               to={`/deck/${id}`}
@@ -114,7 +137,7 @@ export default function Review() {
 
       {/* Card area */}
       <div className="flex-1 flex items-center justify-center p-4">
-        <ReviewCard card={card} onRate={handleRate} />
+        <ReviewCard card={card} onRate={handleRate} starred={card.starred} onToggleStar={() => { toggleStar(card.id); setDueCards(prev => prev.map((c, i) => i === currentIndex ? { ...c, starred: !c.starred } : c)) }} />
       </div>
 
       {/* Bottom bar with interval previews */}

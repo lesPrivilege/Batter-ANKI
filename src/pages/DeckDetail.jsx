@@ -1,7 +1,7 @@
 import { useParams, Link } from 'react-router-dom'
 import { useState, useEffect, useMemo } from 'react'
 import CardEditor from '../components/CardEditor'
-import { getDeck, getCards, addCard, updateCard, deleteCard, deleteCards, deleteDeck, togglePin } from '../lib/storage'
+import { getDeck, getCards, addCard, updateCard, updateDeck, deleteCard, deleteCards, deleteDeck, togglePin, toggleStar } from '../lib/storage'
 
 function buildOutline(cards) {
   const map = new Map()
@@ -27,6 +27,9 @@ export default function DeckDetail() {
   const [expandedChapters, setExpandedChapters] = useState(new Set())
   const [expandedSections, setExpandedSections] = useState(new Set())
   const [searchQuery, setSearchQuery] = useState('')
+  const [filter, setFilter] = useState('all')
+  const [editingName, setEditingName] = useState(false)
+  const [nameInput, setNameInput] = useState('')
 
   const refresh = () => {
     setDeck(getDeck(id))
@@ -35,7 +38,9 @@ export default function DeckDetail() {
 
   useEffect(refresh, [id])
 
-  const outline = useMemo(() => buildOutline(cards), [cards])
+  const filteredCards = useMemo(() => filter === 'starred' ? cards.filter(c => c.starred) : cards, [cards, filter])
+
+  const outline = useMemo(() => buildOutline(filteredCards), [filteredCards])
 
   const toggleChapter = (ch) => {
     setExpandedChapters((prev) => {
@@ -116,9 +121,33 @@ export default function DeckDetail() {
       <header className="sticky top-0 z-10 flex items-center px-4 h-12
         bg-bg-card border-b border-border">
         <Link to="/" className="text-ink-2 text-sm mr-3">←</Link>
-        <h1 className="flex-1 text-lg font-serif font-bold text-ink truncate">
-          {deck.name}
-        </h1>
+        {editingName ? (
+          <input
+            autoFocus
+            type="text"
+            value={nameInput}
+            onChange={(e) => setNameInput(e.target.value)}
+            onBlur={() => {
+              const trimmed = nameInput.trim()
+              if (trimmed && trimmed !== deck.name) { updateDeck(id, trimmed) }
+              setEditingName(false)
+              refresh()
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') e.target.blur()
+              else if (e.key === 'Escape') { setEditingName(false) }
+            }}
+            className="flex-1 text-lg font-serif font-bold text-ink bg-transparent border-b border-accent outline-none"
+          />
+        ) : (
+          <h1
+            onClick={() => { setEditingName(true); setNameInput(deck.name) }}
+            className="flex-1 text-lg font-serif font-bold text-ink truncate cursor-pointer hover:text-accent transition-colors"
+          >
+            {deck.name}
+            <span className="text-xs text-ink-2 ml-1 opacity-0 group-hover:opacity-100">✎</span>
+          </h1>
+        )}
         {editing ? (
           <button onClick={exitEdit} className="text-sm text-ink-2 shrink-0">
             Done
@@ -196,6 +225,28 @@ export default function DeckDetail() {
           </div>
         )}
 
+        {/* Star filter toggle */}
+        {!editing && cards.length > 0 && (
+          <div className="flex gap-2">
+            <button
+              onClick={() => setFilter('all')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-ui transition-colors ${
+                filter === 'all' ? 'bg-accent text-white' : 'border border-border text-ink-2'
+              }`}
+            >
+              All
+            </button>
+            <button
+              onClick={() => setFilter('starred')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-ui transition-colors ${
+                filter === 'starred' ? 'bg-accent text-white' : 'border border-border text-ink-2'
+              }`}
+            >
+              ★ Starred
+            </button>
+          </div>
+        )}
+
         {/* Batch delete bar — edit mode only */}
         {editing && (
           <div className="flex gap-2">
@@ -225,13 +276,13 @@ export default function DeckDetail() {
         )}
 
         {/* Outline view */}
-        {cards.length === 0 ? (
+        {filteredCards.length === 0 ? (
           <p className="text-center text-ink-2 py-8 text-sm">
             No cards yet.
           </p>
         ) : (
           <div className="space-y-1">
-            {cards.length > 4 && (
+            {filteredCards.length > 4 && (
               <input
                 type="text"
                 value={searchQuery}
@@ -243,7 +294,7 @@ export default function DeckDetail() {
               />
             )}
             {searchQuery.trim()
-              ? cards
+              ? filteredCards
                   .filter(c => {
                     const q = searchQuery.toLowerCase()
                     return c.front.toLowerCase().includes(q) || c.back.toLowerCase().includes(q)
@@ -255,6 +306,7 @@ export default function DeckDetail() {
                         hover:bg-bg-raised transition-colors"
                     >
                       <span className="text-sm text-ink truncate flex-1">{card.front}</span>
+                      {card.starred && <span className="text-xs shrink-0">★</span>}
                       {(card.type || 'recall') === 'reference' && (
                         <span className="text-[10px] px-1.5 py-0.5 rounded border border-ink-2/30 text-ink-2 shrink-0">ref</span>
                       )}
@@ -395,6 +447,7 @@ function CardRow({ card, editing, selected, onToggleSelect, onEdit, onDelete, is
           )}
         </div>
         <span className="text-sm text-ink truncate flex-1">{card.front}</span>
+        {card.starred && <span className="text-xs shrink-0">★</span>}
         {(card.type || 'recall') === 'reference' && (
           <span className="text-[10px] px-1.5 py-0.5 rounded border border-ink-2/30 text-ink-2 shrink-0">ref</span>
         )}
@@ -406,6 +459,7 @@ function CardRow({ card, editing, selected, onToggleSelect, onEdit, onDelete, is
     <div className="flex items-center gap-2 py-2 px-2 rounded-lg
       hover:bg-bg-raised transition-colors group">
       <span className="text-sm text-ink truncate flex-1">{card.front}</span>
+      {card.starred && <span className="text-xs shrink-0">★</span>}
       {(card.type || 'recall') === 'reference' && (
         <span className="text-[10px] px-1.5 py-0.5 rounded border border-ink-2/30 text-ink-2 shrink-0">ref</span>
       )}

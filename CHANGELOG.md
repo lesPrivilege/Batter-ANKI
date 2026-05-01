@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.7.0 — 2026-05-01 (star, stats, rename, dedup)
+
+**新增：**
+- 卡片收藏功能（☆/★ 标记 + DeckDetail 筛选）
+- 复习结果统计（正确率 + 评分分布）
+- Deck 重命名（header 点击编辑）
+- 导入去重检测（front 匹配，跳过/全部导入选项）
+
+---
+
 ## v0.6.2 — 2026-05-01 (improvements)
 
 **改进：**

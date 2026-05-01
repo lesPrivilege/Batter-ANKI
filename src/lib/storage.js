@@ -71,11 +71,12 @@ export function deleteDecks(ids) {
 // --- Card CRUD ---
 
 export function getCards(deckId) {
-  return loadData().cards.filter((c) => c.deckId === deckId)
+  return loadData().cards.filter((c) => c.deckId === deckId).map(c => ({ ...c, starred: c.starred ?? false }))
 }
 
 export function getCard(id) {
-  return loadData().cards.find((c) => c.id === id)
+  const card = loadData().cards.find((c) => c.id === id)
+  return card ? { ...card, starred: card.starred ?? false } : card
 }
 
 export function addCard(deckId, front, back, type = 'recall', chapter = '', section = '') {
@@ -92,6 +93,7 @@ export function addCard(deckId, front, back, type = 'recall', chapter = '', sect
     easiness: 2.5,
     interval: 0,
     repetitions: 0,
+    starred: false,
     dueDate: today,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -142,5 +144,12 @@ export function togglePin(id) {
   const d = loadData()
   const deck = d.decks.find(x => x.id === id)
   if (deck) deck.pinned = !deck.pinned
+  saveData(d)
+}
+
+export function toggleStar(id) {
+  const d = loadData()
+  const card = d.cards.find(x => x.id === id)
+  if (card) card.starred = !card.starred
   saveData(d)
 }

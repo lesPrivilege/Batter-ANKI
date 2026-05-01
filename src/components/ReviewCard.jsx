@@ -2,8 +2,8 @@ import { useState, useEffect, useRef } from 'react'
 import renderMarkdown from '../lib/renderMarkdown'
 import '../styles/markdown.css'
 
-// Props: card, onRate(quality)
-export default function ReviewCard({ card, onRate }) {
+// Props: card, onRate(quality), starred, onToggleStar
+export default function ReviewCard({ card, onRate, starred, onToggleStar }) {
   const [flipped, setFlipped] = useState(false)
   const cardRef = useRef(null)
 
@@ -21,7 +21,16 @@ export default function ReviewCard({ card, onRate }) {
   }
 
   return (
-    <div className="flex flex-col items-center gap-4 w-full max-w-md mx-auto">
+    <div className="flex flex-col items-center gap-4 w-full max-w-md mx-auto relative">
+      {/* Star button */}
+      {onToggleStar && (
+        <button
+          onClick={(e) => { e.stopPropagation(); onToggleStar() }}
+          className="absolute top-2 right-2 z-10 text-lg leading-none"
+        >
+          {starred ? '★' : '☆'}
+        </button>
+      )}
       {/* Card with flip */}
       <button
         ref={cardRef}

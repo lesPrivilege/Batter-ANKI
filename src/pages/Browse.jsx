@@ -1,6 +1,6 @@
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { getCards } from '../lib/storage'
+import { getCards, toggleStar } from '../lib/storage'
 import renderMarkdown from '../lib/renderMarkdown'
 
 function shuffle(arr) {
@@ -108,10 +108,16 @@ export default function Browse() {
 
       {/* Card area */}
       <div
-        className="flex-1 flex items-center justify-center p-4"
+        className="flex-1 flex items-center justify-center p-4 relative"
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
+        <button
+          onClick={(e) => { e.stopPropagation(); toggleStar(card.id); setCards(prev => prev.map((c, i) => i === currentIndex ? { ...c, starred: !c.starred } : c)) }}
+          className="absolute top-4 right-4 z-10 text-lg leading-none"
+        >
+          {card.starred ? '★' : '☆'}
+        </button>
         <button
           ref={cardRef}
           onClick={() => setFlipped((f) => !f)}

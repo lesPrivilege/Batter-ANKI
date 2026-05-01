@@ -1,6 +1,6 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { addDeck, addCard, importData } from '../lib/storage'
+import { addDeck, addCard, getCards, getDecks, importData } from '../lib/storage'
 import { parseMdToCards } from '../lib/mdParser'
 
 export default function ImportPage() {
@@ -8,7 +8,23 @@ export default function ImportPage() {
   const [pasteMd, setPasteMd] = useState('')
   const [previewData, setPreviewData] = useState(null)
   const [previewName, setPreviewName] = useState('')
+  const [skipDup, setSkipDup] = useState(false)
   const fileInputRef = useRef(null)
+
+  const dedup = useMemo(() => {
+    if (!previewData) return { count: 0, filtered: [] }
+    const trimmedName = previewName.trim() || previewData.defaultName
+    const decks = getDecks()
+    const existingDeck = decks.find(d => d.name === trimmedName)
+    if (!existingDeck) return { count: 0, filtered: previewData.cards }
+    const existingCards = getCards(existingDeck.id)
+    const existingFronts = new Set(existingCards.map(c => c.front.trim()))
+    const duplicates = previewData.cards.filter(c => existingFronts.has(c.front.trim()))
+    return {
+      count: duplicates.length,
+      filtered: previewData.cards.filter(c => !existingFronts.has(c.front.trim()))
+    }
+  }, [previewData, previewName])
 
   const processMdContent = (mdContent, defaultDeckName) => {
     const { cards, deckName } = parseMdToCards(mdContent, defaultDeckName)
@@ -25,11 +41,13 @@ export default function ImportPage() {
   const handleConfirmImport = () => {
     const name = previewName.trim() || previewData.defaultName
     const deck = addDeck(name)
-    for (const card of previewData.cards) {
+    const cardsToImport = skipDup ? dedup.filtered : previewData.cards
+    for (const card of cardsToImport) {
       addCard(deck.id, card.front, card.back, card.type, card.chapter, card.section)
     }
     setPreviewData(null)
     setPreviewName('')
+    setSkipDup(false)
     navigate('/')
   }
 
@@ -37,6 +55,7 @@ export default function ImportPage() {
     setPreviewData(null)
     setPreviewName('')
     setPasteMd('')
+    setSkipDup(false)
   }
 
   const handleFileSelected = (e) => {
@@ -91,8 +110,31 @@ export default function ImportPage() {
               />
             </div>
             <p className="text-sm text-ink font-ui">
-              将导入 <span className="font-medium text-accent">{previewData.cards.length}</span> 张卡片
+              将导入 <span className="font-medium text-accent">{skipDup ? dedup.filtered.length : previewData.cards.length}</span> 张卡片
+              {dedup.count > 0 && (
+                <span className="text-warning ml-1">（其中 {dedup.count} 张与已有卡片重复）</span>
+              )}
             </p>
+            {dedup.count > 0 && (
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setSkipDup(true)}
+                  className={`flex-1 py-2 rounded-lg font-ui text-sm border transition-colors ${
+                    skipDup ? 'bg-accent text-white border-accent' : 'border-border text-ink-2'
+                  }`}
+                >
+                  跳过重复
+                </button>
+                <button
+                  onClick={() => setSkipDup(false)}
+                  className={`flex-1 py-2 rounded-lg font-ui text-sm border transition-colors ${
+                    !skipDup ? 'bg-accent text-white border-accent' : 'border-border text-ink-2'
+                  }`}
+                >
+                  全部导入
+                </button>
+              </div>
+            )}
             <div>
               <p className="text-xs text-ink-2 mb-1.5">Card preview:</p>
               <ul className="space-y-1">
