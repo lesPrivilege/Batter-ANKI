@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.7.0 — 2026-05-01 (prompt guide)
+
+**新增：** 制卡指南页面（/prompt-guide），内置 prompt 模板一键复制
+
+**改动：**
+- App 名称从 MiniSRS 统一为 Mnemos（capacitor, index.html, package.json, strings.xml）
+- 新增 PromptGuide.jsx 页面，含完整 prompt 模板和复制功能
+- Home.jsx 和 DeckDetail.jsx 底部加制卡指南入口
+- .card-content 中文字体确认使用 Noto Serif SC
+
+---
+
 ## v0.6.0 — 2026-05-01 (rename + browse)
 
 **改动：**

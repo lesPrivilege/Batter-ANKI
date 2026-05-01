@@ -53,7 +53,7 @@ export default function Home() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `mini-srs-backup-${new Date().toISOString().slice(0, 10)}.json`
+    a.download = `mnemos-backup-${new Date().toISOString().slice(0, 10)}.json`
     a.click()
     URL.revokeObjectURL(url)
   }
@@ -328,6 +328,16 @@ export default function Home() {
                 </button>
               </div>
             )}
+
+            <div className="px-4 pt-2">
+              <Link
+                to="/prompt-guide"
+                className="block w-full py-2.5 rounded-lg font-ui text-sm text-ink-2 text-center
+                  border border-border active:scale-[0.97] transition-transform"
+              >
+                制卡指南
+              </Link>
+            </div>
 
             <div className="px-4 pb-4 pt-2">
               {showNewDeck ? (

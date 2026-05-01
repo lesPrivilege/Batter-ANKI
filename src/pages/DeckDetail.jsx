@@ -169,6 +169,13 @@ export default function DeckDetail() {
                 Edit
               </button>
             )}
+            <Link
+              to="/prompt-guide"
+              className="px-4 py-2.5 rounded-lg font-medium text-sm font-ui
+                border border-border text-ink-2 active:scale-[0.97] transition-transform"
+            >
+              制卡指南
+            </Link>
           </div>
         )}
 

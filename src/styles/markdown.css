@@ -1,3 +1,7 @@
+.card-content {
+  font-family: "Noto Serif SC", "Songti SC", Georgia, serif;
+}
+
 .card-content code {
   font-family: var(--font-serif), ui-monospace, monospace;
   background: var(--bg-raised);
