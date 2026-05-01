@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.4.0 — 2026-05-01 (md import)
+
+**新增：** .md 文件导入，解析结构化 markdown 为卡片
+
+**改动：**
+- `src/lib/mdParser.js`: 新建，纯前端确定性解析器，移植 reader.py 分块逻辑，支持 FORMAT.md 体例（h2→chapter, h3→section, `- `→front, 缩进→back，子知识点不单独成卡）
+- `src/pages/Home.jsx`: 新增「Import .md」按钮（文件选择器，accept=".md"）和「Paste .md」按钮（textarea 粘贴 markdown 文本），两种输入方式共用同一解析流程
+
+---
+
 ## v0.3.1 — 2026-05-01 (build fix)
 
 **修复：**

@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import StatsBar from '../components/StatsBar'
 import { getAllDeckStats } from '../lib/scheduler'
-import { addDeck, exportData, importData, deleteDecks } from '../lib/storage'
+import { addDeck, addCard, exportData, importData, deleteDecks } from '../lib/storage'
+import { parseMdToCards } from '../lib/mdParser'
 
 export default function Home() {
   const [decks, setDecks] = useState([])
@@ -76,6 +77,49 @@ export default function Home() {
       reader.readAsText(file)
     }
     input.click()
+  }
+
+  const [showPasteMd, setShowPasteMd] = useState(false)
+  const [pasteMdText, setPasteMdText] = useState('')
+  const pasteTextareaRef = useRef(null)
+  const mdFileInputRef = useRef(null)
+
+  const handleImportMdFile = () => {
+    mdFileInputRef.current?.click()
+  }
+
+  const handleMdFileSelected = (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      processMdContent(ev.target.result, file.name.replace(/\.md$/i, ''))
+    }
+    reader.readAsText(file)
+    e.target.value = ''
+  }
+
+  const handlePasteMdSubmit = () => {
+    if (!pasteMdText.trim()) return
+    processMdContent(pasteMdText, 'Pasted Notes')
+    setPasteMdText('')
+    setShowPasteMd(false)
+  }
+
+  const processMdContent = (mdContent, defaultDeckName) => {
+    const cards = parseMdToCards(mdContent, defaultDeckName)
+    if (cards.length === 0) {
+      alert('No cards found in the markdown. Check the FORMAT.md structure.')
+      return
+    }
+    const deckName = prompt(`Import ${cards.length} card(s). Enter deck name:`, defaultDeckName)
+    if (deckName === null) return
+    const name = deckName.trim() || defaultDeckName
+    const deck = addDeck(name)
+    for (const card of cards) {
+      addCard(deck.id, card.front, card.back, card.type, card.chapter, card.section)
+    }
+    refresh()
   }
 
   const [dark, setDark] = useState(() => {
@@ -241,6 +285,47 @@ export default function Home() {
               </button>
             </div>
 
+            <div className="px-4 pt-2 flex gap-2">
+              <button
+                onClick={handleImportMdFile}
+                className="flex-1 py-2.5 rounded-lg font-ui text-sm text-ink-2
+                  border border-border active:scale-[0.97] transition-transform"
+              >
+                Import .md
+              </button>
+              <button
+                onClick={() => setShowPasteMd(!showPasteMd)}
+                className="flex-1 py-2.5 rounded-lg font-ui text-sm text-ink-2
+                  border border-border active:scale-[0.97] transition-transform"
+              >
+                {showPasteMd ? 'Cancel' : 'Paste .md'}
+              </button>
+            </div>
+
+            {showPasteMd && (
+              <div className="px-4 pt-2">
+                <textarea
+                  ref={pasteTextareaRef}
+                  value={pasteMdText}
+                  onChange={(e) => setPasteMdText(e.target.value)}
+                  placeholder="Paste your structured markdown here..."
+                  className="w-full h-40 px-3 py-2.5 rounded-lg border border-border bg-bg-card text-ink
+                    font-ui text-sm placeholder:text-ink-2/50 resize-none
+                    focus:outline-none focus:border-accent"
+                  autoFocus
+                />
+                <button
+                  onClick={handlePasteMdSubmit}
+                  disabled={!pasteMdText.trim()}
+                  className="w-full mt-2 py-2.5 rounded-lg font-ui text-sm font-medium text-accent
+                    border border-accent active:scale-[0.97] transition-transform
+                    disabled:opacity-40"
+                >
+                  Parse & Import
+                </button>
+              </div>
+            )}
+
             <div className="px-4 pb-4 pt-2">
               {showNewDeck ? (
                 <form onSubmit={handleAddDeck} className="flex gap-2">
@@ -286,6 +371,14 @@ export default function Home() {
           </>
         )}
       </main>
+
+      <input
+        ref={mdFileInputRef}
+        type="file"
+        accept=".md"
+        onChange={handleMdFileSelected}
+        className="hidden"
+      />
     </div>
   )
 }
