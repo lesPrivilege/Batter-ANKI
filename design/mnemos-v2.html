@@ -1,0 +1,2084 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Mnemos · v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&family=Noto+Serif+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  /* Light · warm parchment */
+  --bg:            oklch(96.5% 0.012 80);
+  --bg-card:       oklch(99% 0.006 80);
+  --bg-raised:     oklch(94% 0.016 80);
+  --bg-sunken:     oklch(92.5% 0.018 80);
+  --border:        oklch(86% 0.018 80);
+  --border-soft:   oklch(91% 0.015 80);
+  --border-strong: oklch(72% 0.025 80);
+  --ink:           oklch(22% 0.022 80);
+  --ink-2:         oklch(48% 0.020 80);
+  --ink-3:         oklch(66% 0.014 80);
+  --ink-4:         oklch(78% 0.012 80);
+  --accent:        oklch(56% 0.13 60);          /* ochre */
+  --accent-soft:   oklch(94% 0.038 60);
+  --accent-line:   oklch(78% 0.07 60);
+  --teal:          oklch(50% 0.09 195);          /* answer / reading */
+  --teal-soft:     oklch(94% 0.025 195);
+  --good:          oklch(54% 0.11 155);
+  --good-soft:     oklch(94% 0.030 155);
+  --warn:          oklch(58% 0.13 70);
+  --warn-soft:     oklch(94% 0.035 70);
+  --danger:        oklch(54% 0.16 28);
+  --danger-soft:   oklch(94% 0.030 28);
+
+  --shadow-sm:     0 1px 2px oklch(22% 0.02 80 / 0.05);
+  --shadow-md:     0 1px 3px oklch(22% 0.02 80 / 0.06), 0 6px 24px oklch(22% 0.02 80 / 0.05);
+  --shadow-lg:     0 4px 12px oklch(22% 0.02 80 / 0.08), 0 16px 40px oklch(22% 0.02 80 / 0.08);
+
+  --r-sm: 8px; --r-md: 12px; --r-lg: 16px; --r-xl: 22px;
+
+  --font-zh:    'Noto Serif SC', 'Songti SC', Georgia, serif;
+  --font-disp:  'Instrument Serif', 'Noto Serif SC', Georgia, serif;
+  --font-ui:    'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono:  'JetBrains Mono', ui-monospace, monospace;
+}
+
+:root.dark {
+  --bg:            oklch(15% 0.012 250);
+  --bg-card:       oklch(19% 0.014 250);
+  --bg-raised:     oklch(23% 0.014 250);
+  --bg-sunken:     oklch(12% 0.012 250);
+  --border:        oklch(28% 0.014 250);
+  --border-soft:   oklch(24% 0.012 250);
+  --border-strong: oklch(40% 0.018 250);
+  --ink:           oklch(94% 0.008 80);
+  --ink-2:         oklch(72% 0.012 80);
+  --ink-3:         oklch(54% 0.012 80);
+  --ink-4:         oklch(40% 0.010 80);
+  --accent:        oklch(72% 0.13 65);
+  --accent-soft:   oklch(28% 0.06 65);
+  --accent-line:   oklch(42% 0.10 65);
+  --teal:          oklch(72% 0.10 195);
+  --teal-soft:     oklch(26% 0.05 195);
+  --good:          oklch(72% 0.13 155);
+  --good-soft:     oklch(24% 0.05 155);
+  --warn:          oklch(75% 0.13 75);
+  --warn-soft:     oklch(26% 0.05 75);
+  --danger:        oklch(70% 0.15 28);
+  --danger-soft:   oklch(26% 0.06 28);
+  --shadow-sm:     0 1px 2px #0006;
+  --shadow-md:     0 1px 3px #0007, 0 6px 24px #0005;
+  --shadow-lg:     0 4px 12px #0009, 0 16px 40px #0007;
+}
+
+html, body { height: 100%; }
+body {
+  background: var(--bg-sunken);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+input, textarea { font: inherit; color: inherit; }
+a { color: inherit; text-decoration: none; }
+::-webkit-scrollbar { width: 0; height: 0; }
+
+/* ─────── Stage / phone shell ─────── */
+.stage {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 28px;
+  padding: 28px 16px 60px;
+  background:
+    radial-gradient(1200px 600px at 50% -10%, oklch(94% 0.03 60 / .35), transparent 60%),
+    var(--bg-sunken);
+}
+:root.dark .stage {
+  background:
+    radial-gradient(1200px 600px at 50% -10%, oklch(28% 0.04 250 / .45), transparent 60%),
+    var(--bg-sunken);
+}
+.stage-inner {
+  max-width: 1320px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.stage-head {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  gap: 24px; padding: 0 8px;
+}
+.stage-title {
+  font-family: var(--font-disp);
+  font-size: 38px;
+  line-height: 1;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  font-weight: 400;
+}
+.stage-title em {
+  font-style: italic;
+  color: var(--accent);
+}
+.stage-sub {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-top: 8px;
+}
+.stage-controls {
+  display: flex; gap: 8px; align-items: center;
+}
+.stage-toggle {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 11px; border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  font-size: 12px;
+  color: var(--ink-2);
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+}
+.stage-toggle.active { color: var(--ink); background: var(--bg-card); border-color: var(--border-strong); }
+.stage-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, 360px);
+  gap: 28px 32px;
+  justify-content: center;
+  align-items: start;
+  padding: 8px;
+}
+.frame-wrap { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+.frame-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-3);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  display: flex; gap: 8px; align-items: center;
+}
+.frame-label .num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 18px; height: 18px;
+  border-radius: 4px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--ink-2);
+  font-size: 10px;
+}
+
+/* Phone bezel */
+.phone {
+  width: 360px; height: 740px;
+  background: var(--bg);
+  border-radius: 38px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.phone::before {
+  content:""; position:absolute; top: 8px; left: 50%; transform:translateX(-50%);
+  width: 96px; height: 22px; background: var(--ink); opacity: .9;
+  border-radius: 999px; z-index: 5;
+}
+:root.dark .phone::before { background: #000; }
+.phone-status {
+  position: absolute; top: 0; left: 0; right: 0; height: 38px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 22px 0;
+  font-family: var(--font-mono); font-size: 12px; font-weight: 600;
+  color: var(--ink); z-index: 6;
+}
+.phone-status .right { display:flex; gap:5px; align-items:center; }
+.phone-screen {
+  position: absolute; inset: 0;
+  padding-top: 38px;
+  overflow-y: auto; overflow-x: hidden;
+  background: var(--bg);
+  display: flex; flex-direction: column;
+  scrollbar-width: none;
+}
+
+/* ─────── Top bar inside screen ─────── */
+.topbar {
+  height: 52px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 18px;
+  border-bottom: 1px solid var(--border-soft);
+  background: var(--bg);
+  position: sticky; top: 0; z-index: 4;
+  backdrop-filter: blur(12px);
+}
+.topbar h1 {
+  font-family: var(--font-disp);
+  font-weight: 400;
+  font-size: 22px;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  display: flex; align-items: center; gap: 10px;
+}
+.topbar h1.zh { font-family: var(--font-zh); font-weight: 500; font-size: 17px; letter-spacing: 0; }
+.tb-actions { display: flex; gap: 4px; align-items: center; }
+.tb-btn {
+  width: 32px; height: 32px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 8px;
+  color: var(--ink-2);
+  transition: background 120ms, color 120ms;
+}
+.tb-btn:hover { background: var(--bg-raised); color: var(--ink); }
+.tb-btn.danger { color: var(--danger); }
+.tb-back {
+  font-family: var(--font-mono); font-size: 18px; line-height: 1;
+  color: var(--ink-2); width: 28px;
+}
+.tb-text {
+  font-size: 13px; color: var(--ink-2); font-family: var(--font-ui);
+  padding: 0 6px;
+}
+
+/* ─────── Mark / Logo ─────── */
+.mark {
+  width: 22px; height: 22px;
+  position: relative; display: inline-block;
+}
+.mark svg { width: 100%; height: 100%; display: block; }
+
+/* ─────── Sections ─────── */
+.scr { padding: 18px 18px 32px; display: flex; flex-direction: column; gap: 16px; }
+.section-title {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--ink-3);
+  text-transform: uppercase;
+  display: flex; align-items: center; gap: 8px;
+}
+.section-title::after {
+  content: ""; flex: 1; height: 1px; background: var(--border-soft);
+}
+
+/* Stats hero */
+.hero {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r-lg);
+  padding: 18px 18px 16px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content:""; position: absolute; top:0; left: 18px; right: 18px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent-line), transparent);
+}
+.hero-row {
+  display: grid; grid-template-columns: 1fr 1px 1fr 1px 1fr;
+  gap: 12px; align-items: stretch;
+}
+.hero-col {
+  display: flex; flex-direction: column; gap: 4px; align-items: flex-start;
+}
+.hero-col .num {
+  font-family: var(--font-disp); font-size: 32px; line-height: 1;
+  color: var(--ink); font-weight: 400; letter-spacing: -0.01em;
+}
+.hero-col .num.accent { color: var(--accent); }
+.hero-col .label {
+  font-family: var(--font-mono); font-size: 9px;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-3);
+  margin-top: 2px;
+}
+.hero-col .zh-label {
+  font-family: var(--font-zh); font-size: 11px; color: var(--ink-2);
+  margin-top: 1px;
+}
+.hero-divider { width: 1px; background: var(--border-soft); }
+
+.hero-chart {
+  margin-top: 14px;
+  display: flex; align-items: flex-end; gap: 5px;
+  height: 36px;
+}
+.hero-bar { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.hero-bar .b {
+  width: 100%; min-height: 2px;
+  background: var(--accent-soft);
+  border-top: 1.5px solid var(--accent);
+  border-radius: 2px 2px 0 0;
+  transition: height 350ms cubic-bezier(.2,.8,.2,1);
+}
+.hero-bar.empty .b { background: transparent; border-top-color: var(--border); }
+.hero-bar .day {
+  font-family: var(--font-mono); font-size: 9px; color: var(--ink-3);
+}
+.hero-bar.today .b { background: var(--accent); border-top-color: var(--accent); }
+.hero-bar.today .day { color: var(--accent); font-weight: 600; }
+
+/* Streak chip */
+.streak {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px 4px 8px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-line);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.streak svg { width: 12px; height: 12px; }
+
+/* Deck card */
+.deck {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r-md);
+  padding: 14px 14px 14px 0;
+  display: grid;
+  grid-template-columns: 56px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: transform 140ms, border-color 140ms, background 140ms;
+  position: relative;
+}
+.deck:hover { border-color: var(--border); }
+.deck:active { transform: scale(0.99); }
+.deck-spine {
+  height: 56px;
+  margin-left: 14px;
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+.deck-spine::before {
+  content:""; position:absolute; left: 0; top: 0; bottom: 0; width: 3px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+.deck-spine .glyph {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-zh);
+  font-size: 26px;
+  color: var(--ink-2);
+  font-weight: 500;
+  padding-left: 6px;
+}
+.deck-spine.h0 .glyph { color: oklch(45% 0.10 60); }
+.deck-spine.h1 .glyph { color: oklch(45% 0.10 195); }
+.deck-spine.h2 .glyph { color: oklch(45% 0.10 155); }
+.deck-spine.h3 .glyph { color: oklch(45% 0.10 280); }
+.deck-spine.h0::before { background: oklch(60% 0.13 60); }
+.deck-spine.h1::before { background: oklch(60% 0.10 195); }
+.deck-spine.h2::before { background: oklch(60% 0.11 155); }
+.deck-spine.h3::before { background: oklch(60% 0.11 280); }
+:root.dark .deck-spine.h0 .glyph { color: oklch(78% 0.11 60); }
+:root.dark .deck-spine.h1 .glyph { color: oklch(78% 0.10 195); }
+:root.dark .deck-spine.h2 .glyph { color: oklch(78% 0.11 155); }
+:root.dark .deck-spine.h3 .glyph { color: oklch(78% 0.11 280); }
+
+.deck-meta { min-width: 0; }
+.deck-name {
+  font-family: var(--font-zh);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  display: flex; align-items: center; gap: 6px;
+}
+.deck-pin {
+  color: var(--accent); font-size: 10px; line-height: 1;
+}
+.deck-stats {
+  margin-top: 4px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-3);
+  display: flex; align-items: center; gap: 6px;
+}
+.deck-stats .due { color: var(--accent); font-weight: 600; }
+.deck-stats .dot { color: var(--ink-4); }
+
+.deck-cta {
+  display: flex; align-items: center; gap: 6px;
+}
+.cta-review {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 6px 11px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 11px;
+  font-weight: 500;
+  font-family: var(--font-ui);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.cta-review .arrow { font-family: var(--font-mono); font-size: 12px; }
+.cta-done {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: var(--good-soft); color: var(--good);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 12px;
+}
+.deck-pin-btn {
+  width: 28px; height: 28px;
+  display: inline-flex; align-items: center; justify-content: center;
+  color: var(--ink-3);
+  border-radius: 6px;
+}
+.deck-pin-btn.on { color: var(--accent); }
+.deck-pin-btn:hover { background: var(--bg-raised); }
+
+/* List header row */
+.list-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 4px;
+}
+.list-head .count {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-3);
+}
+
+/* Bottom action bar (Home) */
+.bottom-actions {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  margin-top: 8px;
+}
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 11px 14px;
+  border-radius: var(--r-md);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid transparent;
+  transition: transform 100ms, background 140ms, border-color 140ms, color 140ms;
+  white-space: nowrap;
+  line-height: 1;
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: var(--ink); color: var(--bg); }
+.btn-primary:hover { background: var(--ink-2); }
+.btn-ghost { background: var(--bg-card); border-color: var(--border); color: var(--ink); }
+.btn-ghost:hover { background: var(--bg-raised); }
+.btn-outline { background: transparent; border-color: var(--border); color: var(--ink-2); }
+.btn-outline:hover { background: var(--bg-card); color: var(--ink); }
+.btn-accent { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-line); }
+.btn-accent:hover { background: var(--accent); color: white; }
+.btn-danger { background: transparent; color: var(--danger); border-color: color-mix(in oklch, var(--danger) 30%, transparent); }
+.btn-sm { padding: 7px 11px; font-size: 12px; border-radius: 8px; }
+.btn-block { width: 100%; }
+
+/* ─────── DeckDetail ─────── */
+.dd-head {
+  padding: 18px 18px 8px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.dd-meta {
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--ink-3); letter-spacing: 0.04em;
+  display: flex; align-items: center; gap: 8px;
+}
+.dd-meta .sep { color: var(--ink-4); }
+.dd-name {
+  font-family: var(--font-zh);
+  font-size: 26px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  line-height: 1.2;
+}
+.dd-progress {
+  margin-top: 6px;
+  height: 6px;
+  background: var(--bg-raised);
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+}
+.dd-progress .bar { position: absolute; left:0; top:0; bottom:0; background: var(--accent); border-radius: 3px; }
+.dd-progress-row {
+  margin-top: 8px;
+  display: flex; justify-content: space-between;
+  font-family: var(--font-mono); font-size: 10px; color: var(--ink-3);
+}
+
+/* Primary CTA + secondary cluster */
+.dd-cta {
+  margin: 4px 18px 0;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+}
+.dd-cta-main {
+  grid-column: 1 / -1;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px;
+  border-radius: var(--r-md);
+  background: var(--ink);
+  color: var(--bg);
+}
+.dd-cta-main .left { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
+.dd-cta-main .lead {
+  font-family: var(--font-disp); font-size: 22px; line-height: 1;
+}
+.dd-cta-main .lead .num {
+  font-family: var(--font-mono); font-weight: 500; font-size: 18px; margin-right: 6px;
+}
+.dd-cta-main .sub {
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  opacity: 0.6;
+}
+.dd-cta-main .arr {
+  font-family: var(--font-mono); font-size: 22px;
+}
+
+.dd-secondary {
+  margin: 0 18px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  padding: 6px;
+  border-radius: var(--r-md);
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+}
+.dd-action {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 10px 4px 8px;
+  border-radius: 8px;
+  color: var(--ink-2);
+  transition: background 120ms, color 120ms;
+}
+.dd-action:hover { background: var(--bg-raised); color: var(--ink); }
+.dd-action svg { width: 18px; height: 18px; }
+.dd-action .lab {
+  font-size: 10px; font-weight: 500; letter-spacing: 0.02em;
+  font-family: var(--font-ui);
+}
+
+/* Filters */
+.filters {
+  margin: 4px 18px 0;
+  display: flex; gap: 6px; align-items: center;
+}
+.chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  font-size: 12px;
+  color: var(--ink-2);
+  font-family: var(--font-ui);
+  transition: all 120ms;
+}
+.chip.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.chip:hover:not(.on) { border-color: var(--border-strong); color: var(--ink); }
+
+.search {
+  margin: 0 18px;
+  position: relative;
+}
+.search input {
+  width: 100%; padding: 9px 12px 9px 32px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 120ms;
+}
+.search input:focus { border-color: var(--accent); }
+.search input::placeholder { color: var(--ink-3); }
+.search svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--ink-3); }
+
+/* Outline */
+.outline { margin: 8px 18px 24px; display: flex; flex-direction: column; gap: 1px; }
+.ch-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 8px 8px 4px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 110ms;
+}
+.ch-row:hover { background: var(--bg-raised); }
+.ch-caret {
+  width: 16px; height: 16px;
+  display: inline-flex; align-items: center; justify-content: center;
+  color: var(--ink-3);
+  transition: transform 180ms;
+  font-family: var(--font-mono); font-size: 10px;
+}
+.ch-caret.open { transform: rotate(90deg); }
+.ch-name {
+  font-family: var(--font-zh); font-size: 14px; font-weight: 500;
+  color: var(--ink); flex: 1;
+}
+.ch-count {
+  font-family: var(--font-mono); font-size: 10px; color: var(--ink-3);
+}
+
+.sec-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 8px 6px 22px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 110ms;
+}
+.sec-row:hover { background: var(--bg-raised); }
+.sec-row .ch-name { font-size: 13px; font-weight: 400; color: var(--ink-2); font-family: var(--font-zh); }
+
+.card-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 8px 6px 40px;
+  font-size: 13px;
+  border-radius: 6px;
+  font-family: var(--font-zh);
+  color: var(--ink);
+  position: relative;
+}
+.card-row:hover { background: var(--bg-raised); }
+.card-row::before {
+  content:""; position:absolute; left: 28px; top: 50%; width: 6px; height: 1px;
+  background: var(--ink-4);
+}
+.card-row .front { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-row .star { color: var(--accent); font-size: 11px; }
+.card-row .badge {
+  font-family: var(--font-mono); font-size: 9px;
+  padding: 1px 5px; border-radius: 3px;
+  border: 1px solid var(--border);
+  color: var(--ink-3);
+  letter-spacing: 0.04em;
+}
+
+/* ─────── Review screen ─────── */
+.rv-progress {
+  position: relative;
+  height: 4px;
+  background: var(--bg-raised);
+}
+.rv-progress .bar { height: 100%; background: var(--accent); transition: width 200ms; }
+.rv-progress .ticks { position: absolute; inset: 0; display: flex; }
+.rv-progress .tick { flex: 1; border-right: 1px solid var(--bg); }
+.rv-progress .tick:last-child { border-right: 0; }
+
+.rv-meta {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 18px 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-3);
+}
+.rv-meta .crumb {
+  font-family: var(--font-zh);
+  color: var(--ink-2);
+  font-size: 12px;
+  display: flex; align-items: center; gap: 6px;
+}
+.rv-meta .crumb .div { color: var(--ink-4); }
+.rv-meta .pos { letter-spacing: 0.06em; }
+.rv-meta .pos .now { color: var(--ink); font-weight: 600; }
+
+.rv-card-wrap {
+  flex: 1; min-height: 0;
+  display: flex; flex-direction: column;
+  padding: 18px;
+  gap: 14px;
+}
+.rv-card {
+  flex: 1; min-height: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r-lg);
+  padding: 22px 20px 20px;
+  position: relative;
+  display: flex; flex-direction: column;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+}
+.rv-card .star {
+  position: absolute; top: 14px; right: 14px;
+  width: 26px; height: 26px;
+  display: inline-flex; align-items: center; justify-content: center;
+  color: var(--ink-3);
+  font-size: 16px;
+}
+.rv-card .star.on { color: var(--accent); }
+.rv-card .corner {
+  position: absolute; top: 14px; left: 16px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: var(--ink-3);
+  text-transform: uppercase;
+  display: flex; gap: 6px; align-items: center;
+}
+.rv-card .corner .num {
+  color: var(--accent); font-weight: 600; letter-spacing: 0.02em;
+}
+.rv-card .ornament {
+  position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%);
+  width: 32px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--ink-4), transparent);
+}
+.rv-card .body {
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center;
+  gap: 14px;
+  padding: 8px;
+}
+.rv-card .front-q {
+  font-family: var(--font-zh);
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1.5;
+  letter-spacing: 0.02em;
+}
+.rv-card .front-en {
+  font-family: var(--font-disp);
+  font-style: italic;
+  color: var(--ink-3);
+  font-size: 14px;
+}
+.rv-card .back-a {
+  font-family: var(--font-zh);
+  font-size: 16px;
+  line-height: 1.85;
+  color: var(--teal);
+  text-align: left;
+  letter-spacing: 0.01em;
+  align-self: stretch;
+}
+.rv-card .back-a strong { color: var(--ink); font-weight: 600; }
+.rv-card .divider-srs {
+  width: 100%; padding: 0 8px;
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--font-mono); font-size: 9px;
+  color: var(--ink-3); letter-spacing: 0.18em; text-transform: uppercase;
+}
+.rv-card .divider-srs::before, .rv-card .divider-srs::after {
+  content:""; flex: 1; height: 1px; background: var(--border-soft);
+}
+
+.rv-flip-hint {
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--ink-3);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.rate {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
+  padding: 0 18px 18px;
+}
+.rate-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 12px 4px 10px;
+  border-radius: var(--r-md);
+  border: 1px solid;
+  font-family: var(--font-ui);
+  font-weight: 500;
+  font-size: 13px;
+  transition: transform 100ms, background 120ms;
+}
+.rate-btn:active { transform: scale(0.96); }
+.rate-btn .iv {
+  font-family: var(--font-mono); font-size: 10px; opacity: 0.7;
+  letter-spacing: 0.04em; font-weight: 500;
+}
+.rate-btn .key {
+  font-family: var(--font-mono); font-size: 9px; opacity: 0.4;
+}
+.rate-again { background: var(--danger-soft); color: var(--danger); border-color: color-mix(in oklch, var(--danger) 22%, transparent); }
+.rate-hard  { background: var(--warn-soft);   color: var(--warn);   border-color: color-mix(in oklch, var(--warn) 22%, transparent); }
+.rate-good  { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-line); }
+.rate-easy  { background: var(--good-soft);   color: var(--good);   border-color: color-mix(in oklch, var(--good) 22%, transparent); }
+.rate-btn:hover { filter: brightness(0.97); }
+:root.dark .rate-btn:hover { filter: brightness(1.1); }
+
+/* ─────── Flip card 3D ─────── */
+.flip-card { perspective: 1400px; }
+.flip-inner {
+  width: 100%; height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 480ms cubic-bezier(.4,.2,.2,1);
+  position: relative;
+}
+.flip-inner.flipped { transform: rotateY(180deg); }
+.flip-face {
+  position: absolute; inset: 0;
+  backface-visibility: hidden; -webkit-backface-visibility: hidden;
+  display: flex; flex-direction: column;
+}
+.flip-back-face { transform: rotateY(180deg); }
+
+/* ─────── Browse ─────── */
+.bw-card {
+  flex: 1; min-height: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r-lg);
+  padding: 24px 20px;
+  display: flex; align-items: center; justify-content: center;
+  text-align: center;
+  font-family: var(--font-zh);
+  font-size: 20px;
+  color: var(--ink);
+  position: relative;
+  cursor: pointer;
+}
+.bw-nav {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  padding: 0 18px 18px;
+}
+
+/* ─────── Import ─────── */
+.import-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r-md);
+  padding: 16px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.import-card .h {
+  font-family: var(--font-zh);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+}
+.import-card .sub {
+  font-size: 11px; color: var(--ink-3); font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+}
+.dropzone {
+  border: 1.5px dashed var(--border);
+  border-radius: var(--r-md);
+  padding: 22px 16px;
+  text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  background: var(--bg);
+  transition: border-color 140ms, background 140ms;
+}
+.dropzone:hover { border-color: var(--accent-line); background: var(--accent-soft); }
+.dropzone .icon {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--bg-card); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--ink-2);
+}
+.dropzone .label {
+  font-family: var(--font-zh); font-size: 13px; color: var(--ink);
+}
+.dropzone .ext {
+  font-family: var(--font-mono); font-size: 10px; color: var(--ink-3);
+  letter-spacing: 0.08em;
+}
+.textarea {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 10px 12px;
+  font-size: 13px;
+  font-family: var(--font-zh);
+  outline: none;
+  resize: none;
+  min-height: 110px;
+  transition: border-color 120ms;
+}
+.textarea:focus { border-color: var(--accent); }
+
+/* Preview list */
+.preview-list { display: flex; flex-direction: column; gap: 6px; }
+.preview-list .it {
+  display: flex; gap: 8px;
+  padding: 7px 10px;
+  border-left: 2px solid var(--accent-line);
+  background: var(--bg);
+  border-radius: 0 6px 6px 0;
+  font-family: var(--font-zh);
+  font-size: 12px;
+  color: var(--ink);
+}
+.preview-list .it .n { color: var(--ink-3); font-family: var(--font-mono); font-size: 10px; min-width: 18px; }
+
+/* ─────── Settings ─────── */
+.settings-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r-md);
+  padding: 16px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.settings-card .lbl {
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-3);
+}
+.settings-card .ctl { display: flex; gap: 6px; }
+.seg {
+  display: inline-flex; padding: 3px;
+  background: var(--bg-raised);
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border-soft);
+  width: 100%;
+}
+.seg button {
+  flex: 1; padding: 7px 10px;
+  font-size: 12px; font-weight: 500;
+  border-radius: 6px;
+  color: var(--ink-2);
+}
+.seg button.on { background: var(--bg-card); color: var(--ink); box-shadow: var(--shadow-sm); }
+.kv-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding: 6px 0;
+  border-bottom: 1px dashed var(--border-soft);
+  font-size: 13px;
+}
+.kv-row:last-child { border-bottom: 0; }
+.kv-row .k { color: var(--ink-2); font-family: var(--font-zh); font-size: 12px; }
+.kv-row .v { color: var(--ink); font-family: var(--font-mono); font-size: 12px; }
+
+/* About block */
+.about-mark {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  padding: 14px 0 6px;
+}
+.about-mark .word {
+  font-family: var(--font-disp);
+  font-size: 26px;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+}
+.about-mark .ver {
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--ink-3); letter-spacing: 0.18em;
+}
+
+/* ─────── PromptGuide ─────── */
+.code-block {
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r-md);
+  padding: 14px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--ink-2);
+  white-space: pre-wrap;
+  max-height: 320px;
+  overflow-y: auto;
+  position: relative;
+}
+.code-block .num {
+  color: var(--ink-4);
+  user-select: none;
+  margin-right: 10px;
+}
+.code-block .k { color: var(--accent); }
+
+/* ─────── Done screen ─────── */
+.done-wrap {
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 18px; padding: 32px 24px;
+  text-align: center;
+}
+.done-mark {
+  width: 76px; height: 76px;
+  border-radius: 50%;
+  background: var(--good-soft);
+  border: 1px solid color-mix(in oklch, var(--good) 30%, transparent);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--good);
+}
+.done-title {
+  font-family: var(--font-disp);
+  font-size: 32px;
+  color: var(--ink);
+  margin-top: 4px;
+}
+.done-zh {
+  font-family: var(--font-zh);
+  font-size: 14px;
+  color: var(--ink-2);
+  letter-spacing: 0.06em;
+  margin-top: -8px;
+}
+.done-stats {
+  display: flex; gap: 18px;
+  font-family: var(--font-mono); font-size: 12px;
+  color: var(--ink-3);
+  margin-top: 4px;
+}
+.done-stats .v { color: var(--ink); font-weight: 600; }
+.done-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  width: 100%;
+  margin-top: 8px;
+}
+.done-grid .cell {
+  padding: 8px 4px;
+  border-radius: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+}
+.done-grid .cell .num { font-size: 16px; font-weight: 600; }
+.done-grid .again { color: var(--danger); background: var(--danger-soft); }
+.done-grid .hard  { color: var(--warn); background: var(--warn-soft); }
+.done-grid .good  { color: var(--accent); background: var(--accent-soft); }
+.done-grid .easy  { color: var(--good); background: var(--good-soft); }
+
+/* Empty state */
+.empty {
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 12px; padding: 48px 24px;
+  text-align: center;
+  color: var(--ink-3);
+}
+.empty .glyph {
+  font-family: var(--font-disp); font-size: 64px;
+  color: var(--ink-4); line-height: 1;
+}
+.empty .msg {
+  font-family: var(--font-zh); font-size: 14px;
+}
+
+/* ─────── Logo board ─────── */
+.logo-board {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r-lg);
+  padding: 22px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  width: 360px;
+}
+.logo-tile {
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  padding: 18px 12px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border-soft);
+}
+.logo-tile.dark { background: oklch(15% 0.012 250); border-color: oklch(28% 0.014 250); }
+.logo-tile.light { background: oklch(99% 0.006 80); }
+.logo-tile.mid { background: var(--bg-raised); }
+.logo-tile.full {
+  grid-column: 1 / -1;
+  background: linear-gradient(135deg, oklch(96% 0.014 80) 0%, oklch(92% 0.022 60) 100%);
+  border: 0;
+}
+.logo-tile .cap {
+  font-family: var(--font-mono); font-size: 9px; color: var(--ink-3);
+  letter-spacing: 0.16em; text-transform: uppercase;
+}
+.logo-tile.dark .cap { color: oklch(60% 0.012 80); }
+
+/* Specimens (type) */
+.spec {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r-lg);
+  padding: 22px;
+  width: 360px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.spec .row { display: flex; flex-direction: column; gap: 4px; padding-bottom: 10px; border-bottom: 1px solid var(--border-soft); }
+.spec .row:last-child { border-bottom: 0; padding-bottom: 0; }
+.spec .lbl { font-family: var(--font-mono); font-size: 9px; color: var(--ink-3); letter-spacing: 0.18em; text-transform: uppercase; }
+.spec .zh { font-family: var(--font-zh); font-size: 22px; color: var(--ink); font-weight: 500; }
+.spec .disp { font-family: var(--font-disp); font-size: 26px; color: var(--ink); font-style: italic; }
+.spec .ui { font-family: var(--font-ui); font-size: 14px; color: var(--ink); }
+.spec .mono { font-family: var(--font-mono); font-size: 13px; color: var(--ink); }
+
+/* Hide native spinners */
+input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback, useMemo } = React;
+
+/* ════════════════════════════════════════════════
+   MOCK DATA
+═══════════════════════════════════════════════ */
+const MOCK_DECKS = [
+  { id: 'd1', name: '版本学复习笔记', glyph: '版', hue: 0, pinned: true,  dueCount: 28, totalCards: 153, reviewedToday: 14 },
+  { id: 'd2', name: '计算机组成原理', glyph: '计', hue: 1, pinned: false, dueCount: 45, totalCards: 220, reviewedToday: 0  },
+  { id: 'd3', name: '数据结构',       glyph: '数', hue: 2, pinned: false, dueCount: 0,  totalCards: 89,  reviewedToday: 0  },
+  { id: 'd4', name: '希腊神话',       glyph: '神', hue: 3, pinned: false, dueCount: 12, totalCards: 64,  reviewedToday: 0  },
+];
+
+const SAMPLE_OUTLINE = [
+  { ch: '书册', count: 24, sections: [
+    { sec: '装订', cards: [
+      { id:'c1', front:'什么是经折装？', starred: true, type: 'recall' },
+      { id:'c2', front:'蝴蝶装与包背装的区别', starred: false, type: 'recall' },
+      { id:'c3', front:'线装的起源与流行时代', starred: false, type: 'recall' },
+    ]},
+    { sec: '抄写', cards: [
+      { id:'c4', front:'卷轴装的形制', starred: false, type: 'recall' },
+      { id:'c5', front:'梵夹装的特征', starred: false, type: 'reference' },
+    ]},
+  ]},
+  { ch: '版印', count: 18, sections: [
+    { sec: '雕版', cards: [
+      { id:'c6', front:'宋版书的鉴定要点', starred: true, type: 'recall' },
+    ]}
+  ]},
+  { ch: '收藏', count: 9, sections: [] },
+];
+
+const SAMPLE_CARD = {
+  front: '什么是经折装？',
+  front_en: 'What is the accordion-fold binding?',
+  back: '将长卷按固定宽度反复折叠成册，首末页粘以封面。源于佛经装帧，盛行于唐五代至宋。',
+  chapter: '书册',
+  section: '装订',
+  starred: false,
+};
+
+const FUTURE = [
+  { day: 'M', count: 12 }, { day: 'T', count: 18 }, { day: 'W', count: 28, today: true },
+  { day: 'T', count: 8 },  { day: 'F', count: 15 }, { day: 'S', count: 6 },  { day: 'S', count: 0 },
+];
+
+/* ════════════════════════════════════════════════
+   ICONS — single-path, no clutter
+═══════════════════════════════════════════════ */
+const Icon = ({ d, size=18, sw=1.6, ...p }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round" {...p}>
+    {Array.isArray(d) ? d.map((dd,i)=><path key={i} d={dd} />) : <path d={d} />}
+  </svg>
+);
+const I = {
+  back: <Icon d="M14 6l-6 6 6 6" />,
+  plus: <Icon d="M12 5v14M5 12h14" />,
+  search: <Icon d="M11 5a6 6 0 110 12 6 6 0 010-12zM21 21l-5-5" />,
+  cog: <Icon d={["M12 8.5a3.5 3.5 0 100 7 3.5 3.5 0 000-7z","M19 12a7 7 0 00-.1-1.2l1.7-1.3-1.7-3-2 .8a7 7 0 00-2.1-1.2L15 4h-3.5l-.4 2.1A7 7 0 009 7.3l-2-.8-1.7 3 1.7 1.3a7 7 0 000 2.4l-1.7 1.3 1.7 3 2-.8a7 7 0 002.1 1.2l.4 2.1H15l.4-2.1a7 7 0 002.1-1.2l2 .8 1.7-3-1.7-1.3a7 7 0 00.1-1.2z"]} />,
+  edit: <Icon d="M14 4l6 6-10 10H4v-6L14 4z" />,
+  trash: <Icon d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" />,
+  pin: <Icon d="M12 3l3 5 5 1-4 4 1 5-5-3-5 3 1-5-4-4 5-1z" />,
+  star: <Icon d="M12 3l2.7 5.9 6.3.6-4.8 4.5 1.5 6.5L12 17l-5.7 3.5 1.5-6.5L3 9.5l6.3-.6z" />,
+  arrowR: <Icon d="M5 12h14M13 6l6 6-6 6" />,
+  arrowL: <Icon d="M19 12H5M11 6l-6 6 6 6" />,
+  check: <Icon d="M5 12l5 5 9-12" sw={2} />,
+  doc: <Icon d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9l-6-6zM14 3v6h6" />,
+  upload: <Icon d="M12 4v12M6 10l6-6 6 6M4 20h16" />,
+  download: <Icon d="M12 4v12M6 14l6 6 6-6M4 20h16" />,
+  paste: <Icon d="M9 4h6v2h2a1 1 0 011 1v13a1 1 0 01-1 1H7a1 1 0 01-1-1V7a1 1 0 011-1h2V4z" />,
+  layers: <Icon d="M12 3l9 5-9 5-9-5 9-5zm0 8l9 5-9 5-9-5" />,
+  list: <Icon d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />,
+  spark: <Icon d="M12 4v4M12 16v4M4 12h4M16 12h4M6.3 6.3l2.8 2.8M14.9 14.9l2.8 2.8M6.3 17.7l2.8-2.8M14.9 9.1l2.8-2.8" />,
+  copy: <Icon d="M8 8h11v11H8zM5 5h11v3M5 5v11h3" />,
+  more: <Icon d="M12 5h.01M12 12h.01M12 19h.01" sw={2.5} />,
+  sun: <Icon d={["M12 6V3M12 21v-3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M3 12h3M18 12h3M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1","M12 8a4 4 0 100 8 4 4 0 000-8z"]} />,
+  moon: <Icon d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z" />,
+};
+
+/* ════════════════════════════════════════════════
+   THE M MARK — original, no resemblance to other brands
+   Constructed: trapezoidal frame with central serif spine
+═══════════════════════════════════════════════ */
+function MnemosMark({ size=22, color='currentColor', accent }) {
+  const c = color;
+  const a = accent || color;
+  return (
+    <svg width={size} height={size} viewBox="0 0 64 64" fill="none">
+      {/* Outer frame — squared M */}
+      <path d="M10 52 L10 14 L20 14 L32 30 L44 14 L54 14 L54 52"
+        stroke={c} strokeWidth="5" strokeLinecap="square" strokeLinejoin="miter" fill="none"/>
+      {/* Inner accent — descending fold */}
+      <path d="M22 24 L32 38 L42 24"
+        stroke={a} strokeWidth="3" strokeLinecap="square" strokeLinejoin="miter" fill="none"/>
+      {/* Foot serifs */}
+      <rect x="6" y="50" width="12" height="4" fill={c}/>
+      <rect x="46" y="50" width="12" height="4" fill={c}/>
+    </svg>
+  );
+}
+
+function MnemosMarkFull({ size=22, color='currentColor', accent }) {
+  // App-icon variant: solid silhouette on rounded square
+  return (
+    <svg width={size} height={size} viewBox="0 0 64 64" fill="none">
+      <path d="M10 52 L10 14 L20 14 L32 30 L44 14 L54 14 L54 52"
+        stroke={color} strokeWidth="5" strokeLinecap="square" strokeLinejoin="miter" fill="none"/>
+      <path d="M22 24 L32 38 L42 24"
+        stroke={accent || color} strokeWidth="3" strokeLinecap="square" strokeLinejoin="miter" fill="none"/>
+      <rect x="6" y="50" width="12" height="4" fill={color}/>
+      <rect x="46" y="50" width="12" height="4" fill={color}/>
+    </svg>
+  );
+}
+
+function AppIcon({ size=72, variant='light' }) {
+  const isDark = variant === 'dark';
+  const bg = isDark
+    ? 'oklch(18% 0.02 250)'
+    : 'oklch(96% 0.014 80)';
+  const ink = isDark ? 'oklch(94% 0.008 80)' : 'oklch(22% 0.02 80)';
+  const accent = 'oklch(62% 0.13 65)';
+  const r = size * 0.224;
+  return (
+    <svg width={size} height={size} viewBox="0 0 256 256">
+      <defs>
+        <linearGradient id={`bg-${variant}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor={isDark ? 'oklch(22% 0.02 250)' : 'oklch(98% 0.012 80)'} />
+          <stop offset="1" stopColor={bg} />
+        </linearGradient>
+      </defs>
+      <rect x="0" y="0" width="256" height="256" rx={r*4.5} fill={`url(#bg-${variant})`} />
+      {/* faint key-pattern border */}
+      <rect x="14" y="14" width="228" height="228" rx={r*4} fill="none" stroke={ink} strokeOpacity="0.08" strokeWidth="1.5"/>
+      <g transform="translate(40, 56)">
+        <path d="M0 144 L0 0 L36 0 L88 64 L140 0 L176 0 L176 144"
+          stroke={ink} strokeWidth="18" strokeLinecap="square" strokeLinejoin="miter" fill="none"/>
+        <path d="M40 36 L88 92 L136 36"
+          stroke={accent} strokeWidth="12" strokeLinecap="square" strokeLinejoin="miter" fill="none"/>
+        <rect x="-14" y="138" width="42" height="14" fill={ink}/>
+        <rect x="148" y="138" width="42" height="14" fill={ink}/>
+      </g>
+    </svg>
+  );
+}
+
+/* ════════════════════════════════════════════════
+   STAGE-LEVEL THEME (controls light/dark of all phones at once)
+═══════════════════════════════════════════════ */
+function useTheme() {
+  const [dark, setDark] = useState(false);
+  useEffect(() => { document.documentElement.classList.toggle('dark', dark); }, [dark]);
+  return [dark, setDark];
+}
+
+/* ════════════════════════════════════════════════
+   PHONE FRAME
+═══════════════════════════════════════════════ */
+function Phone({ children, label, n, dark }) {
+  return (
+    <div className="frame-wrap">
+      <div className="phone">
+        <div className="phone-status">
+          <span>9:41</span>
+          <div className="right">
+            <svg width="14" height="10" viewBox="0 0 14 10"><path d="M1 9V7M4 9V5M7 9V3M10 9V1M13 9V0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+            <svg width="22" height="10" viewBox="0 0 22 10"><rect x="0.5" y="1" width="18" height="8" rx="2" stroke="currentColor" fill="none"/><rect x="2" y="2.5" width="14" height="5" fill="currentColor"/><rect x="19" y="3.5" width="2" height="3" fill="currentColor"/></svg>
+          </div>
+        </div>
+        <div className="phone-screen">{children}</div>
+      </div>
+      <div className="frame-label">
+        <span className="num">{n}</span>
+        {label}
+      </div>
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════
+   SCREENS
+═══════════════════════════════════════════════ */
+
+/* — HOME — */
+function HomeScreen({ onNav }) {
+  const [decks, setDecks] = useState(MOCK_DECKS);
+  const totalDue = decks.reduce((s,d)=>s+d.dueCount,0);
+  const totalCards = decks.reduce((s,d)=>s+d.totalCards,0);
+  const reviewedToday = 14;
+  const togglePin = (id) => setDecks(d => d.map(x => x.id===id ? {...x, pinned:!x.pinned} : x));
+  const sorted = [...decks].sort((a,b)=>(b.pinned?1:0)-(a.pinned?1:0));
+
+  return (
+    <>
+      <div className="topbar">
+        <h1><MnemosMark size={20} accent="var(--accent)"/>Mnemos</h1>
+        <div className="tb-actions">
+          <button className="tb-btn" onClick={()=>onNav?.('settings')} aria-label="Settings">{I.cog}</button>
+        </div>
+      </div>
+
+      <div className="scr">
+        {/* Hero stats */}
+        <div className="hero">
+          <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom: 14}}>
+            <div style={{fontFamily:'var(--font-mono)', fontSize: 10, letterSpacing:'.18em', color:'var(--ink-3)', textTransform:'uppercase'}}>今 · TODAY</div>
+            <div className="streak">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c0 0-5 4.5-5 9a5 5 0 0010 0c0-4.5-5-9-5-9zm0 12a2 2 0 110-4 2 2 0 010 4z"/></svg>
+              7 天
+            </div>
+          </div>
+          <div className="hero-row">
+            <div className="hero-col">
+              <span className="num accent">{totalDue}</span>
+              <span className="label">DUE</span>
+              <span className="zh-label">待复习</span>
+            </div>
+            <div className="hero-divider"/>
+            <div className="hero-col">
+              <span className="num">{reviewedToday}</span>
+              <span className="label">DONE</span>
+              <span className="zh-label">已复习</span>
+            </div>
+            <div className="hero-divider"/>
+            <div className="hero-col">
+              <span className="num">{totalCards}</span>
+              <span className="label">TOTAL</span>
+              <span className="zh-label">卡片总数</span>
+            </div>
+          </div>
+          <div className="hero-chart">
+            {FUTURE.map((d,i)=>(
+              <div key={i} className={`hero-bar ${d.count===0?'empty':''} ${d.today?'today':''}`}>
+                <div className="b" style={{height: d.count===0 ? 2 : Math.max(4, (d.count/30)*30)}}/>
+                <span className="day">{d.day}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Decks list header */}
+        <div className="list-head">
+          <div className="section-title" style={{flex:'none'}}>卡组 · DECKS</div>
+          <span className="count">{decks.length}</span>
+        </div>
+
+        {/* Deck list */}
+        <div style={{display:'flex', flexDirection:'column', gap: 8}}>
+          {sorted.map(d => (
+            <div className="deck" key={d.id} onClick={()=>onNav?.('deck')}>
+              <div className={`deck-spine h${d.hue}`}>
+                <span className="glyph">{d.glyph}</span>
+              </div>
+              <div className="deck-meta">
+                <div className="deck-name">
+                  {d.name}
+                  {d.pinned && <span className="deck-pin">◆</span>}
+                </div>
+                <div className="deck-stats">
+                  {d.dueCount > 0
+                    ? <><span className="due">{d.dueCount}</span><span>待复习</span></>
+                    : <span style={{color:'var(--good)'}}>已完成</span>}
+                  <span className="dot">·</span>
+                  <span>{d.totalCards} 张</span>
+                </div>
+              </div>
+              <div className="deck-cta">
+                <button className={`deck-pin-btn ${d.pinned?'on':''}`} onClick={(e)=>{e.stopPropagation();togglePin(d.id)}} aria-label="Pin">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill={d.pinned?'currentColor':'none'} stroke="currentColor" strokeWidth="1.6"><path d="M12 3l3 5 5 1-4 4 1 5-5-3-5 3 1-5-4-4 5-1z" strokeLinejoin="round"/></svg>
+                </button>
+                {d.dueCount > 0 ? (
+                  <button className="cta-review" onClick={(e)=>{e.stopPropagation();onNav?.('review')}}>
+                    复习<span className="arrow">→</span>
+                  </button>
+                ) : (
+                  <span className="cta-done">{I.check}</span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Bottom actions */}
+        <div className="bottom-actions">
+          <button className="btn btn-ghost" onClick={()=>onNav?.('import')}>
+            {I.upload} 导入
+          </button>
+          <button className="btn btn-primary">
+            {I.plus} 新建卡组
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}
+
+/* — DECK DETAIL — */
+function DeckDetailScreen({ onNav }) {
+  const [open, setOpen] = useState(new Set(['书册']));
+  const [openSec, setOpenSec] = useState(new Set(['书册::装订']));
+  const [filter, setFilter] = useState('all');
+  const [search, setSearch] = useState('');
+  const total = SAMPLE_OUTLINE.reduce((s,c)=>s+c.count,0);
+  const due = 28;
+  const learned = total - due;
+  const toggle = (k, set, setSet) => {
+    const n = new Set(set); n.has(k) ? n.delete(k) : n.add(k); setSet(n);
+  };
+  return (
+    <>
+      <div className="topbar">
+        <button className="tb-btn" onClick={()=>onNav?.('home')}>{I.back}</button>
+        <h1 className="zh" style={{flex:1, paddingLeft: 4}}>版本学复习笔记</h1>
+        <div className="tb-actions">
+          <button className="tb-btn">{I.pin}</button>
+          <button className="tb-btn">{I.more}</button>
+        </div>
+      </div>
+
+      {/* Title block + progress */}
+      <div className="dd-head">
+        <div className="dd-meta">
+          <span>153 张</span><span className="sep">/</span>
+          <span style={{color:'var(--accent)'}}>{due} 待复习</span><span className="sep">/</span>
+          <span>{learned} 已学</span>
+        </div>
+        <div className="dd-progress">
+          <div className="bar" style={{width: `${(learned/total)*100}%`}}/>
+        </div>
+        <div className="dd-progress-row">
+          <span>PROGRESS</span>
+          <span>{Math.round((learned/total)*100)}%</span>
+        </div>
+      </div>
+
+      {/* Primary CTA */}
+      <div className="dd-cta">
+        <button className="dd-cta-main" onClick={()=>onNav?.('review')}>
+          <div className="left">
+            <div className="lead"><span className="num">{due}</span> 张待复习</div>
+            <div className="sub">START REVIEW</div>
+          </div>
+          <span className="arr">→</span>
+        </button>
+      </div>
+
+      {/* Secondary actions — 4-up grid */}
+      <div className="dd-secondary">
+        <button className="dd-action" onClick={()=>onNav?.('browse')}>
+          {I.layers}
+          <span className="lab">浏览</span>
+        </button>
+        <button className="dd-action">
+          {I.spark}
+          <span className="lab">全部复习</span>
+        </button>
+        <button className="dd-action" onClick={()=>onNav?.('import')}>
+          {I.upload}
+          <span className="lab">导入</span>
+        </button>
+        <button className="dd-action">
+          {I.plus}
+          <span className="lab">新卡片</span>
+        </button>
+      </div>
+
+      {/* Filter chips */}
+      <div className="filters">
+        <button className={`chip ${filter==='all'?'on':''}`} onClick={()=>setFilter('all')}>全部 · {total}</button>
+        <button className={`chip ${filter==='star'?'on':''}`} onClick={()=>setFilter('star')}>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l2.7 5.9 6.3.6-4.8 4.5 1.5 6.5L12 17l-5.7 3.5 1.5-6.5L3 9.5l6.3-.6z"/></svg>
+          收藏
+        </button>
+        <button className={`chip ${filter==='ref'?'on':''}`} onClick={()=>setFilter('ref')}>参考</button>
+      </div>
+
+      {/* Search */}
+      <div className="search">
+        {I.search}
+        <input value={search} onChange={(e)=>setSearch(e.target.value)} placeholder="搜索卡片..." />
+      </div>
+
+      {/* Outline */}
+      <div className="outline">
+        {SAMPLE_OUTLINE.map(ch => {
+          const isOpen = open.has(ch.ch);
+          return (
+            <div key={ch.ch}>
+              <div className="ch-row" onClick={()=>toggle(ch.ch, open, setOpen)}>
+                <span className={`ch-caret ${isOpen?'open':''}`}>›</span>
+                <span className="ch-name">{ch.ch}</span>
+                <span className="ch-count">{ch.count}</span>
+              </div>
+              {isOpen && ch.sections.map(sec => {
+                const k = `${ch.ch}::${sec.sec}`;
+                const so = openSec.has(k);
+                return (
+                  <div key={k}>
+                    <div className="sec-row" onClick={()=>toggle(k, openSec, setOpenSec)}>
+                      <span className={`ch-caret ${so?'open':''}`}>›</span>
+                      <span className="ch-name">{sec.sec}</span>
+                      <span className="ch-count">{sec.cards.length}</span>
+                    </div>
+                    {so && sec.cards.map(c => (
+                      <div className="card-row" key={c.id}>
+                        <span className="front">{c.front}</span>
+                        {c.starred && <span className="star">★</span>}
+                        {c.type==='reference' && <span className="badge">REF</span>}
+                      </div>
+                    ))}
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })}
+      </div>
+    </>
+  );
+}
+
+/* — REVIEW (front state) — */
+function ReviewScreen({ flipped: initialFlipped=false, onNav }) {
+  const [flipped, setFlipped] = useState(initialFlipped);
+  const [starred, setStarred] = useState(false);
+  const idx = 7, total = 28;
+  return (
+    <>
+      <div className="topbar">
+        <button className="tb-btn" onClick={()=>onNav?.('deck')}>{I.back}</button>
+        <span className="tb-text" style={{fontFamily:'var(--font-mono)', fontSize: 11}}>
+          <span style={{color:'var(--ink)', fontWeight:600}}>{idx}</span>
+          <span style={{color:'var(--ink-3)'}}> / {total}</span>
+        </span>
+        <div className="tb-actions">
+          <button className="tb-btn" onClick={()=>setStarred(s=>!s)}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill={starred?'var(--accent)':'none'} stroke={starred?'var(--accent)':'currentColor'} strokeWidth="1.6" strokeLinejoin="round">
+              <path d="M12 3l2.7 5.9 6.3.6-4.8 4.5 1.5 6.5L12 17l-5.7 3.5 1.5-6.5L3 9.5l6.3-.6z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {/* Progress with ticks */}
+      <div className="rv-progress">
+        <div className="bar" style={{width: `${(idx/total)*100}%`}}/>
+      </div>
+
+      <div className="rv-meta">
+        <span className="crumb">书册<span className="div">›</span>装订</span>
+        <span className="pos"><span className="now">REVIEW</span></span>
+      </div>
+
+      {/* Card */}
+      <div className="rv-card-wrap">
+        <div className="flip-card" style={{flex: 1, minHeight: 0}}>
+          <div className={`flip-inner ${flipped?'flipped':''}`}>
+            {/* FRONT */}
+            <div className="flip-face">
+              <div className="rv-card" onClick={()=>setFlipped(true)}>
+                <div className="corner">
+                  <span className="num">Q</span>
+                  <span>QUESTION</span>
+                </div>
+                <div className="body">
+                  <div className="front-q">{SAMPLE_CARD.front}</div>
+                  <div className="front-en">{SAMPLE_CARD.front_en}</div>
+                </div>
+                <div className="ornament"/>
+              </div>
+            </div>
+            {/* BACK */}
+            <div className="flip-face flip-back-face">
+              <div className="rv-card">
+                <div className="corner">
+                  <span className="num">A</span>
+                  <span>ANSWER</span>
+                </div>
+                <div className="body" style={{justifyContent:'flex-start', paddingTop: 32}}>
+                  <div className="front-q" style={{fontSize: 18, color:'var(--ink-2)'}}>{SAMPLE_CARD.front}</div>
+                  <div className="divider-srs">REVERSO</div>
+                  <div className="back-a">
+                    将长卷按固定宽度反复折叠成册，首末页粘以封面。
+                    <br/>源于<strong>佛经装帧</strong>，盛行于唐五代至宋。
+                  </div>
+                </div>
+                <div className="ornament"/>
+              </div>
+            </div>
+          </div>
+        </div>
+        {!flipped && <div className="rv-flip-hint">TAP TO REVEAL · 点击翻转</div>}
+      </div>
+
+      {/* Rate */}
+      {flipped && (
+        <div className="rate">
+          <button className="rate-btn rate-again">
+            <span>Again</span>
+            <span className="iv">10m</span>
+          </button>
+          <button className="rate-btn rate-hard">
+            <span>Hard</span>
+            <span className="iv">3d</span>
+          </button>
+          <button className="rate-btn rate-good">
+            <span>Good</span>
+            <span className="iv">8d</span>
+          </button>
+          <button className="rate-btn rate-easy">
+            <span>Easy</span>
+            <span className="iv">21d</span>
+          </button>
+        </div>
+      )}
+    </>
+  );
+}
+
+/* — DONE — */
+function DoneScreen({ onNav }) {
+  return (
+    <>
+      <div className="topbar">
+        <button className="tb-btn" onClick={()=>onNav?.('deck')}>{I.back}</button>
+      </div>
+      <div className="done-wrap">
+        <div className="done-mark">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5 9-12"/></svg>
+        </div>
+        <div className="done-title">Mnēmosúnē</div>
+        <div className="done-zh">— 今日已记 —</div>
+
+        <div className="done-stats">
+          <span>已复习 <span className="v">28</span></span>
+          <span>正确率 <span className="v">82%</span></span>
+        </div>
+
+        <div className="done-grid">
+          <div className="cell again"><span className="num">3</span><span>Again</span></div>
+          <div className="cell hard"><span className="num">2</span><span>Hard</span></div>
+          <div className="cell good"><span className="num">19</span><span>Good</span></div>
+          <div className="cell easy"><span className="num">4</span><span>Easy</span></div>
+        </div>
+
+        <div style={{display:'flex', gap: 8, width:'100%', marginTop: 8}}>
+          <button className="btn btn-ghost btn-block" onClick={()=>onNav?.('deck')}>返回卡组</button>
+          <button className="btn btn-primary btn-block" onClick={()=>onNav?.('home')}>主页</button>
+        </div>
+      </div>
+    </>
+  );
+}
+
+/* — BROWSE — */
+function BrowseScreen({ onNav }) {
+  const [flipped, setFlipped] = useState(false);
+  const [idx, setIdx] = useState(3);
+  const total = 153;
+  return (
+    <>
+      <div className="topbar">
+        <button className="tb-btn" onClick={()=>onNav?.('deck')}>{I.back}</button>
+        <span className="tb-text" style={{fontFamily:'var(--font-mono)', fontSize: 11}}>
+          <span style={{color:'var(--ink)', fontWeight:600}}>{idx}</span>
+          <span style={{color:'var(--ink-3)'}}> / {total}</span>
+        </span>
+        <div className="tb-actions">
+          <button className="tb-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"><path d="M12 3l2.7 5.9 6.3.6-4.8 4.5 1.5 6.5L12 17l-5.7 3.5 1.5-6.5L3 9.5l6.3-.6z"/></svg>
+          </button>
+        </div>
+      </div>
+      <div className="rv-meta" style={{paddingTop: 12}}>
+        <span className="crumb">书册<span className="div">›</span>装订</span>
+        <span className="pos">BROWSE</span>
+      </div>
+      <div className="rv-card-wrap">
+        <div className="flip-card" style={{flex:1, minHeight: 0}}>
+          <div className={`flip-inner ${flipped?'flipped':''}`}>
+            <div className="flip-face">
+              <div className="rv-card" onClick={()=>setFlipped(f=>!f)}>
+                <div className="corner"><span className="num">Q</span><span>FRONT</span></div>
+                <div className="body">
+                  <div className="front-q">蝴蝶装与包背装的区别</div>
+                </div>
+                <div className="ornament"/>
+              </div>
+            </div>
+            <div className="flip-face flip-back-face">
+              <div className="rv-card" onClick={()=>setFlipped(f=>!f)}>
+                <div className="corner"><span className="num">A</span><span>BACK</span></div>
+                <div className="body" style={{justifyContent:'flex-start', paddingTop: 32}}>
+                  <div className="back-a">蝴蝶装将版心向内对折、版口为脊；包背装则将版心朝外对折，再以纸条包裹书脊。前者翻阅时易露白页，后者更近现代书形。</div>
+                </div>
+                <div className="ornament"/>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="bw-nav">
+        <button className="btn btn-ghost" onClick={()=>{setFlipped(false); setIdx(i=>Math.max(1,i-1))}}>{I.arrowL} 上一张</button>
+        <button className="btn btn-ghost" onClick={()=>{setFlipped(false); setIdx(i=>Math.min(total,i+1))}}>下一张 {I.arrowR}</button>
+      </div>
+    </>
+  );
+}
+
+/* — IMPORT — */
+function ImportScreen({ onNav, preview=false }) {
+  const [paste, setPaste] = useState('');
+  if (preview) {
+    return <ImportPreviewScreen onNav={onNav}/>;
+  }
+  return (
+    <>
+      <div className="topbar">
+        <button className="tb-btn" onClick={()=>onNav?.('home')}>{I.back}</button>
+        <h1 className="zh" style={{flex:1, paddingLeft: 4}}>导入</h1>
+      </div>
+      <div className="scr">
+        <div className="import-card">
+          <div className="h">从文件导入</div>
+          <div className="dropzone">
+            <div className="icon">{I.upload}</div>
+            <div className="label">点击选择 · 或拖入文件</div>
+            <div className="ext">.MD &nbsp; .JSON</div>
+          </div>
+        </div>
+
+        <div className="import-card">
+          <div className="h">粘贴 Markdown</div>
+          <textarea className="textarea" value={paste} onChange={(e)=>setPaste(e.target.value)} placeholder="# 章节&#10;## 小节&#10;- 正面&#10;  - 背面" />
+          <button className="btn btn-accent btn-block" disabled={!paste.trim()}>{I.paste} 解析并预览</button>
+        </div>
+
+        <div style={{textAlign:'center', fontSize: 11, color:'var(--ink-3)', fontFamily:'var(--font-mono)', letterSpacing:'.06em', marginTop: 4}}>
+          不知如何准备内容？ <a onClick={()=>onNav?.('prompt')} style={{color:'var(--accent)', cursor:'pointer'}}>查看制卡指南 →</a>
+        </div>
+      </div>
+    </>
+  );
+}
+
+function ImportPreviewScreen({ onNav }) {
+  const [mode, setMode] = useState('append');
+  const [skipDup, setSkipDup] = useState(true);
+  const [name, setName] = useState('版本学复习笔记');
+  const total = 42, dup = 6;
+  return (
+    <>
+      <div className="topbar">
+        <button className="tb-btn" onClick={()=>onNav?.('import')}>{I.back}</button>
+        <h1 className="zh" style={{flex:1, paddingLeft: 4}}>导入预览</h1>
+      </div>
+      <div className="scr">
+        <div className="import-card">
+          <div className="h">合并方式</div>
+          <div className="seg">
+            <button className={mode==='append'?'on':''} onClick={()=>setMode('append')}>追加到已有</button>
+            <button className={mode==='new'?'on':''} onClick={()=>setMode('new')}>新建卡组</button>
+          </div>
+          {mode==='new' && (
+            <input className="textarea" style={{minHeight:0, padding:'9px 12px'}} value={name} onChange={(e)=>setName(e.target.value)} />
+          )}
+          <div className="kv-row"><span className="k">解析卡片</span><span className="v">{total}</span></div>
+          <div className="kv-row"><span className="k">重复卡片</span><span className="v" style={{color:'var(--warn)'}}>{dup}</span></div>
+          <div className="kv-row"><span className="k">将导入</span><span className="v" style={{color:'var(--accent)', fontWeight:600}}>{skipDup ? total-dup : total}</span></div>
+          <div className="seg" style={{marginTop: 4}}>
+            <button className={skipDup?'on':''} onClick={()=>setSkipDup(true)}>跳过重复</button>
+            <button className={!skipDup?'on':''} onClick={()=>setSkipDup(false)}>全部导入</button>
+          </div>
+        </div>
+
+        <div className="import-card">
+          <div className="h">卡片预览</div>
+          <div className="preview-list">
+            {['什么是经折装？', '蝴蝶装与包背装的区别', '线装的起源与流行时代', '卷轴装的形制', '梵夹装的特征'].map((q,i)=>(
+              <div className="it" key={i}><span className="n">{String(i+1).padStart(2,'0')}</span>{q}</div>
+            ))}
+            <div className="it" style={{borderColor:'var(--border)', color:'var(--ink-3)', fontFamily:'var(--font-mono)', fontSize: 11}}>
+              <span className="n">···</span>还有 37 张
+            </div>
+          </div>
+        </div>
+
+        <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap: 8}}>
+          <button className="btn btn-ghost" onClick={()=>onNav?.('import')}>取消</button>
+          <button className="btn btn-primary" onClick={()=>onNav?.('home')}>确认导入</button>
+        </div>
+      </div>
+    </>
+  );
+}
+
+/* — PROMPT GUIDE — */
+function PromptScreen({ onNav }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <>
+      <div className="topbar">
+        <button className="tb-btn" onClick={()=>onNav?.('import')}>{I.back}</button>
+        <h1 className="zh" style={{flex:1, paddingLeft: 4}}>制卡指南</h1>
+      </div>
+      <div className="scr">
+        <p style={{fontSize: 13, color:'var(--ink-2)', lineHeight: 1.7, fontFamily:'var(--font-zh)'}}>
+          将下方 prompt 复制给任意 AI（Claude / GPT / DeepSeek / Kimi…），附上学习材料，即可获得可导入的 .md 文件。
+        </p>
+        <button
+          className={`btn ${copied?'btn-accent':'btn-primary'} btn-block`}
+          onClick={()=>{setCopied(true); setTimeout(()=>setCopied(false), 1800);}}
+        >
+          {copied ? <>{I.check} 已复制</> : <>{I.copy} 一键复制 Prompt</>}
+        </button>
+
+        <div className="code-block">
+          <span className="num">01</span><span className="k">## 任务</span>{`\n`}
+          <span className="num">02</span>从下面材料中提取 Anki 卡片。{`\n`}
+          <span className="num">03</span>{`\n`}
+          <span className="num">04</span><span className="k">## 输出格式</span>{`\n`}
+          <span className="num">05</span># 章节名{`\n`}
+          <span className="num">06</span>## 小节名{`\n`}
+          <span className="num">07</span>- 卡片正面{`\n`}
+          <span className="num">08</span>{'  '}- 卡片背面{`\n`}
+          <span className="num">09</span>{`\n`}
+          <span className="num">10</span><span className="k">## 规则</span>{`\n`}
+          <span className="num">11</span>1. 一问一答，简洁{`\n`}
+          <span className="num">12</span>2. 正面避免出现答案{`\n`}
+          <span className="num">13</span>3. 章节与小节按目录组织{`\n`}
+          <span className="num">14</span>4. 标记 [REF] 表示参考卡{`\n`}
+          <span className="num">15</span>{`\n`}
+          <span className="num">16</span><span className="k">## 材料</span>{`\n`}
+          <span className="num">17</span>{'<在此粘贴你的笔记>'}
+        </div>
+
+        <div style={{textAlign:'center', fontSize: 11, color:'var(--ink-3)', fontFamily:'var(--font-mono)', letterSpacing:'.06em'}}>
+          导入时 · 选择文件 或 粘贴 Markdown
+        </div>
+      </div>
+    </>
+  );
+}
+
+/* — SETTINGS — */
+function SettingsScreen({ onNav, themeDark, setThemeDark }) {
+  const [limit, setLimit] = useState('60');
+  return (
+    <>
+      <div className="topbar">
+        <button className="tb-btn" onClick={()=>onNav?.('home')}>{I.back}</button>
+        <h1 className="zh" style={{flex:1, paddingLeft: 4}}>设置</h1>
+      </div>
+      <div className="scr">
+        <div className="settings-card">
+          <div className="lbl">外观 · APPEARANCE</div>
+          <div className="seg">
+            <button className={!themeDark?'on':''} onClick={()=>setThemeDark(false)}>{I.sun} Light</button>
+            <button className={themeDark?'on':''} onClick={()=>setThemeDark(true)}>{I.moon} Dark</button>
+          </div>
+        </div>
+
+        <div className="settings-card">
+          <div className="lbl">每日复习上限 · DAILY LIMIT</div>
+          <input className="textarea" style={{minHeight:0, padding:'10px 12px', fontFamily:'var(--font-mono)'}} type="number" value={limit} onChange={(e)=>setLimit(e.target.value)} placeholder="不限" />
+          <div style={{fontSize: 11, color:'var(--ink-3)', fontFamily:'var(--font-mono)', letterSpacing:'.04em'}}>设置后首页将显示每日目标</div>
+        </div>
+
+        <div className="settings-card">
+          <div className="lbl">数据 · DATA</div>
+          <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap: 8}}>
+            <button className="btn btn-ghost">{I.download} 导出</button>
+            <button className="btn btn-ghost">{I.upload} 导入</button>
+          </div>
+          <div className="kv-row"><span className="k">卡组</span><span className="v">4</span></div>
+          <div className="kv-row"><span className="k">卡片</span><span className="v">526</span></div>
+          <div className="kv-row"><span className="k">最近备份</span><span className="v">2026-04-29</span></div>
+        </div>
+
+        <div className="settings-card">
+          <div className="lbl">关于 · ABOUT</div>
+          <div className="about-mark">
+            <MnemosMark size={36} accent="var(--accent)"/>
+            <div className="word">Mnemos</div>
+            <div className="ver">VERSION 0.7.0</div>
+          </div>
+          <div className="kv-row"><span className="k">间隔算法</span><span className="v">SM-2</span></div>
+          <div className="kv-row"><span className="k">中文字体</span><span className="v">Noto Serif SC</span></div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+/* — Empty deck (variant) — */
+function HomeEmptyScreen({ onNav }) {
+  return (
+    <>
+      <div className="topbar">
+        <h1><MnemosMark size={20} accent="var(--accent)"/>Mnemos</h1>
+        <div className="tb-actions">
+          <button className="tb-btn">{I.cog}</button>
+        </div>
+      </div>
+      <div className="empty">
+        <MnemosMark size={56} color="var(--ink-4)" accent="var(--ink-4)"/>
+        <div style={{fontFamily:'var(--font-disp)', fontSize: 26, color:'var(--ink-2)', marginTop: 8}}>
+          <em>memoria principium</em>
+        </div>
+        <div className="msg">记忆是一切的开端</div>
+        <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap: 8, width:'100%', marginTop: 16, padding: '0 32px'}}>
+          <button className="btn btn-ghost" onClick={()=>onNav?.('import')}>{I.upload} 导入</button>
+          <button className="btn btn-primary">{I.plus} 新建</button>
+        </div>
+      </div>
+    </>
+  );
+}
+
+/* ════════════════════════════════════════════════
+   ROUTER PER PHONE — each phone is independent
+═══════════════════════════════════════════════ */
+function PhoneRouter({ initial='home', presetState }) {
+  const [route, setRoute] = useState(initial);
+  const onNav = (r) => setRoute(r);
+  switch (route) {
+    case 'home':       return <HomeScreen onNav={onNav}/>;
+    case 'home-empty': return <HomeEmptyScreen onNav={onNav}/>;
+    case 'deck':       return <DeckDetailScreen onNav={onNav}/>;
+    case 'review':     return <ReviewScreen onNav={onNav}/>;
+    case 'review-back':return <ReviewScreen onNav={onNav} flipped={true}/>;
+    case 'done':       return <DoneScreen onNav={onNav}/>;
+    case 'browse':     return <BrowseScreen onNav={onNav}/>;
+    case 'import':     return <ImportScreen onNav={onNav}/>;
+    case 'import-preview': return <ImportScreen onNav={onNav} preview/>;
+    case 'prompt':     return <PromptScreen onNav={onNav}/>;
+    case 'settings':   return <SettingsScreen onNav={onNav} themeDark={document.documentElement.classList.contains('dark')} setThemeDark={(v)=>document.documentElement.classList.toggle('dark', v)}/>;
+    default:           return <HomeScreen onNav={onNav}/>;
+  }
+}
+
+/* ════════════════════════════════════════════════
+   APP — design canvas of phones
+═══════════════════════════════════════════════ */
+function App() {
+  const [dark, setDark] = useTheme();
+
+  const phones = [
+    { n: '01', label: '主页 · HOME',                 initial: 'home' },
+    { n: '02', label: '卡组详情 · DECK',              initial: 'deck' },
+    { n: '03', label: '复习正面 · REVIEW Q',          initial: 'review' },
+    { n: '04', label: '复习背面 + 评分 · REVIEW A',    initial: 'review-back' },
+    { n: '05', label: '完成 · DONE',                 initial: 'done' },
+    { n: '06', label: '浏览 · BROWSE',                initial: 'browse' },
+    { n: '07', label: '导入 · IMPORT',                initial: 'import' },
+    { n: '08', label: '导入预览 · PREVIEW',           initial: 'import-preview' },
+    { n: '09', label: '制卡指南 · PROMPT',            initial: 'prompt' },
+    { n: '10', label: '设置 · SETTINGS',              initial: 'settings' },
+    { n: '11', label: '空状态 · EMPTY',               initial: 'home-empty' },
+  ];
+
+  return (
+    <div className="stage">
+      <div className="stage-inner">
+        {/* Title block */}
+        <div className="stage-head">
+          <div>
+            <div style={{display:'flex', alignItems:'center', gap: 14, marginBottom: 6}}>
+              <MnemosMark size={36} accent="var(--accent)"/>
+              <div>
+                <div className="stage-title">Mnemos <em>v2</em></div>
+                <div className="stage-sub">interactive prototype · 11 screens · light + dark</div>
+              </div>
+            </div>
+          </div>
+          <div className="stage-controls">
+            <button className={`stage-toggle ${!dark?'active':''}`} onClick={()=>setDark(false)}>LIGHT</button>
+            <button className={`stage-toggle ${dark?'active':''}`} onClick={()=>setDark(true)}>DARK</button>
+          </div>
+        </div>
+
+        {/* App icon row */}
+        <div className="stage-grid" style={{gridTemplateColumns:'repeat(auto-fit, 360px)'}}>
+          <div className="frame-wrap">
+            <div className="logo-board">
+              <div className="logo-tile light" style={{gridColumn:'1/-1'}}>
+                <AppIcon size={108} variant="light"/>
+                <div className="cap">APP ICON · LIGHT 512</div>
+              </div>
+              <div className="logo-tile dark">
+                <AppIcon size={64} variant="dark"/>
+                <div className="cap">DARK 192</div>
+              </div>
+              <div className="logo-tile mid">
+                <MnemosMark size={48} accent="var(--accent)"/>
+                <div className="cap">MARK · MONO</div>
+              </div>
+            </div>
+            <div className="frame-label"><span className="num">M</span>品牌 · BRAND MARK</div>
+          </div>
+
+          <div className="frame-wrap">
+            <div className="spec">
+              <div className="row">
+                <span className="lbl">中文 · Noto Serif SC</span>
+                <span className="zh">间隔重复 · 记忆术</span>
+              </div>
+              <div className="row">
+                <span className="lbl">Display · Instrument Serif</span>
+                <span className="disp">Mnēmosúnē</span>
+              </div>
+              <div className="row">
+                <span className="lbl">UI · Inter</span>
+                <span className="ui">Review · Browse · Import</span>
+              </div>
+              <div className="row">
+                <span className="lbl">Numerals · JetBrains Mono</span>
+                <span className="mono">28 / 153 · 82% · v0.7.0</span>
+              </div>
+              <div className="row" style={{display:'flex', flexDirection:'row', gap: 6, alignItems:'center'}}>
+                <span style={{width:14,height:14,borderRadius:3,background:'var(--accent)'}}/>
+                <span style={{width:14,height:14,borderRadius:3,background:'var(--teal)'}}/>
+                <span style={{width:14,height:14,borderRadius:3,background:'var(--good)'}}/>
+                <span style={{width:14,height:14,borderRadius:3,background:'var(--warn)'}}/>
+                <span style={{width:14,height:14,borderRadius:3,background:'var(--danger)'}}/>
+                <span style={{width:14,height:14,borderRadius:3,background:'var(--ink)'}}/>
+                <span className="lbl" style={{marginLeft: 'auto'}}>PALETTE</span>
+              </div>
+            </div>
+            <div className="frame-label"><span className="num">T</span>字体 · TYPE</div>
+          </div>
+        </div>
+
+        <div className="stage-grid">
+          {phones.map(p => (
+            <Phone key={p.n} n={p.n} label={p.label} dark={dark}>
+              <PhoneRouter initial={p.initial}/>
+            </Phone>
+          ))}
+        </div>
+
+        <div style={{textAlign:'center', padding:'32px 0 8px', fontFamily:'var(--font-mono)', fontSize: 10, letterSpacing:'.18em', color:'var(--ink-3)'}}>
+          MNEMOS · DESIGN STUDY · 2026
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

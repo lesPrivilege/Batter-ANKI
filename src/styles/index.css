@@ -3,49 +3,67 @@
 @tailwind utilities;
 
 :root {
-  --bg:            oklch(97% 0.009 60);
-  --bg-card:       oklch(99.5% 0.004 60);
-  --bg-raised:     oklch(95% 0.012 60);
-  --border:        oklch(88% 0.012 60);
-  --border-strong: oklch(78% 0.018 60);
-  --ink:           oklch(22% 0.020 60);
-  --ink-2:         oklch(46% 0.018 60);
-  --ink-3:         oklch(66% 0.012 60);
-  --accent:        oklch(60% 0.16 40);
-  --accent-bg:     oklch(95.5% 0.035 40);
-  --accent-border: oklch(82% 0.07 40);
-  --success:       oklch(58% 0.14 155);
-  --success-bg:    oklch(95% 0.04 155);
-  --warning:       oklch(62% 0.14 80);
-  --warning-bg:    oklch(96% 0.04 80);
-  --danger:        oklch(56% 0.16 20);
-  --danger-bg:     oklch(95.5% 0.035 20);
-  --radius:        14px;
-  --radius-sm:     8px;
-  --shadow-card:   0 1px 3px oklch(22% 0.02 60 / 0.06), 0 4px 16px oklch(22% 0.02 60 / 0.04);
-  --shadow-raised: 0 2px 8px oklch(22% 0.02 60 / 0.10), 0 8px 32px oklch(22% 0.02 60 / 0.06);
+  --bg:            oklch(96.5% 0.012 80);
+  --bg-card:       oklch(99% 0.006 80);
+  --bg-raised:     oklch(94% 0.016 80);
+  --bg-sunken:     oklch(92.5% 0.018 80);
+  --border:        oklch(86% 0.018 80);
+  --border-soft:   oklch(91% 0.015 80);
+  --border-strong: oklch(72% 0.025 80);
+  --ink:           oklch(22% 0.022 80);
+  --ink-2:         oklch(48% 0.020 80);
+  --ink-3:         oklch(66% 0.014 80);
+  --ink-4:         oklch(78% 0.012 80);
+  --accent:        oklch(56% 0.13 60);
+  --accent-soft:   oklch(94% 0.038 60);
+  --accent-line:   oklch(78% 0.07 60);
+  --teal:          oklch(50% 0.09 195);
+  --teal-soft:     oklch(94% 0.025 195);
+  --good:          oklch(54% 0.11 155);
+  --good-soft:     oklch(94% 0.030 155);
+  --warn:          oklch(58% 0.13 70);
+  --warn-soft:     oklch(94% 0.035 70);
+  --danger:        oklch(54% 0.16 28);
+  --danger-soft:   oklch(94% 0.030 28);
+  --shadow-sm:     0 1px 2px oklch(22% 0.02 80 / 0.05);
+  --shadow-md:     0 1px 3px oklch(22% 0.02 80 / 0.06), 0 6px 24px oklch(22% 0.02 80 / 0.05);
+  --shadow-lg:     0 4px 12px oklch(22% 0.02 80 / 0.08), 0 16px 40px oklch(22% 0.02 80 / 0.08);
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 22px;
+  --font-zh:   'Noto Serif SC', 'Songti SC', Georgia, serif;
+  --font-disp: 'Instrument Serif', 'Noto Serif SC', Georgia, serif;
+  --font-ui:   'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 }
 
 :root.dark {
-  --bg:            oklch(14% 0.016 60);
-  --bg-card:       oklch(18% 0.018 60);
-  --bg-raised:     oklch(21% 0.018 60);
-  --border:        oklch(28% 0.016 60);
-  --border-strong: oklch(36% 0.016 60);
-  --ink:           oklch(92% 0.008 60);
-  --ink-2:         oklch(72% 0.010 60);
-  --ink-3:         oklch(52% 0.008 60);
-  --accent:        oklch(68% 0.16 40);
-  --accent-bg:     oklch(22% 0.06 40);
-  --accent-border: oklch(36% 0.10 40);
-  --success:       oklch(64% 0.14 155);
-  --success-bg:    oklch(20% 0.05 155);
-  --warning:       oklch(68% 0.14 80);
-  --warning-bg:    oklch(20% 0.05 80);
-  --danger:        oklch(64% 0.16 20);
-  --danger-bg:     oklch(20% 0.05 20);
-  --shadow-card:   0 1px 4px #0007, 0 4px 16px #0005;
-  --shadow-raised: 0 2px 8px #000a, 0 8px 32px #0007;
+  --bg:            oklch(15% 0.012 250);
+  --bg-card:       oklch(19% 0.014 250);
+  --bg-raised:     oklch(23% 0.014 250);
+  --bg-sunken:     oklch(12% 0.012 250);
+  --border:        oklch(28% 0.014 250);
+  --border-soft:   oklch(24% 0.012 250);
+  --border-strong: oklch(40% 0.018 250);
+  --ink:           oklch(94% 0.008 80);
+  --ink-2:         oklch(72% 0.012 80);
+  --ink-3:         oklch(54% 0.012 80);
+  --ink-4:         oklch(40% 0.010 80);
+  --accent:        oklch(72% 0.13 65);
+  --accent-soft:   oklch(28% 0.06 65);
+  --accent-line:   oklch(42% 0.10 65);
+  --teal:          oklch(72% 0.10 195);
+  --teal-soft:     oklch(26% 0.05 195);
+  --good:          oklch(72% 0.13 155);
+  --good-soft:     oklch(24% 0.05 155);
+  --warn:          oklch(75% 0.13 75);
+  --warn-soft:     oklch(26% 0.05 75);
+  --danger:        oklch(70% 0.15 28);
+  --danger-soft:   oklch(26% 0.06 28);
+  --shadow-sm:     0 1px 2px #0006;
+  --shadow-md:     0 1px 3px #0007, 0 6px 24px #0005;
+  --shadow-lg:     0 4px 12px #0009, 0 16px 40px #0007;
 }
 
 @layer base {
@@ -57,7 +75,7 @@
 
   body {
     font-family: var(--font-ui);
-    background-color: var(--bg);
+    background: var(--bg-sunken);
     color: var(--ink);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -65,7 +83,8 @@
 
   #root {
     min-height: 100dvh;
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
+    background: var(--bg);
+    max-width: 480px;
+    margin: 0 auto;
   }
 }

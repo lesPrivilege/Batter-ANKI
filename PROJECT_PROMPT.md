@@ -1,10 +1,10 @@
-# Batter-ANKI — MiMo 工作规范
+# Mnemos — MiMo 工作规范
 
 ## 项目概述
 
-Batter-ANKI 是考研 SRS 复习系统的前端，与 md-to-cards（Python CLI）形成闭环：
+Mnemos 是考研 SRS 复习系统的前端，与 md-to-cards（Python CLI）形成闭环：
 - md-to-cards：.md → LLM 提取 → JSON
-- Batter-ANKI：JSON 导入 → SM-2 复习 → 大纲视图
+- Mnemos：JSON 导入 → SM-2 复习 → 大纲视图
 
 技术栈：React 18 + Vite 6 + Tailwind 3 + Capacitor 8 + @fontsource
 Repo：github.com/lesPrivilege/Batter-ANKI
@@ -100,8 +100,13 @@ sed -i '' 's/JavaVersion.VERSION_21/JavaVersion.VERSION_17/g' \
 
 # 4. 构建 APK
 cd android && ./gradlew assembleDebug
-# 输出：android/app/build/outputs/apk/debug/app-debug.apk
+# 产物：android/app/build/outputs/apk/debug/app-debug.apk
+
+# 5. 输出到 Downloads（约定路径）
+cp app/build/outputs/apk/debug/app-debug.apk ~/Downloads/mnemos-v{version}-debug.apk
 ```
+
+**APK 输出约定：** `~/Downloads/mnemos-v{版本号}-debug.apk`，旧版 APK 打包前先清理。
 
 **踩过的坑：**
 - `cap sync` 每次都会把 `node_modules/@capacitor/android/capacitor/build.gradle` 的 Java 版本重置为 `VERSION_21`

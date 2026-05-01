@@ -49,7 +49,7 @@ export function parseMdToCards(mdContent, deckName) {
     const isIndented = /^[ \t]/.test(line) && line.trim().length > 0
     const isEmpty = line.trim() === ''
 
-    if (h1Match && !line.match(/^## /)) {
+    if (h1Match) {
       continue
     }
 

@@ -1,6 +1,7 @@
 // 到期判定 + 排序逻辑
 import { loadData } from './storage'
-import { localToday } from './dateUtils'
+import { localToday, isoToLocalDate } from './dateUtils'
+import { isRecall } from './cardUtils'
 
 // 获取今天日期字符串 YYYY-MM-DD
 function today() {
@@ -17,7 +18,7 @@ export function isDue(card) {
 export function getDueCards(deckId) {
   const data = loadData()
   return data.cards
-    .filter((c) => c.deckId === deckId && (c.type || 'recall') === 'recall' && isDue(c))
+    .filter((c) => c.deckId === deckId && isRecall(c) && isDue(c))
     .sort((a, b) => a.dueDate.localeCompare(b.dueDate))
 }
 
@@ -25,12 +26,12 @@ export function getDueCards(deckId) {
 export function getDeckStats(deckId) {
   const data = loadData()
   const cards = data.cards.filter((c) => c.deckId === deckId)
-  const recallCards = cards.filter((c) => (c.type || 'recall') === 'recall')
+  const recallCards = cards.filter((c) => isRecall(c))
   const t = today()
 
   const dueCount = recallCards.filter((c) => c.dueDate <= t).length
   const reviewedToday = recallCards.filter(
-    (c) => c.updatedAt && c.updatedAt.startsWith(t) && c.repetitions > 0
+    (c) => c.updatedAt && isoToLocalDate(c.updatedAt) === t && c.repetitions > 0
   ).length
 
   // 未来 7 天到期分布
@@ -58,10 +59,10 @@ export function getAllDeckStats() {
 
   return data.decks.map((deck) => {
     const cards = data.cards.filter((c) => c.deckId === deck.id)
-    const recallCards = cards.filter((c) => (c.type || 'recall') === 'recall')
+    const recallCards = cards.filter((c) => isRecall(c))
     const dueCount = recallCards.filter((c) => c.dueDate <= t).length
     const reviewedToday = recallCards.filter(
-      (c) => c.updatedAt && c.updatedAt.startsWith(t) && c.repetitions > 0
+      (c) => c.updatedAt && isoToLocalDate(c.updatedAt) === t && c.repetitions > 0
     ).length
     return {
       ...deck,

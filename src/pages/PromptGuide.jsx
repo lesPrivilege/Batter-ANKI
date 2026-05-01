@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { PROMPT_TEMPLATE } from '../lib/formatSpec'
+import { BackIcon, CopyIcon, CheckIcon } from '../components/Icons'
 
 export default function PromptGuide() {
   const navigate = useNavigate()
@@ -23,39 +24,42 @@ export default function PromptGuide() {
     }
   }
 
+  const lines = PROMPT_TEMPLATE.split('\n')
+
   return (
     <div className="flex flex-col min-h-screen bg-bg">
-      <header className="sticky top-0 z-10 flex items-center px-4 h-12
-        bg-bg-card border-b border-border">
-        <button onClick={() => navigate(-1)} className="text-ink-2 text-sm mr-3">←</button>
-        <h1 className="flex-1 text-lg font-serif font-bold text-ink">制卡指南</h1>
+      <header className="sticky top-0 z-10 flex items-center px-[18px] h-[52px] bg-bg border-b" style={{ borderColor: 'var(--border-soft)' }}>
+        <button onClick={() => navigate(-1)} className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-ink-2 hover:bg-bg-raised hover:text-ink transition-colors">
+          <BackIcon />
+        </button>
+        <h1 className="flex-1 font-zh text-[17px] font-medium text-ink pl-1">制卡指南</h1>
       </header>
 
-      <main className="flex-1 overflow-y-auto p-4 max-w-[480px] w-full mx-auto space-y-4">
-        <p className="text-sm text-ink-2 leading-relaxed">
-          将以下 prompt 复制给任意 AI chatbot（Claude / DeepSeek / GPT / Kimi 等），附上你的学习材料，获得可导入的 .md 文件。
+      <main className="flex-1 overflow-y-auto p-[18px] flex flex-col gap-4">
+        <p className="text-[13px] text-ink-2 leading-relaxed font-zh">
+          将下方 prompt 复制给任意 AI（Claude / GPT / DeepSeek / Kimi…），附上学习材料，即可获得可导入的 .md 文件。
         </p>
 
-        <button
-          onClick={handleCopy}
-          className={`w-full py-2.5 rounded-lg font-ui text-sm font-medium border active:scale-[0.97] transition-transform ${
-            copied
-              ? 'border-success text-success bg-success-bg'
-              : 'border-accent text-accent'
-          }`}
-        >
-          {copied ? 'Copied!' : '一键复制 Prompt'}
+        <button onClick={handleCopy}
+          className={`w-full inline-flex items-center justify-center gap-1.5 py-2.5 rounded-md font-body text-sm font-medium active:scale-[0.97] transition-transform
+            ${copied ? '' : 'bg-ink text-bg'}`}
+          style={copied ? { background: 'var(--accent-soft)', color: 'var(--accent)', border: '1px solid var(--accent-line)' } : {}}>
+          {copied ? <><CheckIcon size={16} /> 已复制</> : <><CopyIcon size={16} /> 一键复制 Prompt</>}
         </button>
 
-        <div className="p-4 rounded-lg border border-border bg-bg-card">
-          <pre className="text-xs text-ink font-serif whitespace-pre-wrap leading-relaxed overflow-x-auto">
-            {PROMPT_TEMPLATE}
-          </pre>
+        <div className="rounded-md p-3.5 font-mono text-[11px] leading-[1.7] text-ink-2 whitespace-pre-wrap max-h-[320px] overflow-y-auto relative"
+          style={{ background: 'var(--bg-sunken)', border: '1px solid var(--border-soft)' }}>
+          {lines.map((line, i) => (
+            <div key={i}>
+              <span className="text-ink-4 select-none mr-2.5">{String(i+1).padStart(2,'0')}</span>
+              {line.startsWith('##') ? <span className="text-accent">{line}</span> : line}
+            </div>
+          ))}
         </div>
 
-        <p className="text-xs text-ink-2 text-center pt-2 pb-4">
-          导入时在首页选择 Import .md 或 Paste .md
-        </p>
+        <div className="text-center text-[11px] text-ink-3 font-mono tracking-wider">
+          导入时 · 选择文件 或 粘贴 Markdown
+        </div>
       </main>
     </div>
   )

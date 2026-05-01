@@ -1,0 +1,42 @@
+export const Icon = ({ d, size=20, sw=1.6, ...p }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round" {...p}>
+    {Array.isArray(d) ? d.map((dd,i)=><path key={i} d={dd} />) : <path d={d} />}
+  </svg>
+)
+
+export const BackIcon = (p) => <Icon d="M14 6l-6 6 6 6" {...p} />
+export const PlusIcon = (p) => <Icon d="M12 5v14M5 12h14" {...p} />
+export const SearchIcon = (p) => <Icon d="M11 5a6 6 0 110 12 6 6 0 010-12zM21 21l-5-5" {...p} />
+export const SettingsIcon = (p) => <Icon d={["M12 8.5a3.5 3.5 0 100 7 3.5 3.5 0 000-7z","M19 12a7 7 0 00-.1-1.2l1.7-1.3-1.7-3-2 .8a7 7 0 00-2.1-1.2L15 4h-3.5l-.4 2.1A7 7 0 009 7.3l-2-.8-1.7 3 1.7 1.3a7 7 0 000 2.4l-1.7 1.3 1.7 3 2-.8a7 7 0 002.1 1.2l.4 2.1H15l.4-2.1a7 7 0 002.1-1.2l2 .8 1.7-3-1.7-1.3a7 7 0 00.1-1.2z"]} {...p} />
+export const EditIcon = (p) => <Icon d="M14 4l6 6-10 10H4v-6L14 4z" {...p} />
+export const TrashIcon = (p) => <Icon d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" {...p} />
+export const PinIcon = (p) => <Icon d="M12 3l3 5 5 1-4 4 1 5-5-3-5 3 1-5-4-4 5-1z" {...p} />
+export const StarIcon = (p) => <Icon d="M12 3l2.7 5.9 6.3.6-4.8 4.5 1.5 6.5L12 17l-5.7 3.5 1.5-6.5L3 9.5l6.3-.6z" {...p} />
+export const ArrowRIcon = (p) => <Icon d="M5 12h14M13 6l6 6-6 6" {...p} />
+export const ArrowLIcon = (p) => <Icon d="M19 12H5M11 6l-6 6 6 6" {...p} />
+export const CheckIcon = (p) => <Icon d="M5 12l5 5 9-12" sw={2} {...p} />
+export const UploadIcon = (p) => <Icon d="M12 4v12M6 10l6-6 6 6M4 20h16" {...p} />
+export const DownloadIcon = (p) => <Icon d="M12 4v12M6 14l6 6 6-6M4 20h16" {...p} />
+export const PasteIcon = (p) => <Icon d="M9 4h6v2h2a1 1 0 011 1v13a1 1 0 01-1 1H7a1 1 0 01-1-1V7a1 1 0 011-1h2V4z" {...p} />
+export const LayersIcon = (p) => <Icon d="M12 3l9 5-9 5-9-5 9-5zm0 8l9 5-9 5-9-5" {...p} />
+export const SparkIcon = (p) => <Icon d="M12 4v4M12 16v4M4 12h4M16 12h4M6.3 6.3l2.8 2.8M14.9 14.9l2.8 2.8M6.3 17.7l2.8-2.8M14.9 9.1l2.8-2.8" {...p} />
+export const CopyIcon = (p) => <Icon d="M8 8h11v11H8zM5 5h11v3M5 5v11h3" {...p} />
+export const MoreIcon = (p) => <Icon d="M12 5h.01M12 12h.01M12 19h.01" sw={2.5} {...p} />
+export const SunIcon = (p) => <Icon d={["M12 6V3M12 21v-3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M3 12h3M18 12h3M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1","M12 8a4 4 0 100 8 4 4 0 000-8z"]} {...p} />
+export const MoonIcon = (p) => <Icon d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z" {...p} />
+
+export function MnemosMark({ size=22, color='currentColor', accent }) {
+  const c = color
+  const a = accent || color
+  return (
+    <svg width={size} height={size} viewBox="0 0 64 64" fill="none">
+      <path d="M10 52 L10 14 L20 14 L32 30 L44 14 L54 14 L54 52"
+        stroke={c} strokeWidth="5" strokeLinecap="square" strokeLinejoin="miter" fill="none"/>
+      <path d="M22 24 L32 38 L42 24"
+        stroke={a} strokeWidth="3" strokeLinecap="square" strokeLinejoin="miter" fill="none"/>
+      <rect x="6" y="50" width="12" height="4" fill={c}/>
+      <rect x="46" y="50" width="12" height="4" fill={c}/>
+    </svg>
+  )
+}

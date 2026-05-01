@@ -1,17 +1,10 @@
 # Issues
 
-## 1. Duplicate rating buttons in Review mode
+## ~~1. Duplicate rating buttons in Review mode~~ (Fixed in v0.7.3)
 
 **Severity:** High (UX bug)
 
-When a card is flipped in Review mode, users see **two sets of rating buttons**:
-
-1. **ReviewCard.jsx lines 56–91**: Again / Hard / Good / Easy (no interval preview)
-2. **Review.jsx lines 97–130**: Again / Hard / Good / Easy (with interval preview like "3d")
-
-Both call `handleRate()` and are visible simultaneously. The user sees 8 buttons total. The Review.jsx bottom bar is more useful (has interval predictions), so the ReviewCard.jsx buttons are redundant.
-
-**Suggested fix:** Remove the rating buttons from ReviewCard.jsx, or remove the bottom bar from Review.jsx. Given that Review.jsx's buttons show interval previews (more informative), removing the buttons from ReviewCard.jsx is the cleaner path.
+Fixed in v0.7.3 — rating buttons removed from ReviewCard.jsx, only Review.jsx bottom bar remains.
 
 ## 2. KaTeX $...$ only works inside backtick code spans
 

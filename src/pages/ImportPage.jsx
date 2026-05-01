@@ -2,6 +2,7 @@ import { useState, useRef, useMemo } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { addDeck, addCard, getCards, getDecks, getDeck, importData } from '../lib/storage'
 import { parseMdToCards } from '../lib/mdParser'
+import { BackIcon, UploadIcon, PasteIcon } from '../components/Icons'
 
 export default function ImportPage() {
   const navigate = useNavigate()
@@ -100,115 +101,89 @@ export default function ImportPage() {
     processMdContent(pasteMd, 'Pasted Notes')
   }
 
+  // Preview mode
   if (previewData) {
     return (
       <div className="flex flex-col min-h-screen bg-bg">
-        <header className="sticky top-0 z-10 flex items-center gap-3 px-4 h-12
-          bg-bg-card border-b border-border shrink-0">
-          <button onClick={handleCancelImport} className="text-ink-2 active:scale-[0.97]">
-            ←
+        <header className="sticky top-0 z-10 flex items-center px-[18px] h-[52px] bg-bg border-b" style={{ borderColor: 'var(--border-soft)' }}>
+          <button onClick={handleCancelImport} className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-ink-2 hover:bg-bg-raised hover:text-ink transition-colors">
+            <BackIcon />
           </button>
-          <h1 className="text-lg font-serif font-bold text-ink">Import Preview</h1>
+          <h1 className="flex-1 font-zh text-[17px] font-medium text-ink pl-1">导入预览</h1>
         </header>
 
-        <main className="flex-1 overflow-y-auto max-w-[480px] w-full mx-auto px-4 pt-4 pb-4 space-y-4">
-          <div className="bg-bg-card border border-border rounded-lg p-4 space-y-3">
-            {targetDeckId && (
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setImportMode('append')}
-                  className={`flex-1 py-2 rounded-lg font-ui text-sm border transition-colors ${
-                    importMode === 'append' ? 'bg-accent text-white border-accent' : 'border-border text-ink-2'
-                  }`}
-                >
-                  追加到「{targetDeck.name}」
-                </button>
-                <button
-                  onClick={() => setImportMode('new')}
-                  className={`flex-1 py-2 rounded-lg font-ui text-sm border transition-colors ${
-                    importMode === 'new' ? 'bg-accent text-white border-accent' : 'border-border text-ink-2'
-                  }`}
-                >
-                  创建新卡组
-                </button>
-              </div>
-            )}
+        <main className="flex-1 overflow-y-auto p-[18px] flex flex-col gap-4">
+          <div className="bg-bg-card rounded-md p-4 flex flex-col gap-2.5" style={{ border: '1px solid var(--border-soft)' }}>
+            <div className="font-zh text-sm font-medium text-ink">合并方式</div>
+            <div className="inline-flex p-0.5 rounded-lg" style={{ background: 'var(--bg-raised)', border: '1px solid var(--border-soft)' }}>
+              <button onClick={() => setImportMode('append')}
+                className={`flex-1 py-[7px] px-2.5 text-[12px] font-medium rounded-md transition-all ${importMode === 'append' ? 'bg-bg-card text-ink shadow-sm' : 'text-ink-2'}`}>
+                追加到已有
+              </button>
+              <button onClick={() => setImportMode('new')}
+                className={`flex-1 py-[7px] px-2.5 text-[12px] font-medium rounded-md transition-all ${importMode === 'new' ? 'bg-bg-card text-ink shadow-sm' : 'text-ink-2'}`}>
+                新建卡组
+              </button>
+            </div>
             {importMode === 'new' && (
-              <div>
-                <label className="text-sm font-ui text-ink-2 mb-1 block">Deck name</label>
-                <input
-                  type="text"
-                  value={previewName}
-                  onChange={(e) => setPreviewName(e.target.value)}
-                  placeholder={previewData.defaultName}
-                  className="w-full px-3 py-2.5 rounded-lg border border-border bg-bg-card text-ink
-                    font-ui text-sm placeholder:text-ink-2/50
-                    focus:outline-none focus:border-accent"
-                />
-              </div>
+              <input value={previewName} onChange={(e) => setPreviewName(e.target.value)}
+                className="w-full py-[9px] px-3 rounded-md border bg-bg text-ink font-zh text-sm outline-none focus:border-accent"
+                style={{ borderColor: 'var(--border)' }} />
             )}
-            {importMode === 'append' && (
-              <p className="text-sm text-ink font-ui">
-                追加到「<span className="font-medium text-accent">{targetDeck.name}</span>」
-              </p>
-            )}
-            <p className="text-sm text-ink font-ui">
-              将导入 <span className="font-medium text-accent">{skipDup ? dedup.filtered.length : previewData.cards.length}</span> 张卡片
-              {dedup.count > 0 && (
-                <span className="text-warning ml-1">（其中 {dedup.count} 张与已有卡片重复）</span>
-              )}
-            </p>
+            <div className="flex justify-between items-baseline py-1.5 border-b" style={{ borderColor: 'var(--border-soft)' }}>
+              <span className="font-zh text-xs text-ink-2">解析卡片</span>
+              <span className="font-mono text-xs text-ink">{previewData.cards.length}</span>
+            </div>
+            <div className="flex justify-between items-baseline py-1.5 border-b" style={{ borderColor: 'var(--border-soft)' }}>
+              <span className="font-zh text-xs text-ink-2">重复卡片</span>
+              <span className="font-mono text-xs" style={{ color: 'var(--warn)' }}>{dedup.count}</span>
+            </div>
+            <div className="flex justify-between items-baseline py-1.5">
+              <span className="font-zh text-xs text-ink-2">将导入</span>
+              <span className="font-mono text-xs font-semibold" style={{ color: 'var(--accent)' }}>{skipDup ? dedup.filtered.length : previewData.cards.length}</span>
+            </div>
             {dedup.count > 0 && (
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setSkipDup(true)}
-                  className={`flex-1 py-2 rounded-lg font-ui text-sm border transition-colors ${
-                    skipDup ? 'bg-accent text-white border-accent' : 'border-border text-ink-2'
-                  }`}
-                >
+              <div className="inline-flex p-0.5 rounded-lg" style={{ background: 'var(--bg-raised)', border: '1px solid var(--border-soft)' }}>
+                <button onClick={() => setSkipDup(true)}
+                  className={`flex-1 py-[7px] px-2.5 text-[12px] font-medium rounded-md transition-all ${skipDup ? 'bg-bg-card text-ink shadow-sm' : 'text-ink-2'}`}>
                   跳过重复
                 </button>
-                <button
-                  onClick={() => setSkipDup(false)}
-                  className={`flex-1 py-2 rounded-lg font-ui text-sm border transition-colors ${
-                    !skipDup ? 'bg-accent text-white border-accent' : 'border-border text-ink-2'
-                  }`}
-                >
+                <button onClick={() => setSkipDup(false)}
+                  className={`flex-1 py-[7px] px-2.5 text-[12px] font-medium rounded-md transition-all ${!skipDup ? 'bg-bg-card text-ink shadow-sm' : 'text-ink-2'}`}>
                   全部导入
                 </button>
               </div>
             )}
-            <div>
-              <p className="text-xs text-ink-2 mb-1.5">Card preview:</p>
-              <ul className="space-y-1">
-                {previewData.cards.slice(0, 5).map((card, i) => (
-                  <li key={i} className="text-sm text-ink truncate pl-2 border-l-2 border-border">
-                    {card.front}
-                  </li>
-                ))}
-                {previewData.cards.length > 5 && (
-                  <li className="text-xs text-ink-2 pl-2">
-                    ...and {previewData.cards.length - 5} more
-                  </li>
-                )}
-              </ul>
+          </div>
+
+          <div className="bg-bg-card rounded-md p-4 flex flex-col gap-2.5" style={{ border: '1px solid var(--border-soft)' }}>
+            <div className="font-zh text-sm font-medium text-ink">卡片预览</div>
+            <div className="flex flex-col gap-1.5">
+              {previewData.cards.slice(0, 5).map((card, i) => (
+                <div key={i} className="flex gap-2 py-[7px] px-2.5 rounded-md font-zh text-xs text-ink"
+                  style={{ borderLeft: '2px solid var(--accent-line)', background: 'var(--bg)' }}>
+                  <span className="font-mono text-[10px] text-ink-3 min-w-[18px]">{String(i+1).padStart(2,'0')}</span>
+                  {card.front}
+                </div>
+              ))}
+              {previewData.cards.length > 5 && (
+                <div className="flex gap-2 py-[7px] px-2.5 rounded-md font-mono text-[11px] text-ink-3"
+                  style={{ borderLeft: '2px solid var(--border)', background: 'var(--bg)' }}>
+                  <span className="min-w-[18px]">···</span>还有 {previewData.cards.length - 5} 张
+                </div>
+              )}
             </div>
           </div>
 
-          <div className="flex gap-2">
-            <button
-              onClick={handleConfirmImport}
-              className="flex-1 py-2.5 rounded-lg font-ui text-sm font-medium text-white
-                bg-accent active:scale-[0.97] transition-transform"
-            >
-              确认导入
-            </button>
-            <button
-              onClick={handleCancelImport}
-              className="flex-1 py-2.5 rounded-lg font-ui text-sm text-ink-2
-                border border-border active:scale-[0.97] transition-transform"
-            >
+          <div className="grid grid-cols-2 gap-2">
+            <button onClick={handleCancelImport}
+              className="inline-flex items-center justify-center py-2.5 rounded-md font-body text-sm text-ink-2 border active:scale-[0.97] transition-transform"
+              style={{ borderColor: 'var(--border)' }}>
               取消
+            </button>
+            <button onClick={handleConfirmImport}
+              className="inline-flex items-center justify-center py-2.5 rounded-md font-body text-sm font-medium bg-ink text-bg active:scale-[0.97] transition-transform">
+              确认导入
             </button>
           </div>
         </main>
@@ -216,62 +191,49 @@ export default function ImportPage() {
     )
   }
 
+  // Import mode
   return (
     <div className="flex flex-col min-h-screen bg-bg">
-      <header className="sticky top-0 z-10 flex items-center gap-3 px-4 h-12
-        bg-bg-card border-b border-border shrink-0">
-        <button onClick={() => navigate(-1)} className="text-ink-2 active:scale-[0.97]">
-          ←
+      <header className="sticky top-0 z-10 flex items-center px-[18px] h-[52px] bg-bg border-b" style={{ borderColor: 'var(--border-soft)' }}>
+        <button onClick={() => navigate(-1)} className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-ink-2 hover:bg-bg-raised hover:text-ink transition-colors">
+          <BackIcon />
         </button>
-        <h1 className="text-lg font-serif font-bold text-ink">Import</h1>
+        <h1 className="flex-1 font-zh text-[17px] font-medium text-ink pl-1">导入</h1>
       </header>
 
-      <main className="flex-1 overflow-y-auto max-w-[480px] w-full mx-auto px-4 pt-4 pb-4 space-y-4">
-        <div className="bg-bg-card border border-border rounded-lg p-4">
-          <p className="text-sm font-ui font-medium text-ink mb-2">从文件导入</p>
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="w-full py-2.5 rounded-lg font-ui text-sm text-ink-2
-              border border-border active:scale-[0.97] transition-transform"
-          >
-            选择文件
-          </button>
-          <p className="text-xs text-ink-2 mt-1.5">支持 .md 和 .json 格式</p>
+      <main className="flex-1 overflow-y-auto p-[18px] flex flex-col gap-4">
+        <div className="bg-bg-card rounded-md p-4 flex flex-col gap-2.5" style={{ border: '1px solid var(--border-soft)' }}>
+          <div className="font-zh text-sm font-medium text-ink">从文件导入</div>
+          <div onClick={() => fileInputRef.current?.click()}
+            className="border-dashed rounded-md py-[22px] px-4 text-center flex flex-col items-center gap-2.5 cursor-pointer transition-colors hover:border-accent-line"
+            style={{ border: '1.5px dashed var(--border)', background: 'var(--bg)' }}>
+            <div className="w-9 h-9 rounded-full bg-bg-card flex items-center justify-center text-ink-2" style={{ border: '1px solid var(--border)' }}>
+              <UploadIcon size={18} />
+            </div>
+            <div className="font-zh text-[13px] text-ink">点击选择 · 或拖入文件</div>
+            <div className="font-mono text-[10px] text-ink-3 tracking-wider">.MD &nbsp; .JSON</div>
+          </div>
         </div>
 
-        <div className="bg-bg-card border border-border rounded-lg p-4">
-          <p className="text-sm font-ui font-medium text-ink mb-2">粘贴文本</p>
-          <textarea
-            value={pasteMd}
-            onChange={(e) => setPasteMd(e.target.value)}
-            placeholder="Paste markdown here..."
-            className="w-full h-40 px-3 py-2.5 rounded-lg border border-border bg-bg-card text-ink
-              font-ui text-sm placeholder:text-ink-2/50 resize-none
-              focus:outline-none focus:border-accent"
-          />
-          <button
-            onClick={handlePasteSubmit}
-            disabled={!pasteMd.trim()}
-            className="w-full mt-2 py-2.5 rounded-lg font-ui text-sm font-medium text-accent
-              border border-accent active:scale-[0.97] transition-transform
-              disabled:opacity-40"
-          >
-            导入
+        <div className="bg-bg-card rounded-md p-4 flex flex-col gap-2.5" style={{ border: '1px solid var(--border-soft)' }}>
+          <div className="font-zh text-sm font-medium text-ink">粘贴 Markdown</div>
+          <textarea value={pasteMd} onChange={(e) => setPasteMd(e.target.value)}
+            placeholder="# 章节&#10;## 小节&#10;- 正面&#10;  - 背面"
+            className="w-full min-h-[110px] bg-bg rounded-lg px-3 py-2.5 text-[13px] font-zh outline-none resize-none focus:border-accent"
+            style={{ border: '1px solid var(--border)' }} />
+          <button onClick={handlePasteSubmit} disabled={!pasteMd.trim()}
+            className="inline-flex items-center justify-center gap-1.5 py-2.5 rounded-md font-body text-sm font-medium active:scale-[0.97] transition-transform disabled:opacity-40"
+            style={{ background: 'var(--accent-soft)', color: 'var(--accent)', border: '1px solid var(--accent-line)' }}>
+            <PasteIcon size={16} /> 解析并预览
           </button>
         </div>
 
-        <p className="text-xs text-ink-2 text-center">
-          不知道如何准备内容？ <Link to="/prompt-guide" className="text-accent">查看制卡指南</Link>
-        </p>
+        <div className="text-center text-[11px] text-ink-3 font-mono tracking-wider mt-1">
+          不知如何准备内容？ <Link to="/prompt-guide" className="text-accent hover:underline">查看制卡指南 →</Link>
+        </div>
       </main>
 
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept=".md,.json"
-        onChange={handleFileSelected}
-        className="hidden"
-      />
+      <input ref={fileInputRef} type="file" accept=".md,.json" onChange={handleFileSelected} className="hidden" />
     </div>
   )
 }

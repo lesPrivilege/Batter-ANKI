@@ -126,12 +126,22 @@ export default function Browse() {
             {/* FRONT */}
             <div className="absolute inset-0" style={{ backfaceVisibility: 'hidden' }}>
               <div ref={cardRef} onClick={() => setFlipped(f => !f)}
-                className="h-full bg-bg-card rounded-lg p-6 flex items-center justify-center text-center font-zh text-xl text-ink cursor-pointer"
-                style={{ border: '1px solid var(--border-soft)', boxShadow: 'var(--shadow-md)' }}>
-                <div className="absolute top-3.5 left-4 font-mono text-[9px] tracking-[0.18em] text-ink-3 uppercase flex gap-1.5 items-center">
-                  <span style={{ color: 'var(--accent)', fontWeight: 600 }}>Q</span><span>FRONT</span>
+                className="h-full relative flex flex-col cursor-pointer"
+                style={{
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border-soft)',
+                  borderRadius: 'var(--r-lg)',
+                  boxShadow: 'var(--shadow-md)',
+                  padding: '22px 20px 20px',
+                }}>
+                <div className="absolute top-[14px] left-4 font-mono text-[9px] tracking-[0.18em] text-ink-3 uppercase flex gap-1.5 items-center">
+                  <span style={{ color: 'var(--accent)', fontWeight: 600, letterSpacing: '0.02em' }}>Q</span><span>FRONT</span>
                 </div>
-                {card.front}
+                <div className="flex-1 flex flex-col items-center justify-center text-center gap-3.5 p-2">
+                  <div className="font-zh text-[22px] font-medium leading-relaxed tracking-wide" style={{ color: 'var(--ink)' }}>
+                    {card.front}
+                  </div>
+                </div>
                 <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-8 h-px"
                   style={{ background: 'linear-gradient(90deg, transparent, var(--ink-4), transparent)' }} />
               </div>
@@ -139,13 +149,27 @@ export default function Browse() {
             {/* BACK */}
             <div className="absolute inset-0" style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}>
               <div onClick={() => setFlipped(f => !f)}
-                className="h-full bg-bg-card rounded-lg p-6 flex items-center justify-center text-center cursor-pointer"
-                style={{ border: '1px solid var(--border-soft)', boxShadow: 'var(--shadow-md)' }}>
-                <div className="absolute top-3.5 left-4 font-mono text-[9px] tracking-[0.18em] text-ink-3 uppercase flex gap-1.5 items-center">
-                  <span style={{ color: 'var(--accent)', fontWeight: 600 }}>A</span><span>BACK</span>
+                className="h-full relative flex flex-col cursor-pointer"
+                style={{
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border-soft)',
+                  borderRadius: 'var(--r-lg)',
+                  boxShadow: 'var(--shadow-md)',
+                  padding: '22px 20px 20px',
+                }}>
+                <div className="absolute top-[14px] left-4 font-mono text-[9px] tracking-[0.18em] text-ink-3 uppercase flex gap-1.5 items-center">
+                  <span style={{ color: 'var(--accent)', fontWeight: 600, letterSpacing: '0.02em' }}>A</span><span>BACK</span>
                 </div>
-                <div className="card-content font-zh text-base leading-[1.85] text-teal"
-                  dangerouslySetInnerHTML={{ __html: renderMarkdown(card.back) }} />
+                <div className="flex-1 flex flex-col items-center justify-start text-center gap-3.5 p-2 pt-8">
+                  <div className="font-zh text-[18px] text-ink-2">{card.front}</div>
+                  <div className="w-full px-2 flex items-center gap-2.5 font-mono text-[9px] text-ink-3 tracking-[0.18em] uppercase">
+                    <span className="flex-1 h-px" style={{ background: 'var(--border-soft)' }} />
+                    REVERSO
+                    <span className="flex-1 h-px" style={{ background: 'var(--border-soft)' }} />
+                  </div>
+                  <div className="card-content font-zh text-base leading-[1.85] text-teal text-left self-stretch tracking-wide"
+                    dangerouslySetInnerHTML={{ __html: renderMarkdown(card.back) }} />
+                </div>
                 <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-8 h-px"
                   style={{ background: 'linear-gradient(90deg, transparent, var(--ink-4), transparent)' }} />
               </div>

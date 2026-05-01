@@ -21,9 +21,15 @@ export default function ReviewCard({ card }) {
           {/* FRONT */}
           <div className="absolute inset-0" style={{ backfaceVisibility: 'hidden' }}>
             <div onClick={() => setFlipped(true)}
-              className="h-full bg-bg-card rounded-lg p-5 pb-4 relative flex flex-col cursor-pointer"
-              style={{ border: '1px solid var(--border-soft)', boxShadow: 'var(--shadow-md)' }}>
-              <div className="absolute top-3.5 left-4 font-mono text-[9px] tracking-[0.18em] text-ink-3 uppercase flex gap-1.5 items-center">
+              className="h-full relative flex flex-col cursor-pointer"
+              style={{
+                background: 'var(--bg-card)',
+                border: '1px solid var(--border-soft)',
+                borderRadius: 'var(--r-lg)',
+                boxShadow: 'var(--shadow-md)',
+                padding: '22px 20px 20px',
+              }}>
+              <div className="absolute top-[14px] left-4 font-mono text-[9px] tracking-[0.18em] text-ink-3 uppercase flex gap-1.5 items-center">
                 <span style={{ color: 'var(--accent)', fontWeight: 600, letterSpacing: '0.02em' }}>Q</span>
                 <span>QUESTION</span>
               </div>
@@ -40,9 +46,15 @@ export default function ReviewCard({ card }) {
 
           {/* BACK */}
           <div className="absolute inset-0" style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}>
-            <div className="h-full bg-bg-card rounded-lg p-5 pb-4 relative flex flex-col"
-              style={{ border: '1px solid var(--border-soft)', boxShadow: 'var(--shadow-md)' }}>
-              <div className="absolute top-3.5 left-4 font-mono text-[9px] tracking-[0.18em] text-ink-3 uppercase flex gap-1.5 items-center">
+            <div className="h-full relative flex flex-col"
+              style={{
+                background: 'var(--bg-card)',
+                border: '1px solid var(--border-soft)',
+                borderRadius: 'var(--r-lg)',
+                boxShadow: 'var(--shadow-md)',
+                padding: '22px 20px 20px',
+              }}>
+              <div className="absolute top-[14px] left-4 font-mono text-[9px] tracking-[0.18em] text-ink-3 uppercase flex gap-1.5 items-center">
                 <span style={{ color: 'var(--accent)', fontWeight: 600, letterSpacing: '0.02em' }}>A</span>
                 <span>ANSWER</span>
               </div>
