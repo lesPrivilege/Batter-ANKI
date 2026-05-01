@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import StatsBar from '../components/StatsBar'
 import { getAllDeckStats } from '../lib/scheduler'
-import { addDeck, addCard, exportData, importData, deleteDecks } from '../lib/storage'
+import { addDeck, addCard, exportData, importData, deleteDecks, loadData } from '../lib/storage'
 import { parseMdToCards } from '../lib/mdParser'
 
 export default function Home() {
@@ -174,11 +174,14 @@ export default function Home() {
               dueCount: decks.reduce((sum, d) => sum + d.dueCount, 0),
               total: decks.reduce((sum, d) => sum + d.totalCards, 0),
               futureDistribution: (() => {
+                const data = loadData()
+                const allRecall = data.cards.filter(c => (c.type || 'recall') === 'recall')
                 const dist = []
-                for (let i = 0; i < 7; i++) {
+                for (let i = 1; i <= 7; i++) {
                   const d = new Date()
                   d.setDate(d.getDate() + i)
-                  dist.push({ date: d.toISOString().split('T')[0], count: 0 })
+                  const ds = d.toISOString().split('T')[0]
+                  dist.push({ date: ds, count: allRecall.filter(c => c.dueDate === ds).length })
                 }
                 return dist
               })(),
