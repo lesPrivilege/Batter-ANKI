@@ -5,6 +5,7 @@
 **修复：**
 - 修复 Unicode 箭头未渲染问题（← 显示为转义字符串）
 - DeckDetail 移除"制卡指南"按钮
+- PromptGuide / ImportPage 返回按钮改为 navigate(-1)，从 Import 进来回 Import
 
 **新增：**
 - DeckDetail 加 "Review All" 按钮，支持复习全部卡片（不限 dueDate）

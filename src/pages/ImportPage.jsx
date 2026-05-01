@@ -55,9 +55,9 @@ export default function ImportPage() {
     <div className="flex flex-col min-h-screen bg-bg">
       <header className="sticky top-0 z-10 flex items-center gap-3 px-4 h-12
         bg-bg-card border-b border-border shrink-0">
-        <Link to="/" className="text-ink-2 active:scale-[0.97]">
+        <button onClick={() => navigate(-1)} className="text-ink-2 active:scale-[0.97]">
           ← back
-        </Link>
+        </button>
         <h1 className="text-lg font-serif font-bold text-ink">Import</h1>
       </header>
 
