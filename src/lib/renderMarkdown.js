@@ -1,9 +1,10 @@
 import { marked } from 'marked'
-import katex from 'katex'
 import DOMPurify from 'dompurify'
-import 'katex/dist/katex.min.css'
 
 marked.use({ breaks: true, gfm: true })
+
+let katexModule = null
+let katexLoadPromise = null
 
 function escapeHtml(value) {
   return String(value)
@@ -15,11 +16,31 @@ function escapeHtml(value) {
 }
 
 function renderKatex(latex, displayMode = false) {
+  if (!katexModule) {
+    return `<code>${escapeHtml(latex)}</code>`
+  }
   try {
-    return katex.renderToString(latex, { displayMode, output: 'html', throwOnError: false })
+    return katexModule.renderToString(latex, { displayMode, output: 'html', throwOnError: false })
   } catch {
     return `<code class="katex-error">${escapeHtml(latex)}</code>`
   }
+}
+
+function shouldLoadKatex(raw) {
+  return typeof raw === 'string' && raw.includes('$')
+}
+
+async function ensureKatex(raw) {
+  if (!shouldLoadKatex(raw) || katexModule) return
+  if (!katexLoadPromise) {
+    katexLoadPromise = Promise.all([
+      import('katex'),
+      import('katex/dist/katex.min.css'),
+    ]).then(([katex]) => {
+      katexModule = katex.default
+    })
+  }
+  await katexLoadPromise
 }
 
 marked.use({
@@ -97,7 +118,17 @@ const SANITIZE_CONFIG = {
   ALLOWED_ATTR: ['class','href','target','rel'],
 }
 
+export function preloadKatex() {
+  ensureKatex('$')
+}
+
 export default function renderMarkdown(raw) {
+  const html = marked.parse(raw)
+  return DOMPurify.sanitize(html, SANITIZE_CONFIG)
+}
+
+export async function renderMarkdownAsync(raw) {
+  await ensureKatex(raw)
   const html = marked.parse(raw)
   return DOMPurify.sanitize(html, SANITIZE_CONFIG)
 }
