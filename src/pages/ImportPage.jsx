@@ -1,10 +1,14 @@
 import { useState, useRef, useMemo } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { addDeck, addCard, getCards, getDecks, importData } from '../lib/storage'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { addDeck, addCard, getCards, getDecks, getDeck, importData } from '../lib/storage'
 import { parseMdToCards } from '../lib/mdParser'
 
 export default function ImportPage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const targetDeckId = searchParams.get('deckId')
+  const targetDeck = targetDeckId ? getDeck(targetDeckId) : null
+  const [importMode, setImportMode] = useState(targetDeckId ? 'append' : 'new')
   const [pasteMd, setPasteMd] = useState('')
   const [previewData, setPreviewData] = useState(null)
   const [previewName, setPreviewName] = useState('')
@@ -13,18 +17,23 @@ export default function ImportPage() {
 
   const dedup = useMemo(() => {
     if (!previewData) return { count: 0, filtered: [] }
-    const trimmedName = previewName.trim() || previewData.defaultName
-    const decks = getDecks()
-    const existingDeck = decks.find(d => d.name === trimmedName)
-    if (!existingDeck) return { count: 0, filtered: previewData.cards }
-    const existingCards = getCards(existingDeck.id)
+    let existingCards = []
+    if (importMode === 'append' && targetDeckId) {
+      existingCards = getCards(targetDeckId)
+    } else {
+      const trimmedName = previewName.trim() || previewData.defaultName
+      const decks = getDecks()
+      const existingDeck = decks.find(d => d.name === trimmedName)
+      if (existingDeck) existingCards = getCards(existingDeck.id)
+    }
+    if (existingCards.length === 0) return { count: 0, filtered: previewData.cards }
     const existingFronts = new Set(existingCards.map(c => c.front.trim()))
     const duplicates = previewData.cards.filter(c => existingFronts.has(c.front.trim()))
     return {
       count: duplicates.length,
       filtered: previewData.cards.filter(c => !existingFronts.has(c.front.trim()))
     }
-  }, [previewData, previewName])
+  }, [previewData, previewName, importMode, targetDeckId])
 
   const processMdContent = (mdContent, defaultDeckName) => {
     const { cards, deckName } = parseMdToCards(mdContent, defaultDeckName)
@@ -39,15 +48,22 @@ export default function ImportPage() {
   }
 
   const handleConfirmImport = () => {
-    const name = previewName.trim() || previewData.defaultName
-    const deck = addDeck(name)
     const cardsToImport = skipDup ? dedup.filtered : previewData.cards
+    let deckId
+    if (importMode === 'append' && targetDeckId) {
+      deckId = targetDeckId
+    } else {
+      const name = previewName.trim() || previewData.defaultName
+      const deck = addDeck(name)
+      deckId = deck.id
+    }
     for (const card of cardsToImport) {
-      addCard(deck.id, card.front, card.back, card.type, card.chapter, card.section)
+      addCard(deckId, card.front, card.back, card.type, card.chapter, card.section)
     }
     setPreviewData(null)
     setPreviewName('')
     setSkipDup(false)
+    setImportMode(targetDeckId ? 'append' : 'new')
     navigate('/')
   }
 
@@ -90,25 +106,52 @@ export default function ImportPage() {
         <header className="sticky top-0 z-10 flex items-center gap-3 px-4 h-12
           bg-bg-card border-b border-border shrink-0">
           <button onClick={handleCancelImport} className="text-ink-2 active:scale-[0.97]">
-            ← back
+            ←
           </button>
           <h1 className="text-lg font-serif font-bold text-ink">Import Preview</h1>
         </header>
 
         <main className="flex-1 overflow-y-auto max-w-[480px] w-full mx-auto px-4 pt-4 pb-4 space-y-4">
           <div className="bg-bg-card border border-border rounded-lg p-4 space-y-3">
-            <div>
-              <label className="text-sm font-ui text-ink-2 mb-1 block">Deck name</label>
-              <input
-                type="text"
-                value={previewName}
-                onChange={(e) => setPreviewName(e.target.value)}
-                placeholder={previewData.defaultName}
-                className="w-full px-3 py-2.5 rounded-lg border border-border bg-bg-card text-ink
-                  font-ui text-sm placeholder:text-ink-2/50
-                  focus:outline-none focus:border-accent"
-              />
-            </div>
+            {targetDeckId && (
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setImportMode('append')}
+                  className={`flex-1 py-2 rounded-lg font-ui text-sm border transition-colors ${
+                    importMode === 'append' ? 'bg-accent text-white border-accent' : 'border-border text-ink-2'
+                  }`}
+                >
+                  追加到「{targetDeck.name}」
+                </button>
+                <button
+                  onClick={() => setImportMode('new')}
+                  className={`flex-1 py-2 rounded-lg font-ui text-sm border transition-colors ${
+                    importMode === 'new' ? 'bg-accent text-white border-accent' : 'border-border text-ink-2'
+                  }`}
+                >
+                  创建新卡组
+                </button>
+              </div>
+            )}
+            {importMode === 'new' && (
+              <div>
+                <label className="text-sm font-ui text-ink-2 mb-1 block">Deck name</label>
+                <input
+                  type="text"
+                  value={previewName}
+                  onChange={(e) => setPreviewName(e.target.value)}
+                  placeholder={previewData.defaultName}
+                  className="w-full px-3 py-2.5 rounded-lg border border-border bg-bg-card text-ink
+                    font-ui text-sm placeholder:text-ink-2/50
+                    focus:outline-none focus:border-accent"
+                />
+              </div>
+            )}
+            {importMode === 'append' && (
+              <p className="text-sm text-ink font-ui">
+                追加到「<span className="font-medium text-accent">{targetDeck.name}</span>」
+              </p>
+            )}
             <p className="text-sm text-ink font-ui">
               将导入 <span className="font-medium text-accent">{skipDup ? dedup.filtered.length : previewData.cards.length}</span> 张卡片
               {dedup.count > 0 && (
@@ -178,7 +221,7 @@ export default function ImportPage() {
       <header className="sticky top-0 z-10 flex items-center gap-3 px-4 h-12
         bg-bg-card border-b border-border shrink-0">
         <button onClick={() => navigate(-1)} className="text-ink-2 active:scale-[0.97]">
-          ← back
+          ←
         </button>
         <h1 className="text-lg font-serif font-bold text-ink">Import</h1>
       </header>

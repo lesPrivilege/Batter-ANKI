@@ -1,7 +1,6 @@
 /**
- * Parse structured markdown into Card objects.
- * Input: .md string following FORMAT.md conventions
- * Output: { cards: Card[], deckName: string | null }
+ * Markdown parser — implements rules defined in src/lib/formatSpec.js (PARSER_RULES)
+ * Do not modify parsing logic without updating formatSpec.js
  */
 import { localToday } from './dateUtils'
 

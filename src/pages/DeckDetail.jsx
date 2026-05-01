@@ -215,6 +215,13 @@ export default function DeckDetail() {
             >
               Review All
             </Link>
+            <Link
+              to={`/import?deckId=${id}`}
+              className="px-4 py-2.5 rounded-lg font-medium text-sm font-ui
+                border border-border text-ink-2 active:scale-[0.97] transition-transform"
+            >
+              Import
+            </Link>
           </div>
         )}
 

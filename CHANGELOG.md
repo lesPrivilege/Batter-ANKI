@@ -107,13 +107,14 @@
 
 ---
 
-## v0.7.1 — 2026-05-01 (home simplification)
+## v0.7.1 — 2026-05-01 (format spec + deck import)
 
-**改动：**
-- Home.jsx：合并 Import + Import .md 为一个按钮，支持 .json/.md 自动识别
-- Home.jsx：移除 Export 按钮（后续进 Settings）
-- Home.jsx：底部简化为 Import / Paste .md / + New Deck 三个按钮
-- Import 按钮下方加"如何制作 .md？"链接到制卡指南
+**改进：**
+- 返回按钮统一为 ← 纯字符
+- DeckDetail 加 Import 按钮，支持追加到当前卡组
+- ImportPage 支持 ?deckId= 参数，追加/新建双模式
+- 新建 formatSpec.js 作为 prompt 模板和解析规则的单一事实来源
+- PromptGuide 从 formatSpec 读取模板，不再硬编码
 
 ---
 
