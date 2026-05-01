@@ -1,5 +1,19 @@
 # Changelog
 
+## v1.0.7 — 2026-05-01 (deck export, KaTeX lazy-load)
+
+**新增：**
+- `DeckDetail` ⋮ 菜单新增"导出卡组"，下载单个 deck 的 JSON（`storage.js` `exportDeck()`）
+- `DeckDetail` header 移除 Edit 按钮，编辑功能仅通过 ⋮ 菜单"批量编辑卡片"进入
+- `renderMarkdown.js` KaTeX 按需动态加载，主 bundle 从 562KB → 312KB
+- `useRenderedMarkdown.js` hook 封装异步渲染，ReviewCard/Browse 统一使用
+- `main.jsx` 启动时 preload KaTeX（后台加载，不影响首屏）
+
+**拆分：**
+- KaTeX（259KB JS + 29KB CSS）拆为独立 chunk，仅在含 `$` 的内容渲染时加载
+
+---
+
 ## v1.0.6 — 2026-05-01 (KaTeX, import safety, dropdown menu)
 
 **修复：**
