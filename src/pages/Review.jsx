@@ -1,8 +1,8 @@
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useSearchParams } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import ReviewCard from '../components/ReviewCard'
 import { getDueCards } from '../lib/scheduler'
-import { updateCardSM2 } from '../lib/storage'
+import { getCards, updateCardSM2 } from '../lib/storage'
 import { sm2 } from '../lib/sm2'
 
 function predictInterval(card, quality) {
@@ -12,12 +12,19 @@ function predictInterval(card, quality) {
 
 export default function Review() {
   const { id } = useParams()
+  const [searchParams] = useSearchParams()
+  const reviewAll = searchParams.get('all') === 'true'
   const [dueCards, setDueCards] = useState([])
   const [currentIndex, setCurrentIndex] = useState(0)
 
   useEffect(() => {
-    setDueCards(getDueCards(id))
-  }, [id])
+    if (reviewAll) {
+      const allCards = getCards(id).filter(c => (c.type || 'recall') === 'recall')
+      setDueCards(allCards)
+    } else {
+      setDueCards(getDueCards(id))
+    }
+  }, [id, reviewAll])
 
   const handleRate = (quality) => {
     const card = dueCards[currentIndex]
@@ -37,7 +44,7 @@ export default function Review() {
       <div className="flex flex-col min-h-screen bg-bg">
         <header className="sticky top-0 z-10 flex items-center px-4 h-12
           bg-bg-card border-b border-border">
-          <Link to="/" className="text-ink-2 text-sm">\u2190</Link>
+          <Link to="/" className="text-ink-2 text-sm">←</Link>
         </header>
         <div className="flex-1 flex flex-col items-center justify-center gap-4 p-4">
           <div className="text-4xl text-success">&#10003;</div>
@@ -73,7 +80,7 @@ export default function Review() {
       {/* Header */}
       <header className="sticky top-0 z-10 flex items-center justify-between px-4 h-12
         bg-bg-card border-b border-border">
-        <Link to="/" className="text-ink-2 text-sm">\u2190</Link>
+        <Link to="/" className="text-ink-2 text-sm">←</Link>
         <span className="text-xs text-ink-2 font-display">
           {currentIndex + 1} / {dueCards.length}
         </span>

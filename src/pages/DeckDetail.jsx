@@ -170,11 +170,11 @@ export default function DeckDetail() {
               </button>
             )}
             <Link
-              to="/prompt-guide"
+              to={`/review/${id}?all=true`}
               className="px-4 py-2.5 rounded-lg font-medium text-sm font-ui
-                border border-border text-ink-2 active:scale-[0.97] transition-transform"
+                border border-success text-success active:scale-[0.97] transition-transform"
             >
-              制卡指南
+              Review All
             </Link>
           </div>
         )}
