@@ -3,6 +3,15 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { getCards } from '../lib/storage'
 import renderMarkdown from '../lib/renderMarkdown'
 
+function shuffle(arr) {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
+
 export default function Browse() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -13,7 +22,7 @@ export default function Browse() {
   const touchStartX = useRef(null)
 
   useEffect(() => {
-    setCards(getCards(id))
+    setCards(shuffle(getCards(id)))
   }, [id])
 
   useEffect(() => {

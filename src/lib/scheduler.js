@@ -69,5 +69,5 @@ export function getAllDeckStats() {
       dueCount,
       reviewedToday,
     }
-  })
+  }).sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0))
 }

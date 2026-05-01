@@ -1,7 +1,7 @@
 import { useParams, Link } from 'react-router-dom'
 import { useState, useEffect, useMemo } from 'react'
 import CardEditor from '../components/CardEditor'
-import { getDeck, getCards, addCard, updateCard, deleteCard, deleteCards, deleteDeck } from '../lib/storage'
+import { getDeck, getCards, addCard, updateCard, deleteCard, deleteCards, deleteDeck, togglePin } from '../lib/storage'
 
 function buildOutline(cards) {
   const map = new Map()
@@ -26,6 +26,7 @@ export default function DeckDetail() {
   const [selected, setSelected] = useState(new Set())
   const [expandedChapters, setExpandedChapters] = useState(new Set())
   const [expandedSections, setExpandedSections] = useState(new Set())
+  const [searchQuery, setSearchQuery] = useState('')
 
   const refresh = () => {
     setDeck(getDeck(id))
@@ -123,12 +124,21 @@ export default function DeckDetail() {
             Done
           </button>
         ) : (
-          <button
-            onClick={handleDeleteDeck}
-            className="text-danger text-sm shrink-0"
-          >
-            Delete
-          </button>
+          <>
+            <button
+              onClick={() => { togglePin(id); refresh() }}
+              className="text-sm shrink-0 px-2 py-1 rounded active:scale-[0.97]"
+              title={deck.pinned ? 'Unpin' : 'Pin'}
+            >
+              {deck.pinned ? '📌' : '△'}
+            </button>
+            <button
+              onClick={handleDeleteDeck}
+              className="text-danger text-sm shrink-0"
+            >
+              Delete
+            </button>
+          </>
         )}
       </header>
 
@@ -221,7 +231,40 @@ export default function DeckDetail() {
           </p>
         ) : (
           <div className="space-y-1">
-            {[...outline.entries()].map(([chapter, secMap]) => {
+            {cards.length > 4 && (
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search cards..."
+                className="w-full px-3 py-2.5 rounded-lg border border-border bg-bg-card text-ink
+                  font-ui text-sm placeholder:text-ink-2/50
+                  focus:outline-none focus:border-accent mb-2"
+              />
+            )}
+            {searchQuery.trim()
+              ? cards
+                  .filter(c => {
+                    const q = searchQuery.toLowerCase()
+                    return c.front.toLowerCase().includes(q) || c.back.toLowerCase().includes(q)
+                  })
+                  .map(card => (
+                    <div
+                      key={card.id}
+                      className="flex items-center gap-2 py-2 px-2 rounded-lg
+                        hover:bg-bg-raised transition-colors"
+                    >
+                      <span className="text-sm text-ink truncate flex-1">{card.front}</span>
+                      {(card.type || 'recall') === 'reference' && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded border border-ink-2/30 text-ink-2 shrink-0">ref</span>
+                      )}
+                      <div className="text-right shrink-0">
+                        {card.chapter && <div className="text-xs text-ink-2 truncate max-w-[80px]">{card.chapter}</div>}
+                        {card.section && <div className="text-[10px] text-ink-2/60 truncate max-w-[80px]">{card.section}</div>}
+                      </div>
+                    </div>
+                  ))
+              : [...outline.entries()].map(([chapter, secMap]) => {
               const chapterKey = chapter || '__uncategorized__'
               const chapterCount = [...secMap.values()].reduce((sum, arr) => sum + arr.length, 0)
               const isChapterOpen = expandedChapters.has(chapterKey)

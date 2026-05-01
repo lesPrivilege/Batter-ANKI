@@ -28,7 +28,8 @@ export function getDecks() {
 }
 
 export function getDeck(id) {
-  return loadData().decks.find((d) => d.id === id)
+  const deck = loadData().decks.find((d) => d.id === id)
+  return deck ? { ...deck, pinned: deck.pinned ?? false } : deck
 }
 
 export function addDeck(name) {
@@ -36,6 +37,7 @@ export function addDeck(name) {
   const deck = {
     id: crypto.randomUUID(),
     name,
+    pinned: false,
     createdAt: new Date().toISOString(),
   }
   data.decks.push(deck)
@@ -134,4 +136,11 @@ export function importData(jsonString) {
   const data = JSON.parse(jsonString)
   if (!data.decks || !data.cards) throw new Error('Invalid format')
   saveData(data)
+}
+
+export function togglePin(id) {
+  const d = loadData()
+  const deck = d.decks.find(x => x.id === id)
+  if (deck) deck.pinned = !deck.pinned
+  saveData(d)
 }

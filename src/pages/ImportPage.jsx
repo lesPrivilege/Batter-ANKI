@@ -6,6 +6,8 @@ import { parseMdToCards } from '../lib/mdParser'
 export default function ImportPage() {
   const navigate = useNavigate()
   const [pasteMd, setPasteMd] = useState('')
+  const [previewData, setPreviewData] = useState(null)
+  const [previewName, setPreviewName] = useState('')
   const fileInputRef = useRef(null)
 
   const processMdContent = (mdContent, defaultDeckName) => {
@@ -15,14 +17,25 @@ export default function ImportPage() {
       navigate('/prompt-guide')
       return
     }
-    const deckName = prompt(`Import ${cards.length} card(s). Enter deck name:`, defaultDeckName)
-    if (deckName === null) return
-    const name = deckName.trim() || defaultDeckName
+    setPreviewData({ cards, defaultName: defaultDeckName })
+    setPreviewName(defaultDeckName)
+  }
+
+  const handleConfirmImport = () => {
+    const name = previewName.trim() || previewData.defaultName
     const deck = addDeck(name)
-    for (const card of cards) {
+    for (const card of previewData.cards) {
       addCard(deck.id, card.front, card.back, card.type, card.chapter, card.section)
     }
+    setPreviewData(null)
+    setPreviewName('')
     navigate('/')
+  }
+
+  const handleCancelImport = () => {
+    setPreviewData(null)
+    setPreviewName('')
+    setPasteMd('')
   }
 
   const handleFileSelected = (e) => {
@@ -49,6 +62,72 @@ export default function ImportPage() {
   const handlePasteSubmit = () => {
     if (!pasteMd.trim()) return
     processMdContent(pasteMd, 'Pasted Notes')
+  }
+
+  if (previewData) {
+    return (
+      <div className="flex flex-col min-h-screen bg-bg">
+        <header className="sticky top-0 z-10 flex items-center gap-3 px-4 h-12
+          bg-bg-card border-b border-border shrink-0">
+          <button onClick={handleCancelImport} className="text-ink-2 active:scale-[0.97]">
+            ← back
+          </button>
+          <h1 className="text-lg font-serif font-bold text-ink">Import Preview</h1>
+        </header>
+
+        <main className="flex-1 overflow-y-auto max-w-[480px] w-full mx-auto px-4 pt-4 pb-4 space-y-4">
+          <div className="bg-bg-card border border-border rounded-lg p-4 space-y-3">
+            <div>
+              <label className="text-sm font-ui text-ink-2 mb-1 block">Deck name</label>
+              <input
+                type="text"
+                value={previewName}
+                onChange={(e) => setPreviewName(e.target.value)}
+                placeholder={previewData.defaultName}
+                className="w-full px-3 py-2.5 rounded-lg border border-border bg-bg-card text-ink
+                  font-ui text-sm placeholder:text-ink-2/50
+                  focus:outline-none focus:border-accent"
+              />
+            </div>
+            <p className="text-sm text-ink font-ui">
+              将导入 <span className="font-medium text-accent">{previewData.cards.length}</span> 张卡片
+            </p>
+            <div>
+              <p className="text-xs text-ink-2 mb-1.5">Card preview:</p>
+              <ul className="space-y-1">
+                {previewData.cards.slice(0, 5).map((card, i) => (
+                  <li key={i} className="text-sm text-ink truncate pl-2 border-l-2 border-border">
+                    {card.front}
+                  </li>
+                ))}
+                {previewData.cards.length > 5 && (
+                  <li className="text-xs text-ink-2 pl-2">
+                    ...and {previewData.cards.length - 5} more
+                  </li>
+                )}
+              </ul>
+            </div>
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              onClick={handleConfirmImport}
+              className="flex-1 py-2.5 rounded-lg font-ui text-sm font-medium text-white
+                bg-accent active:scale-[0.97] transition-transform"
+            >
+              确认导入
+            </button>
+            <button
+              onClick={handleCancelImport}
+              className="flex-1 py-2.5 rounded-lg font-ui text-sm text-ink-2
+                border border-border active:scale-[0.97] transition-transform"
+            >
+              取消
+            </button>
+          </div>
+        </main>
+      </div>
+    )
   }
 
   return (

@@ -102,12 +102,13 @@
 
 ---
 
-## v0.6.0 — 2026-05-01 (rename + browse)
+## v0.6.0 — 2026-05-01 (shuffle, pin, preview, search)
 
-**改动：**
-- App 名称从 MiniSRS 改为 Mnemos
-- 新增 Browse 页面（/browse/:id）：浏览牌组全部卡片，不影响 SM-2 调度
-- DeckDetail 新增 Browse 按钮
+**新增：**
+- 卡片打乱顺序（Fisher-Yates shuffle，Review + Browse）
+- 卡组置顶功能（storage.js pinned 字段 + togglePin）
+- 导入预览（解析后展示卡片列表，确认再写入）
+- 卡片搜索（DeckDetail 实时过滤，匹配 front/back）
 
 ---
 

@@ -5,6 +5,15 @@ import { getDueCards } from '../lib/scheduler'
 import { getCards, updateCardSM2 } from '../lib/storage'
 import { sm2 } from '../lib/sm2'
 
+function shuffle(arr) {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
+
 function predictInterval(card, quality) {
   const result = sm2(card, quality)
   return result.interval
@@ -21,9 +30,9 @@ export default function Review() {
   useEffect(() => {
     if (reviewAll) {
       const allCards = getCards(id).filter(c => (c.type || 'recall') === 'recall')
-      setDueCards(allCards)
+      setDueCards(shuffle(allCards))
     } else {
-      setDueCards(getDueCards(id))
+      setDueCards(shuffle(getDueCards(id)))
     }
   }, [id, reviewAll])
 
