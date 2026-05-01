@@ -99,6 +99,13 @@ export default function Browse() {
         <span className="w-6" />
       </header>
 
+      {/* Breadcrumb */}
+      {(card.chapter || card.section) && (
+        <div className="text-xs text-ink-2 text-center">
+          {card.chapter}{card.section && ` > ${card.section}`}
+        </div>
+      )}
+
       {/* Card area */}
       <div
         className="flex-1 flex items-center justify-center p-4"

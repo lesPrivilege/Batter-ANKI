@@ -11,14 +11,15 @@ export default function ImportPage() {
   const fileInputRef = useRef(null)
 
   const processMdContent = (mdContent, defaultDeckName) => {
-    const cards = parseMdToCards(mdContent, defaultDeckName)
+    const { cards, deckName } = parseMdToCards(mdContent, defaultDeckName)
     if (cards.length === 0) {
       alert('未识别到卡片。请确认 .md 格式是否正确。')
       navigate('/prompt-guide')
       return
     }
-    setPreviewData({ cards, defaultName: defaultDeckName })
-    setPreviewName(defaultDeckName)
+    const resolvedName = deckName || defaultDeckName
+    setPreviewData({ cards, defaultName: resolvedName })
+    setPreviewName(resolvedName)
   }
 
   const handleConfirmImport = () => {

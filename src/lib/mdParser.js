@@ -1,13 +1,19 @@
 /**
  * Parse structured markdown into Card objects.
  * Input: .md string following FORMAT.md conventions
- * Output: Card[] array (compatible with storage.js addCard)
+ * Output: { cards: Card[], deckName: string | null }
  */
 import { localToday } from './dateUtils'
 
 export function parseMdToCards(mdContent, deckName) {
   const lines = mdContent.split('\n')
   const cards = []
+
+  let extractedDeckName = null
+  for (const line of lines) {
+    const h1 = line.match(/^# (.+)/)
+    if (h1) { extractedDeckName = h1[1].trim(); break }
+  }
 
   let currentH2 = ''
   let currentH3 = ''
@@ -85,5 +91,5 @@ export function parseMdToCards(mdContent, deckName) {
   }
 
   flush()
-  return cards
+  return { cards, deckName: extractedDeckName }
 }

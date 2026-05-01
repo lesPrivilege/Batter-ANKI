@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.6.2 — 2026-05-01 (improvements)
+
+**改进：**
+- .md 导入自动提取 h1 标题作为 deck name（可手动修改）
+- Review/Browse 界面显示章节标签（chapter > section）
+
+---
+
 ## v0.6.1 — 2026-05-01 (fixes)
 
 **修复：**
