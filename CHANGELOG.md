@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.7.1 — 2026-05-01 (home simplification)
+
+**改动：**
+- Home.jsx：合并 Import + Import .md 为一个按钮，支持 .json/.md 自动识别
+- Home.jsx：移除 Export 按钮（后续进 Settings）
+- Home.jsx：底部简化为 Import / Paste .md / + New Deck 三个按钮
+- Import 按钮下方加"如何制作 .md？"链接到制卡指南
+
+---
+
 ## v0.7.0 — 2026-05-01 (prompt guide)
 
 **新增：** 制卡指南页面（/prompt-guide），内置 prompt 模板一键复制

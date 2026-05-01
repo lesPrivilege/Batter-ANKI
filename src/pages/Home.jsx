@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import StatsBar from '../components/StatsBar'
 import { getAllDeckStats } from '../lib/scheduler'
-import { addDeck, addCard, exportData, importData, deleteDecks, loadData } from '../lib/storage'
+import { addDeck, addCard, importData, deleteDecks, loadData } from '../lib/storage'
 import { parseMdToCards } from '../lib/mdParser'
 
 export default function Home() {
@@ -47,57 +47,38 @@ export default function Home() {
     setSelected(new Set())
   }
 
-  const handleExport = () => {
-    const json = exportData()
-    const blob = new Blob([json], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `mnemos-backup-${new Date().toISOString().slice(0, 10)}.json`
-    a.click()
-    URL.revokeObjectURL(url)
+  const unifiedFileInputRef = useRef(null)
+
+  const handleUnifiedImport = () => {
+    unifiedFileInputRef.current?.click()
   }
 
-  const handleImport = () => {
-    const input = document.createElement('input')
-    input.type = 'file'
-    input.accept = '.json'
-    input.onchange = (e) => {
-      const file = e.target.files[0]
-      if (!file) return
-      const reader = new FileReader()
-      reader.onload = (ev) => {
+  const handleUnifiedFileSelected = (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const ext = file.name.split('.').pop().toLowerCase()
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      if (ext === 'json') {
         try {
           importData(ev.target.result)
           refresh()
         } catch {
-          alert('Import failed: invalid format')
+          alert('Import failed: invalid JSON format')
         }
+      } else if (ext === 'md') {
+        processMdContent(ev.target.result, file.name.replace(/\.md$/i, ''))
+      } else {
+        alert('Unsupported file type. Please select .json or .md')
       }
-      reader.readAsText(file)
     }
-    input.click()
+    reader.readAsText(file)
+    e.target.value = ''
   }
 
   const [showPasteMd, setShowPasteMd] = useState(false)
   const [pasteMdText, setPasteMdText] = useState('')
   const pasteTextareaRef = useRef(null)
-  const mdFileInputRef = useRef(null)
-
-  const handleImportMdFile = () => {
-    mdFileInputRef.current?.click()
-  }
-
-  const handleMdFileSelected = (e) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    const reader = new FileReader()
-    reader.onload = (ev) => {
-      processMdContent(ev.target.result, file.name.replace(/\.md$/i, ''))
-    }
-    reader.readAsText(file)
-    e.target.value = ''
-  }
 
   const handlePasteMdSubmit = () => {
     if (!pasteMdText.trim()) return
@@ -271,34 +252,28 @@ export default function Home() {
         {/* Bottom actions — hidden in edit mode */}
         {!editing && (
           <>
-            <div className="px-4 pt-4 flex gap-2">
+            {/* Import button */}
+            <div className="px-4 pt-4">
               <button
-                onClick={handleExport}
-                className="flex-1 py-2.5 rounded-lg font-ui text-sm text-ink-2
-                  border border-border active:scale-[0.97] transition-transform"
-              >
-                Export
-              </button>
-              <button
-                onClick={handleImport}
-                className="flex-1 py-2.5 rounded-lg font-ui text-sm text-ink-2
+                onClick={handleUnifiedImport}
+                className="w-full py-2.5 rounded-lg font-ui text-sm text-ink-2
                   border border-border active:scale-[0.97] transition-transform"
               >
                 Import
               </button>
+              <p className="text-center text-xs text-ink-2/60 mt-1.5">
+                支持 .md 和 .json ·{' '}
+                <Link to="/prompt-guide" className="text-accent underline">
+                  如何制作 .md？
+                </Link>
+              </p>
             </div>
 
-            <div className="px-4 pt-2 flex gap-2">
-              <button
-                onClick={handleImportMdFile}
-                className="flex-1 py-2.5 rounded-lg font-ui text-sm text-ink-2
-                  border border-border active:scale-[0.97] transition-transform"
-              >
-                Import .md
-              </button>
+            {/* Paste .md button */}
+            <div className="px-4 pt-2">
               <button
                 onClick={() => setShowPasteMd(!showPasteMd)}
-                className="flex-1 py-2.5 rounded-lg font-ui text-sm text-ink-2
+                className="w-full py-2.5 rounded-lg font-ui text-sm text-ink-2
                   border border-border active:scale-[0.97] transition-transform"
               >
                 {showPasteMd ? 'Cancel' : 'Paste .md'}
@@ -329,16 +304,7 @@ export default function Home() {
               </div>
             )}
 
-            <div className="px-4 pt-2">
-              <Link
-                to="/prompt-guide"
-                className="block w-full py-2.5 rounded-lg font-ui text-sm text-ink-2 text-center
-                  border border-border active:scale-[0.97] transition-transform"
-              >
-                制卡指南
-              </Link>
-            </div>
-
+            {/* + New Deck button */}
             <div className="px-4 pb-4 pt-2">
               {showNewDeck ? (
                 <form onSubmit={handleAddDeck} className="flex gap-2">
@@ -386,10 +352,10 @@ export default function Home() {
       </main>
 
       <input
-        ref={mdFileInputRef}
+        ref={unifiedFileInputRef}
         type="file"
-        accept=".md"
-        onChange={handleMdFileSelected}
+        accept=".json,.md"
+        onChange={handleUnifiedFileSelected}
         className="hidden"
       />
     </div>
