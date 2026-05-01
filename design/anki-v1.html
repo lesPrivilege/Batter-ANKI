@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>ANKI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=Noto+Serif+SC:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:            oklch(97% 0.009 60);
+  --bg-card:       oklch(99.5% 0.004 60);
+  --bg-raised:     oklch(95% 0.012 60);
+  --border:        oklch(88% 0.012 60);
+  --border-strong: oklch(78% 0.018 60);
+  --ink:           oklch(22% 0.020 60);
+  --ink-2:         oklch(46% 0.018 60);
+  --ink-3:         oklch(66% 0.012 60);
+  --accent:        oklch(60% 0.16 40);
+  --accent-bg:     oklch(95.5% 0.035 40);
+  --accent-border: oklch(82% 0.07 40);
+  --success:       oklch(58% 0.14 155);
+  --success-bg:    oklch(95% 0.04 155);
+  --warning:       oklch(62% 0.14 80);
+  --warning-bg:    oklch(96% 0.04 80);
+  --danger:        oklch(56% 0.16 20);
+  --danger-bg:     oklch(95.5% 0.035 20);
+  --radius:        14px;
+  --radius-sm:     8px;
+  --shadow-card:   0 1px 3px oklch(22% 0.02 60 / 0.06), 0 4px 16px oklch(22% 0.02 60 / 0.04);
+  --shadow-raised: 0 2px 8px oklch(22% 0.02 60 / 0.10), 0 8px 32px oklch(22% 0.02 60 / 0.06);
+  --font-ui:       'DM Sans', system-ui, sans-serif;
+  --font-serif:    'Noto Serif SC', 'Songti SC', Georgia, serif;
+  --safe-top:      env(safe-area-inset-top, 0px);
+  --safe-bot:      env(safe-area-inset-bottom, 0px);
+}
+
+:root.dark {
+  --bg:            oklch(14% 0.016 60);
+  --bg-card:       oklch(18% 0.018 60);
+  --bg-raised:     oklch(21% 0.018 60);
+  --border:        oklch(28% 0.016 60);
+  --border-strong: oklch(36% 0.016 60);
+  --ink:           oklch(92% 0.008 60);
+  --ink-2:         oklch(72% 0.010 60);
+  --ink-3:         oklch(52% 0.008 60);
+  --accent:        oklch(68% 0.16 40);
+  --accent-bg:     oklch(22% 0.06 40);
+  --accent-border: oklch(36% 0.10 40);
+  --success:       oklch(64% 0.14 155);
+  --success-bg:    oklch(20% 0.05 155);
+  --warning:       oklch(68% 0.14 80);
+  --warning-bg:    oklch(20% 0.05 80);
+  --danger:        oklch(64% 0.16 20);
+  --danger-bg:     oklch(20% 0.05 20);
+  --shadow-card:   0 1px 4px #0007, 0 4px 16px #0005;
+  --shadow-raised: 0 2px 8px #000a, 0 8px 32px #0007;
+}
+
+html, body { height: 100%; background: var(--bg); color: var(--ink); }
+body { font-family: var(--font-ui); -webkit-font-smoothing: antialiased; overflow: hidden; }
+#root { height: 100%; display: flex; flex-direction: column; }
+::-webkit-scrollbar { width: 0; }
+.tap { -webkit-tap-highlight-color: transparent; user-select: none; }
+
+/* ── Page transitions ── */
+.page-enter { animation: pgIn 200ms cubic-bezier(0.22,1,0.36,1) both; }
+@keyframes pgIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+/* ── Flip card ── */
+.flip-card { perspective: 1200px; }
+.flip-inner {
+  position: relative; transform-style: preserve-3d;
+  transition: transform 360ms cubic-bezier(0.4,0.2,0.2,1);
+}
+.flip-inner.flipped { transform: rotateY(180deg); }
+.flip-front, .flip-back {
+  backface-visibility: hidden; -webkit-backface-visibility: hidden;
+}
+.flip-back { transform: rotateY(180deg); }
+
+/* ── Progress ring ── */
+.ring-track { stroke: var(--border); }
+.ring-fill  { stroke: var(--accent); stroke-linecap: round; transition: stroke-dashoffset 550ms cubic-bezier(0.4,0,0.2,1); }
+
+/* ── Buttons ── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 10px 18px; border-radius: var(--radius-sm); font-family: var(--font-ui);
+  font-size: 14px; font-weight: 500; cursor: pointer; border: 1.5px solid transparent;
+  transition: transform 110ms, opacity 110ms, background 130ms;
+}
+.btn:active { transform: scale(0.96); }
+.btn:disabled { opacity: 0.38; pointer-events: none; }
+.btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+.btn-ghost   { background: transparent; color: var(--ink-2); border-color: var(--border); }
+.btn-ghost:hover { background: var(--bg-raised); }
+.btn-danger  { background: transparent; color: var(--danger); border-color: color-mix(in oklch, var(--danger) 32%, transparent); }
+.btn-icon    { padding: 7px; border-radius: 50%; border-color: transparent; background: transparent; color: var(--ink-2); }
+.btn-icon:hover { background: var(--bg-raised); }
+
+/* ── Rating buttons ── */
+.rate-btn {
+  flex: 1; border: 1.5px solid; border-radius: var(--radius);
+  padding: 13px 6px; cursor: pointer; font-family: var(--font-ui);
+  font-weight: 500; font-size: 15px;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  transition: transform 110ms;
+}
+.rate-btn:active { transform: scale(0.95); }
+.rate-again { background: var(--danger-bg);  color: var(--danger);  border-color: color-mix(in oklch, var(--danger) 28%, transparent); }
+.rate-hard  { background: var(--warning-bg); color: var(--warning); border-color: color-mix(in oklch, var(--warning) 28%, transparent); }
+.rate-good  { background: var(--accent-bg);  color: var(--accent);  border-color: var(--accent-border); }
+.rate-easy  { background: var(--success-bg); color: var(--success); border-color: color-mix(in oklch, var(--success) 28%, transparent); }
+
+/* ── Deck card ── */
+.deck-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow-card);
+  padding: 15px 17px; cursor: pointer;
+  display: flex; align-items: center; gap: 13px;
+  transition: transform 110ms, box-shadow 110ms;
+}
+.deck-card:active { transform: scale(0.985); box-shadow: none; }
+
+/* ── Inputs ── */
+.anki-input {
+  width: 100%; padding: 11px 13px;
+  font-family: var(--font-ui); font-size: 15px; color: var(--ink);
+  background: var(--bg-card); border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm); outline: none; resize: none;
+  transition: border-color 140ms, box-shadow 140ms;
+}
+.anki-input::placeholder { color: var(--ink-3); }
+.anki-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--accent) 14%, transparent);
+}
+
+/* ── Header ── */
+.header {
+  position: sticky; top: 0; z-index: 50;
+  background: color-mix(in oklch, var(--bg) 84%, transparent);
+  backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--border);
+  padding-top: var(--safe-top);
+  display: flex; align-items: center; gap: 8px;
+  height: calc(52px + var(--safe-top));
+  padding-left: 16px; padding-right: 16px;
+  flex-shrink: 0;
+}
+
+/* ── Sheet modal ── */
+.sheet-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: oklch(0% 0 0 / 0.4);
+  backdrop-filter: blur(4px);
+  display: flex; align-items: flex-end; justify-content: center;
+  animation: fIn 180ms ease both;
+}
+.sheet-body {
+  background: var(--bg-card); border-radius: 22px 22px 0 0;
+  width: 100%; max-width: 540px; max-height: 85vh; overflow-y: auto;
+  padding: 20px 20px calc(20px + var(--safe-bot));
+  box-shadow: var(--shadow-raised);
+  animation: sUp 260ms cubic-bezier(0.22,1,0.36,1) both;
+}
+@keyframes fIn { from { opacity:0; } to { opacity:1; } }
+@keyframes sUp { from { transform:translateY(100%); } to { transform:translateY(0); } }
+
+/* ── Tree ── */
+.tree-chapter { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); }
+.tree-row { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: var(--radius-sm); transition: background 110ms; }
+.tree-row:hover { background: var(--bg-raised); }
+.tree-row .actions { opacity: 0; transition: opacity 130ms; display: flex; gap: 4px; }
+.tree-row:hover .actions { opacity: 1; }
+
+/* ── Done anim ── */
+@keyframes popIn { 0%{transform:scale(0.4);opacity:0} 65%{transform:scale(1.08)} 100%{transform:scale(1);opacity:1} }
+.pop-in { animation: popIn 420ms cubic-bezier(0.22,1,0.36,1) both; }
+
+/* ── Streak ── */
+.streak-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 9px; border-radius: 99px;
+  background: color-mix(in oklch, var(--warning) 12%, transparent);
+  border: 1px solid color-mix(in oklch, var(--warning) 25%, transparent);
+  font-size: 12px; font-weight: 600; color: var(--warning); font-family: var(--font-ui);
+}
+
+/* ── Search input ── */
+.search-wrap { position: relative; }
+.search-wrap svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--ink-3); pointer-events: none; }
+.search-input { padding-left: 34px !important; }
+
+/* ── Safe bottom ── */
+.safe-bot { height: var(--safe-bot); flex-shrink: 0; min-height: 8px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback, useMemo } = React;
+
+/* ═══════════════════════════════════════════════════════════
+   STORAGE
+═══════════════════════════════════════════════════════════ */
+const SK = 'anki-data';
+const emptyData = () => ({ decks: [], cards: [] });
+function load() { try { const r = localStorage.getItem(SK); return r ? JSON.parse(r) : emptyData(); } catch { return emptyData(); } }
+function save(d) { localStorage.setItem(SK, JSON.stringify(d)); }
+
+const getDecks  = () => load().decks;
+const getDeck   = id => load().decks.find(d => d.id === id);
+const addDeck   = name => { const d = load(); const dk = { id: crypto.randomUUID(), name, createdAt: new Date().toISOString() }; d.decks.push(dk); save(d); return dk; };
+const renameDeck= (id, name) => { const d = load(); const dk = d.decks.find(x => x.id === id); if (dk) dk.name = name; save(d); };
+const deleteDeck= id => { const d = load(); d.decks = d.decks.filter(x => x.id !== id); d.cards = d.cards.filter(c => c.deckId !== id); save(d); };
+const deleteDecks = ids => { const s = new Set(ids); const d = load(); d.decks = d.decks.filter(x => !s.has(x.id)); d.cards = d.cards.filter(c => !s.has(c.deckId)); save(d); };
+const getCards  = deckId => load().cards.filter(c => c.deckId === deckId);
+const addCard   = (deckId, front, back) => { const d = load(); const t = new Date().toISOString().split('T')[0]; const c = { id: crypto.randomUUID(), deckId, front, back, type:'recall', chapter:'', section:'', easiness:2.5, interval:0, repetitions:0, dueDate:t, createdAt:new Date().toISOString(), updatedAt:new Date().toISOString() }; d.cards.push(c); save(d); return c; };
+const updateCard = (id, fields) => { const d = load(); const c = d.cards.find(x => x.id === id); if (c) Object.assign(c, fields); save(d); return c; };
+const deleteCard = id => { const d = load(); d.cards = d.cards.filter(c => c.id !== id); save(d); };
+const deleteCards = ids => { const s = new Set(ids); const d = load(); d.cards = d.cards.filter(c => !s.has(c.id)); save(d); };
+const exportData = () => JSON.stringify(load(), null, 2);
+const importData = json => { const d = JSON.parse(json); if (!d.decks || !d.cards) throw new Error('bad'); save(d); };
+
+/* ── Deck-cards JSON import (二籍跋草_cards.json format) ── */
+function importDeckJson(json, deckName) {
+  const arr = JSON.parse(json);
+  if (!Array.isArray(arr)) throw new Error('expected array');
+  const d = load();
+  const deckId = crypto.randomUUID();
+  d.decks.push({ id: deckId, name: deckName, createdAt: new Date().toISOString() });
+  const t = new Date().toISOString().split('T')[0];
+  for (const item of arr) {
+    const front = item.front || item.question || item.q || '';
+    const back  = item.back  || item.answer   || item.a || '';
+    if (!front && !back) continue;
+    d.cards.push({
+      id: crypto.randomUUID(), deckId,
+      front, back,
+      type: item.type || 'recall',
+      chapter: item.chapter || '', section: item.section || '',
+      easiness: 2.5, interval: 0, repetitions: 0,
+      dueDate: t, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+    });
+  }
+  save(d);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SM-2 + SCHEDULER
+═══════════════════════════════════════════════════════════ */
+function sm2(card, q) {
+  let { easiness:e=2.5, interval:iv=0, repetitions:r=0 } = card;
+  let ne=e, ni, nr;
+  if (q < 3) { nr=0; ni=1; ne=e; }
+  else {
+    ni = r===0 ? 1 : r===1 ? 6 : Math.round(iv * e);
+    nr = r + 1;
+    ne = e + 0.1 - (5-q)*(0.08+(5-q)*0.02);
+  }
+  ne = Math.max(1.3, ne);
+  const due = new Date(); due.setDate(due.getDate() + ni);
+  return { easiness:ne, interval:ni, repetitions:nr, dueDate:due.toISOString().split('T')[0], updatedAt:new Date().toISOString() };
+}
+const predictDays = (card, q) => sm2(card, q).interval;
+
+function todayStr() { return new Date().toISOString().split('T')[0]; }
+const isDue = c => c.dueDate <= todayStr();
+const getDueCards = deckId => load().cards.filter(c => c.deckId===deckId && (c.type||'recall')==='recall' && isDue(c)).sort((a,b)=>a.dueDate.localeCompare(b.dueDate));
+
+function getDeckStats(deckId) {
+  const d = load(); const cards = d.cards.filter(c => c.deckId===deckId);
+  const recall = cards.filter(c => (c.type||'recall')==='recall'); const t = todayStr();
+  return {
+    total: cards.length,
+    dueCount: recall.filter(c => c.dueDate <= t).length,
+    reviewedToday: recall.filter(c => c.updatedAt?.startsWith(t) && c.repetitions > 0).length,
+    futureDistribution: Array.from({length:7},(_,i)=>{ const d=new Date(); d.setDate(d.getDate()+i+1); const ds=d.toISOString().split('T')[0]; return {date:ds,count:recall.filter(c=>c.dueDate===ds).length}; }),
+  };
+}
+function getAllDeckStats() {
+  const d = load(); const t = todayStr();
+  return d.decks.map(dk => {
+    const cards = d.cards.filter(c => c.deckId===dk.id);
+    const recall = cards.filter(c => (c.type||'recall')==='recall');
+    return { ...dk, totalCards:cards.length, dueCount:recall.filter(c=>c.dueDate<=t).length };
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   STREAK
+═══════════════════════════════════════════════════════════ */
+function getStreak() {
+  const key = 'anki-streak';
+  try {
+    const s = JSON.parse(localStorage.getItem(key) || '{"days":0,"last":""}');
+    const t = todayStr();
+    const yest = new Date(); yest.setDate(yest.getDate()-1);
+    const ys = yest.toISOString().split('T')[0];
+    if (s.last === t) return s.days;
+    if (s.last === ys) return s.days; // not yet reviewed today, streak still alive
+    return 0;
+  } catch { return 0; }
+}
+function recordStreak() {
+  const key = 'anki-streak';
+  const t = todayStr();
+  try {
+    const s = JSON.parse(localStorage.getItem(key) || '{"days":0,"last":""}');
+    const yest = new Date(); yest.setDate(yest.getDate()-1);
+    const ys = yest.toISOString().split('T')[0];
+    if (s.last === t) return; // already recorded today
+    const days = s.last === ys ? s.days + 1 : 1;
+    localStorage.setItem(key, JSON.stringify({ days, last: t }));
+  } catch {}
+}
+
+/* ═══════════════════════════════════════════════════════════
+   THEME
+═══════════════════════════════════════════════════════════ */
+function useTheme() {
+  const [dark, setDark] = useState(() => {
+    const s = localStorage.getItem('anki-theme');
+    return s ? s==='dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  });
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', dark);
+    localStorage.setItem('anki-theme', dark ? 'dark' : 'light');
+  }, [dark]);
+  return [dark, setDark];
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ICONS (single path, no duplicate names)
+═══════════════════════════════════════════════════════════ */
+function SvgIcon({ d, size=20, strokeWidth='1.8', style={}, ...p }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style} {...p}>
+      <path d={d} />
+    </svg>
+  );
+}
+const IcoLeft    = () => <SvgIcon d="M15 18l-6-6 6-6" />;
+const IcoRight   = () => <SvgIcon d="M9 18l6-6-6-6" />;
+const IcoDown    = () => <SvgIcon d="M6 9l6 6 6-6" size={16} />;
+const IcoPlus    = () => <SvgIcon d="M12 5v14M5 12h14" />;
+const IcoSun     = () => <SvgIcon d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42M12 7a5 5 0 100 10A5 5 0 0012 7z" />;
+const IcoMoon    = () => <SvgIcon d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />;
+const IcoTrash   = () => <SvgIcon d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" size={18} />;
+const IcoPencil  = () => <SvgIcon d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" size={18} />;
+const IcoCheck   = () => <SvgIcon d="M20 6L9 17l-5-5" size={16} strokeWidth="2.2" />;
+const IcoDl      = () => <SvgIcon d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" size={18} />;
+const IcoUl      = () => <SvgIcon d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" size={18} />;
+const IcoSearch  = () => <SvgIcon d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z" size={16} />;
+const IcoFlame   = () => <SvgIcon d="M12 2c0 0-5 4.5-5 9a5 5 0 0010 0c0-4.5-5-9-5-9zm0 12a2 2 0 110-4 2 2 0 010 4z" size={15} />;
+const IcoKey     = () => <SvgIcon d="M15 7a4 4 0 010 8M1 17l8-8M1 21l2-2M5 17l2-2" size={16} />;
+
+/* ═══════════════════════════════════════════════════════════
+   PRIMITIVES
+═══════════════════════════════════════════════════════════ */
+function ProgressRing({ progress, size=64, stroke=5, children }) {
+  const r = (size - stroke) / 2;
+  const circ = 2 * Math.PI * r;
+  return (
+    <div style={{ position:'relative', width:size, height:size, flexShrink:0 }}>
+      <svg width={size} height={size} style={{ transform:'rotate(-90deg)' }}>
+        <circle className="ring-track" cx={size/2} cy={size/2} r={r} strokeWidth={stroke} fill="none" />
+        <circle className="ring-fill"  cx={size/2} cy={size/2} r={r} strokeWidth={stroke} fill="none"
+          strokeDasharray={circ} strokeDashoffset={circ * (1 - Math.min(1, Math.max(0, progress)))} />
+      </svg>
+      <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center' }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function MiniBarChart({ dist }) {
+  const max = Math.max(1, ...dist.map(d => d.count));
+  const dow  = ['日','一','二','三','四','五','六'];
+  return (
+    <div style={{ display:'flex', alignItems:'flex-end', gap:4, height:44 }}>
+      {dist.map(d => {
+        const day = new Date(d.date + 'T12:00:00').getDay();
+        const h = d.count > 0 ? Math.max(6, (d.count/max)*32) : 3;
+        return (
+          <div key={d.date} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:4 }}>
+            <div style={{ width:'100%', height:h, background: d.count>0 ? 'var(--accent)' : 'var(--border)', borderRadius:3, opacity: d.count>0 ? 0.8 : 1, transition:'height 450ms cubic-bezier(0.4,0,0.2,1)' }} />
+            <span style={{ fontSize:10, color:'var(--ink-3)' }}>{dow[day]}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+const HUES = [40, 155, 240, 290, 200, 80, 10, 320];
+function deckHue(id) { let h=0; for (const c of (id||'')) h=(h*31+c.charCodeAt(0))%HUES.length; return HUES[h]; }
+
+function DeckBadge({ id, size=40 }) {
+  const hue = deckHue(id);
+  return (
+    <div style={{ width:size, height:size, borderRadius:size*0.3, flexShrink:0, background:`oklch(90% 0.07 ${hue})`, display:'flex', alignItems:'center', justifyContent:'center' }}>
+      <div style={{ width:size*0.36, height:size*0.36, borderRadius:size*0.09, background:`oklch(60% 0.14 ${hue})`, opacity:0.85 }} />
+    </div>
+  );
+}
+
+function Divider() { return <div style={{ height:1, background:'var(--border)', margin:'8px 0' }} />; }
+
+/* ═══════════════════════════════════════════════════════════
+   CARD EDITOR
+═══════════════════════════════════════════════════════════ */
+function CardEditor({ initial, onSave, onCancel }) {
+  const [front, setFront] = useState(initial?.front || '');
+  const [back,  setBack ] = useState(initial?.back  || '');
+  const ok = front.trim() && back.trim();
+  const submit = e => {
+    e.preventDefault();
+    if (!ok) return;
+    onSave(front.trim(), back.trim());
+    if (!initial) { setFront(''); setBack(''); }
+  };
+  return (
+    <form onSubmit={submit} style={{ display:'flex', flexDirection:'column', gap:10 }}>
+      <textarea className="anki-input" value={front} onChange={e=>setFront(e.target.value)}
+        placeholder="正面" rows={2} style={{ fontFamily:'var(--font-serif)' }} />
+      <textarea className="anki-input" value={back}  onChange={e=>setBack(e.target.value)}
+        placeholder="背面" rows={2} style={{ fontFamily:'var(--font-serif)' }} />
+      <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
+        <button type="submit" className="btn btn-primary tap" disabled={!ok}>{initial ? '保存' : '添加'}</button>
+        {onCancel && <button type="button" className="btn btn-ghost tap" onClick={onCancel}>取消</button>}
+      </div>
+    </form>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   HOME
+═══════════════════════════════════════════════════════════ */
+function Home({ navigate, dark, setDark }) {
+  const [decks,   setDecks  ] = useState([]);
+  const [editing, setEditing] = useState(false);
+  const [sel,     setSel    ] = useState(new Set());
+  const [showAdd, setShowAdd] = useState(false);
+  const [newName, setNewName] = useState('');
+  const [streak,  setStreak ] = useState(0);
+
+  const refresh = useCallback(() => { setDecks(getAllDeckStats()); setStreak(getStreak()); }, []);
+  useEffect(refresh, []);
+
+  const totalDue   = decks.reduce((s,d) => s+d.dueCount,    0);
+  const totalCards = decks.reduce((s,d) => s+d.totalCards,  0);
+
+  const handleAdd = e => {
+    e.preventDefault();
+    if (!newName.trim()) return;
+    addDeck(newName.trim()); setNewName(''); setShowAdd(false); refresh();
+  };
+
+  const toggleSel = id => setSel(p => { const n=new Set(p); n.has(id)?n.delete(id):n.add(id); return n; });
+  const exitEdit  = ()  => { setEditing(false); setSel(new Set()); };
+
+  const handleExport = () => {
+    const b = new Blob([exportData()], {type:'application/json'});
+    const url = URL.createObjectURL(b);
+    const a = document.createElement('a'); a.href=url;
+    a.download=`anki-${new Date().toISOString().slice(0,10)}.json`; a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImport = () => {
+    const inp = document.createElement('input'); inp.type='file'; inp.accept='.json';
+    inp.onchange = e => {
+      const f = e.target.files[0]; if (!f) return;
+      const r = new FileReader();
+      r.onload = ev => {
+        try {
+          // Try full backup first, then deck-cards array
+          const raw = ev.target.result;
+          const parsed = JSON.parse(raw);
+          if (parsed.decks && parsed.cards) { importData(raw); }
+          else if (Array.isArray(parsed)) {
+            const name = f.name.replace(/_cards\.json$|\.json$/, '').replace(/_/g,' ');
+            importDeckJson(raw, name);
+          } else { alert('格式不支持'); return; }
+          refresh();
+        } catch { alert('导入失败：文件格式不正确'); }
+      };
+      r.readAsText(f);
+    };
+    inp.click();
+  };
+
+  /* future distribution across all decks */
+  const dist = useMemo(() => {
+    const d = load();
+    return Array.from({length:7},(_,i) => {
+      const dt = new Date(); dt.setDate(dt.getDate()+i+1);
+      const ds = dt.toISOString().split('T')[0];
+      const count = d.cards.filter(c => (c.type||'recall')==='recall' && c.dueDate===ds).length;
+      return { date:ds, count };
+    });
+  }, [decks]);
+
+  const showChart = dist.some(d => d.count > 0);
+
+  return (
+    <div className="page-enter" style={{ display:'flex', flexDirection:'column', height:'100%' }}>
+      <header className="header">
+        <span style={{ fontFamily:'var(--font-serif)', fontSize:19, fontWeight:600, letterSpacing:'0.04em', flex:1 }}>ANKI</span>
+        {streak > 0 && !editing && (
+          <div className="streak-pill">
+            <IcoFlame />{streak}
+          </div>
+        )}
+        <div style={{ display:'flex', alignItems:'center', gap:2, marginLeft:4 }}>
+          {editing ? (
+            <button className="btn btn-ghost tap" style={{ padding:'5px 13px', fontSize:13 }} onClick={exitEdit}>完成</button>
+          ) : (
+            <>
+              <button className="btn btn-icon tap" onClick={() => setDark(!dark)} title={dark?'亮色模式':'深色模式'}>
+                {dark ? <IcoSun /> : <IcoMoon />}
+              </button>
+              {decks.length > 0 && (
+                <button className="btn btn-ghost tap" style={{ padding:'5px 13px', fontSize:13 }} onClick={() => setEditing(true)}>编辑</button>
+              )}
+            </>
+          )}
+        </div>
+      </header>
+
+      <div style={{ flex:1, overflowY:'auto', padding:'0 16px 16px' }}>
+
+        {/* Stats banner */}
+        {!editing && decks.length > 0 && (
+          <div style={{ margin:'16px 0 10px', padding:'16px 18px', background:'var(--bg-card)', border:'1px solid var(--border)', borderRadius:'var(--radius)', boxShadow:'var(--shadow-card)' }}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom: showChart ? 14 : 0 }}>
+              <div>
+                <div style={{ fontSize:12, color:'var(--ink-3)', marginBottom:3 }}>今日待复习</div>
+                <div style={{ fontSize:34, fontWeight:600, lineHeight:1, color: totalDue>0 ? 'var(--accent)' : 'var(--success)' }}>{totalDue}</div>
+              </div>
+              <div style={{ textAlign:'right' }}>
+                <div style={{ fontSize:12, color:'var(--ink-3)', marginBottom:3 }}>卡片总数</div>
+                <div style={{ fontSize:34, fontWeight:300, lineHeight:1, color:'var(--ink-2)' }}>{totalCards}</div>
+              </div>
+            </div>
+            {showChart && (
+              <>
+                <div style={{ fontSize:10, color:'var(--ink-3)', letterSpacing:'0.07em', textTransform:'uppercase', marginBottom:8 }}>未来 7 天</div>
+                <MiniBarChart dist={dist} />
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Deck list */}
+        <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+          {decks.length === 0 && !editing && (
+            <div style={{ textAlign:'center', padding:'60px 0 24px', color:'var(--ink-3)', fontSize:14 }}>
+              还没有牌组，创建第一个吧
+            </div>
+          )}
+          {decks.map(dk => (
+            <div key={dk.id} className="deck-card tap"
+              onClick={() => editing ? toggleSel(dk.id) : navigate('deck', dk.id)}
+              style={editing && sel.has(dk.id) ? { borderColor:'var(--accent)', background:'var(--accent-bg)' } : {}}>
+              {editing ? (
+                <div style={{ width:20, height:20, borderRadius:'50%', border:`2px solid ${sel.has(dk.id)?'var(--accent)':'var(--border-strong)'}`, background:sel.has(dk.id)?'var(--accent)':'transparent', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, transition:'all 140ms', color:'white' }}>
+                  {sel.has(dk.id) && <IcoCheck />}
+                </div>
+              ) : (
+                <DeckBadge id={dk.id} />
+              )}
+              <div style={{ flex:1, minWidth:0 }}>
+                <div style={{ fontWeight:500, fontSize:16, marginBottom:2, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{dk.name}</div>
+                <div style={{ fontSize:13, color:'var(--ink-3)' }}>
+                  <span style={{ color: dk.dueCount>0 ? 'var(--accent)' : 'var(--ink-3)', fontWeight: dk.dueCount>0 ? 600 : 400 }}>{dk.dueCount} 到期</span>
+                  <span style={{ margin:'0 5px', opacity:0.35 }}>·</span>
+                  <span>{dk.totalCards} 张</span>
+                </div>
+              </div>
+              {!editing && <IcoRight />}
+            </div>
+          ))}
+        </div>
+
+        {/* Edit actions */}
+        {editing && (
+          <div style={{ display:'flex', gap:8, marginTop:14 }}>
+            {sel.size > 0 && (
+              <button className="btn btn-danger tap" style={{ flex:1 }} onClick={() => {
+                if (!confirm(`删除选中的 ${sel.size} 个牌组及全部卡片？`)) return;
+                deleteDecks([...sel]); exitEdit(); refresh();
+              }}>删除选中 ({sel.size})</button>
+            )}
+            <button className="btn btn-danger tap" style={{ flex:1 }} onClick={() => {
+              if (!confirm(`删除全部 ${decks.length} 个牌组？`)) return;
+              deleteDecks(decks.map(d=>d.id)); exitEdit(); refresh();
+            }}>删除全部</button>
+          </div>
+        )}
+
+        {/* Bottom toolbar */}
+        {!editing && (
+          <div style={{ display:'flex', flexDirection:'column', gap:8, marginTop:10 }}>
+            <div style={{ display:'flex', gap:8 }}>
+              <button className="btn btn-ghost tap" style={{ flex:1 }} onClick={handleExport}><IcoDl />导出</button>
+              <button className="btn btn-ghost tap" style={{ flex:1 }} onClick={handleImport}><IcoUl />导入</button>
+            </div>
+            {showAdd ? (
+              <form onSubmit={handleAdd} style={{ background:'var(--bg-card)', border:'1px solid var(--border)', borderRadius:'var(--radius)', padding:14, display:'flex', flexDirection:'column', gap:8 }}>
+                <input autoFocus className="anki-input" value={newName} onChange={e=>setNewName(e.target.value)} placeholder="牌组名称…" style={{ fontFamily:'var(--font-ui)' }} />
+                <div style={{ display:'flex', gap:8 }}>
+                  <button type="submit" className="btn btn-primary tap" style={{ flex:1 }} disabled={!newName.trim()}>创建</button>
+                  <button type="button" className="btn btn-ghost tap" onClick={()=>{setShowAdd(false);setNewName('');}}>取消</button>
+                </div>
+              </form>
+            ) : (
+              <button className="btn btn-primary tap" style={{ width:'100%', padding:'13px' }} onClick={()=>setShowAdd(true)}>
+                <IcoPlus />新建牌组
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+      <div className="safe-bot" />
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DECK DETAIL
+═══════════════════════════════════════════════════════════ */
+function DeckDetail({ deckId, navigate }) {
+  const [deck,   setDeck  ] = useState(null);
+  const [cards,  setCards ] = useState([]);
+  const [stats,  setStats ] = useState(null);
+  const [showEd, setShowEd] = useState(false);
+  const [editCard, setEditCard] = useState(null);
+  const [editing,  setEditing] = useState(false);
+  const [sel,      setSel   ] = useState(new Set());
+  const [openCh,   setOpenCh] = useState(new Set());
+  const [openSec,  setOpenSec] = useState(new Set());
+  const [query,    setQuery ] = useState('');
+
+  const refresh = useCallback(() => {
+    setDeck(getDeck(deckId));
+    setCards(getCards(deckId));
+    setStats(getDeckStats(deckId));
+  }, [deckId]);
+  useEffect(refresh, [refresh]);
+
+  /* keyboard shortcuts in deck detail */
+  useEffect(() => {
+    const handler = e => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      if (e.key === 'Escape') { setEditing(false); setSel(new Set()); setShowEd(false); setEditCard(null); }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
+
+  const outline = useMemo(() => {
+    const map = new Map();
+    const filtered = query.trim() ? cards.filter(c => c.front.includes(query)||c.back.includes(query)) : cards;
+    for (const c of filtered) {
+      const ch = c.chapter||''; if (!map.has(ch)) map.set(ch, new Map());
+      const sec = c.section||''; if (!map.get(ch).has(sec)) map.get(ch).set(sec,[]);
+      map.get(ch).get(sec).push(c);
+    }
+    return map;
+  }, [cards, query]);
+
+  const togCh  = k => setOpenCh( p=>{const n=new Set(p);n.has(k)?n.delete(k):n.add(k);return n;});
+  const togSec = k => setOpenSec(p=>{const n=new Set(p);n.has(k)?n.delete(k):n.add(k);return n;});
+  const togSel = id=> setSel(    p=>{const n=new Set(p);n.has(id)?n.delete(id):n.add(id);return n;});
+  const exitEd = () => { setEditing(false); setSel(new Set()); };
+
+  if (!deck) return <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100%', color:'var(--ink-3)' }}>找不到牌组</div>;
+
+  const due   = stats?.dueCount || 0;
+  const total = stats?.total    || 0;
+  const pct   = total > 0 ? Math.round((total-due)/total*100) : 0;
+
+  return (
+    <div className="page-enter" style={{ display:'flex', flexDirection:'column', height:'100%' }}>
+      <header className="header">
+        <button className="btn btn-icon tap" onClick={()=>navigate('home')} style={{ marginLeft:-6 }}><IcoLeft /></button>
+        <span style={{ flex:1, fontWeight:600, fontSize:16, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{deck.name}</span>
+        {editing ? (
+          <button className="btn btn-ghost tap" style={{ padding:'5px 13px', fontSize:13 }} onClick={exitEd}>完成</button>
+        ) : (
+          <button className="btn btn-icon tap" style={{ color:'var(--danger)' }}
+            onClick={() => { if (confirm('删除此牌组及所有卡片？')) { deleteDeck(deckId); navigate('home'); } }}>
+            <IcoTrash />
+          </button>
+        )}
+      </header>
+
+      {/* Hero stats */}
+      {!editing && (
+        <div style={{ padding:'16px 16px 0' }}>
+          <div style={{ background:'var(--bg-card)', border:'1px solid var(--border)', borderRadius:'var(--radius)', boxShadow:'var(--shadow-card)', padding:'16px 18px', display:'flex', alignItems:'center', gap:18 }}>
+            <ProgressRing progress={total>0?(total-due)/total:0} size={68} stroke={6}>
+              <span style={{ fontSize:15, fontWeight:700, color:'var(--ink)' }}>{pct}%</span>
+            </ProgressRing>
+            <div style={{ flex:1 }}>
+              <div style={{ display:'flex', gap:18, marginBottom:10 }}>
+                <div>
+                  <div style={{ fontSize:10, color:'var(--ink-3)', textTransform:'uppercase', letterSpacing:'0.07em', marginBottom:2 }}>待复习</div>
+                  <div style={{ fontSize:26, fontWeight:700, lineHeight:1, color: due>0?'var(--accent)':'var(--success)' }}>{due}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize:10, color:'var(--ink-3)', textTransform:'uppercase', letterSpacing:'0.07em', marginBottom:2 }}>总计</div>
+                  <div style={{ fontSize:26, fontWeight:300, lineHeight:1, color:'var(--ink-2)' }}>{total}</div>
+                </div>
+              </div>
+              <button className="btn btn-primary tap" style={{ width:'100%', padding:'9px', fontSize:14, opacity:due===0?0.45:1 }}
+                onClick={()=>navigate('review',deckId)} disabled={due===0}>
+                {due===0 ? '今日已完成' : `开始复习  ${due} 张`}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Action row */}
+      <div style={{ padding:'10px 16px 0', display:'flex', gap:8 }}>
+        {!editing ? (
+          <>
+            <button className="btn btn-ghost tap" style={{ flex:1 }} onClick={()=>{setShowEd(!showEd);setEditCard(null);}}>
+              {showEd ? '关闭' : <><IcoPlus />新增卡片</>}
+            </button>
+            {cards.length>0 && <button className="btn btn-ghost tap" onClick={()=>setEditing(true)}>编辑</button>}
+          </>
+        ) : (
+          <div style={{ display:'flex', gap:8, flex:1 }}>
+            {sel.size>0 && (
+              <button className="btn btn-danger tap" style={{ flex:1 }} onClick={()=>{
+                if(!confirm(`删除 ${sel.size} 张？`))return;
+                deleteCards([...sel]); setSel(new Set()); setEditing(false); refresh();
+              }}>删除选中 ({sel.size})</button>
+            )}
+            <button className="btn btn-danger tap" style={{ flex:1 }} onClick={()=>{
+              if(!confirm(`删除全部 ${cards.length} 张？`))return;
+              deleteCards(cards.map(c=>c.id)); exitEd(); refresh();
+            }}>删除全部</button>
+          </div>
+        )}
+      </div>
+
+      {/* Card editor panel */}
+      {showEd && !editing && (
+        <div style={{ margin:'10px 16px 0', padding:14, background:'var(--bg-card)', border:'1px solid var(--accent-border)', borderRadius:'var(--radius)', boxShadow:'var(--shadow-card)' }}>
+          <CardEditor onSave={(f,b)=>{addCard(deckId,f,b);setShowEd(false);refresh();}} onCancel={()=>setShowEd(false)} />
+        </div>
+      )}
+
+      {/* Search */}
+      {cards.length > 4 && !editing && (
+        <div style={{ padding:'10px 16px 0' }}>
+          <div className="search-wrap">
+            <IcoSearch />
+            <input className="anki-input search-input" value={query} onChange={e=>setQuery(e.target.value)}
+              placeholder="搜索卡片…" style={{ fontFamily:'var(--font-ui)', fontSize:14 }} />
+          </div>
+        </div>
+      )}
+
+      {/* Card list */}
+      <div style={{ flex:1, overflowY:'auto', padding:'10px 16px 16px' }}>
+        {cards.length===0 ? (
+          <div style={{ textAlign:'center', padding:'44px 0', color:'var(--ink-3)', fontSize:14 }}>还没有卡片</div>
+        ) : outline.size===0 ? (
+          <div style={{ textAlign:'center', padding:'28px 0', color:'var(--ink-3)', fontSize:14 }}>没有匹配结果</div>
+        ) : (
+          <div style={{ display:'flex', flexDirection:'column', gap:2 }}>
+            {[...outline.entries()].map(([ch, secMap]) => {
+              const chKey = ch||'__unc__';
+              const chCnt = [...secMap.values()].reduce((s,a)=>s+a.length,0);
+              const isOpen = openCh.has(chKey);
+              return (
+                <div key={chKey}>
+                  <button className="tap" onClick={()=>togCh(chKey)}
+                    style={{ width:'100%', display:'flex', alignItems:'center', gap:8, padding:'9px 8px', borderRadius:'var(--radius-sm)', background:'transparent', border:'none', cursor:'pointer', textAlign:'left' }}>
+                    <div style={{ transition:'transform 180ms', transform:isOpen?'rotate(0)':'rotate(-90deg)', color:'var(--ink-3)', flexShrink:0 }}><IcoDown /></div>
+                    <span className="tree-chapter" style={{ flex:1 }}>{ch||'未分类'}</span>
+                    <span style={{ fontSize:12, color:'var(--ink-3)' }}>{chCnt}</span>
+                  </button>
+                  {isOpen && (
+                    <div style={{ marginLeft:14 }}>
+                      {[...secMap.entries()].map(([sec, scards]) => {
+                        const sKey = `${chKey}::${sec}`;
+                        const sOpen = openSec.has(sKey);
+                        if (!sec) return (
+                          <div key={sKey}>
+                            {scards.map(c=>(
+                              <CardRow key={c.id} card={c} editing={editing} selected={sel.has(c.id)}
+                                onToggle={()=>togSel(c.id)}
+                                isEditing={editCard?.id===c.id}
+                                onEdit={()=>setEditCard(c)}
+                                onDelete={()=>{deleteCard(c.id);refresh();}}
+                                onSave={(f,b)=>{updateCard(c.id,{front:f,back:b});setEditCard(null);refresh();}}
+                                onCancel={()=>setEditCard(null)} />
+                            ))}
+                          </div>
+                        );
+                        return (
+                          <div key={sKey}>
+                            <button className="tap" onClick={()=>togSec(sKey)}
+                              style={{ width:'100%', display:'flex', alignItems:'center', gap:8, padding:'7px 8px', borderRadius:'var(--radius-sm)', background:'transparent', border:'none', cursor:'pointer', textAlign:'left' }}>
+                              <div style={{ transition:'transform 180ms', transform:sOpen?'rotate(0)':'rotate(-90deg)', color:'var(--ink-3)', flexShrink:0 }}><IcoDown /></div>
+                              <span style={{ fontSize:13, color:'var(--ink-2)', flex:1 }}>{sec}</span>
+                              <span style={{ fontSize:12, color:'var(--ink-3)' }}>{scards.length}</span>
+                            </button>
+                            {sOpen && (
+                              <div style={{ marginLeft:14 }}>
+                                {scards.map(c=>(
+                                  <CardRow key={c.id} card={c} editing={editing} selected={sel.has(c.id)}
+                                    onToggle={()=>togSel(c.id)}
+                                    isEditing={editCard?.id===c.id}
+                                    onEdit={()=>setEditCard(c)}
+                                    onDelete={()=>{deleteCard(c.id);refresh();}}
+                                    onSave={(f,b)=>{updateCard(c.id,{front:f,back:b});setEditCard(null);refresh();}}
+                                    onCancel={()=>setEditCard(null)} />
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+      <div className="safe-bot" />
+    </div>
+  );
+}
+
+function CardRow({ card, editing, selected, onToggle, isEditing, onEdit, onDelete, onSave, onCancel }) {
+  if (isEditing) return (
+    <div style={{ padding:10, borderRadius:'var(--radius-sm)', border:'1.5px solid var(--accent-border)', background:'var(--accent-bg)', margin:'2px 0 4px' }}>
+      <CardEditor initial={card} onSave={onSave} onCancel={onCancel} />
+    </div>
+  );
+  return (
+    <div className="tree-row tap" onClick={editing?onToggle:undefined}
+      style={editing&&selected ? { background:'var(--accent-bg)', border:'1px solid var(--accent-border)' } : {}}>
+      {editing && (
+        <div style={{ width:18, height:18, borderRadius:'50%', border:`2px solid ${selected?'var(--accent)':'var(--border-strong)'}`, background:selected?'var(--accent)':'transparent', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, color:'white', transition:'all 140ms' }}>
+          {selected && <IcoCheck />}
+        </div>
+      )}
+      <span style={{ flex:1, fontSize:14, fontFamily:'var(--font-serif)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{card.front}</span>
+      {!editing && (
+        <div className="actions">
+          <button className="btn btn-ghost tap" style={{ padding:'3px 7px', fontSize:12 }} onClick={e=>{e.stopPropagation();onEdit();}}><IcoPencil /></button>
+          <button className="btn btn-danger tap" style={{ padding:'3px 7px', fontSize:12 }} onClick={e=>{e.stopPropagation();onDelete();}}><IcoTrash /></button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   REVIEW
+═══════════════════════════════════════════════════════════ */
+function Review({ deckId, navigate }) {
+  const initCards = useMemo(() => getDueCards(deckId), [deckId]);
+  const [dueCards, setDueCards] = useState(initCards);
+  const [idx,      setIdx     ] = useState(0);
+  const [flipped,  setFlipped ] = useState(false);
+  const [done,     setDone    ] = useState(initCards.length===0);
+  const total = initCards.length;
+
+  /* keyboard shortcuts */
+  useEffect(() => {
+    const handler = e => {
+      if (e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA') return;
+      if (e.key===' '||e.key==='Enter') { e.preventDefault(); if (!flipped) setFlipped(true); }
+      if (flipped) {
+        if (e.key==='1') handleRate(1);
+        if (e.key==='2') handleRate(2);
+        if (e.key==='3') handleRate(4);
+        if (e.key==='4') handleRate(5);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [flipped, idx, dueCards]);
+
+  useEffect(() => { setFlipped(false); }, [idx]);
+
+  const handleRate = q => {
+    if (idx >= dueCards.length) return;
+    updateCard(dueCards[idx].id, sm2(dueCards[idx], q));
+    recordStreak();
+    if (idx + 1 < dueCards.length) setIdx(i => i+1);
+    else setDone(true);
+  };
+
+  const progress = total > 0 ? idx / total : 0;
+
+  if (done) return (
+    <div className="page-enter" style={{ display:'flex', flexDirection:'column', height:'100%' }}>
+      <header className="header">
+        <button className="btn btn-icon tap" onClick={()=>navigate('deck',deckId)} style={{ marginLeft:-6 }}><IcoLeft /></button>
+        <span style={{ flex:1 }} />
+      </header>
+      <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:22, padding:32 }}>
+        <div className="pop-in" style={{ width:76, height:76, borderRadius:'50%', background:'var(--success-bg)', border:'1.5px solid color-mix(in oklch, var(--success) 28%, transparent)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+          <svg width={34} height={34} viewBox="0 0 24 24" fill="none" stroke="var(--success)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M20 6L9 17l-5-5" />
+          </svg>
+        </div>
+        <div style={{ textAlign:'center' }}>
+          <div style={{ fontSize:22, fontWeight:600, fontFamily:'var(--font-serif)', marginBottom:6 }}>复习完成</div>
+          <div style={{ fontSize:14, color:'var(--ink-3)' }}>共复习了 {total} 张</div>
+        </div>
+        <div style={{ display:'flex', gap:10 }}>
+          <button className="btn btn-ghost tap" style={{ padding:'10px 20px' }} onClick={()=>navigate('deck',deckId)}>返回牌组</button>
+          <button className="btn btn-primary tap" style={{ padding:'10px 20px' }} onClick={()=>navigate('home')}>首页</button>
+        </div>
+        {/* shortcuts hint */}
+        <div style={{ marginTop:8, fontSize:12, color:'var(--ink-3)', display:'flex', alignItems:'center', gap:5 }}>
+          <IcoKey />快捷键：Space 翻转 · 1/2/3/4 评分
+        </div>
+      </div>
+      <div className="safe-bot" />
+    </div>
+  );
+
+  const card = dueCards[idx];
+
+  return (
+    <div className="page-enter" style={{ display:'flex', flexDirection:'column', height:'100%' }}>
+      <header className="header" style={{ gap:10 }}>
+        <button className="btn btn-icon tap" onClick={()=>navigate('deck',deckId)} style={{ marginLeft:-6 }}><IcoLeft /></button>
+        <div style={{ flex:1, height:3, background:'var(--border)', borderRadius:2, overflow:'hidden' }}>
+          <div style={{ height:'100%', width:`${progress*100}%`, background:'var(--accent)', borderRadius:2, transition:'width 380ms cubic-bezier(0.4,0,0.2,1)' }} />
+        </div>
+        <span style={{ fontSize:13, color:'var(--ink-3)', minWidth:38, textAlign:'right' }}>
+          {idx+1}<span style={{ opacity:0.45 }}>/{total}</span>
+        </span>
+      </header>
+
+      <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'20px 18px 12px', gap:18 }}>
+
+        {/* Flip card */}
+        <div className="flip-card tap" style={{ width:'100%', maxWidth:440, cursor: flipped?'default':'pointer' }}
+          onClick={()=>{ if (!flipped) setFlipped(true); }}>
+          {/* Fixed-height wrapper so the card doesn't collapse */}
+          <div style={{ position:'relative', minHeight:240 }}>
+            <div className={`flip-inner${flipped?' flipped':''}`} style={{ position:'absolute', inset:0 }}>
+              {/* Front */}
+              <div className="flip-front" style={{ position:'absolute', inset:0, background:'var(--bg-card)', border:'1px solid var(--border)', borderRadius:'var(--radius)', boxShadow:'var(--shadow-raised)', padding:'28px 24px', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:12 }}>
+                <div style={{ fontFamily:'var(--font-serif)', fontSize:22, fontWeight:400, color:'var(--ink)', lineHeight:1.65, textAlign:'center' }}>{card.front}</div>
+                <div style={{ fontSize:11, color:'var(--ink-3)', marginTop:6 }}>点击翻转 · Space</div>
+              </div>
+              {/* Back */}
+              <div className="flip-back" style={{ position:'absolute', inset:0, background:'var(--bg-card)', border:'1.5px solid var(--accent-border)', borderRadius:'var(--radius)', boxShadow:'var(--shadow-raised)', padding:'28px 24px', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:10 }}>
+                <div style={{ fontSize:10, color:'var(--ink-3)', textTransform:'uppercase', letterSpacing:'0.1em' }}>答案</div>
+                <div style={{ fontFamily:'var(--font-serif)', fontSize:22, fontWeight:500, color:'var(--accent)', lineHeight:1.65, textAlign:'center' }}>{card.back}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Progress ring (front only) */}
+        {!flipped && (
+          <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+            <ProgressRing progress={progress} size={44} stroke={3.5}>
+              <span style={{ fontSize:10, fontWeight:600, color:'var(--ink-2)' }}>{Math.round(progress*100)}%</span>
+            </ProgressRing>
+            <span style={{ fontSize:13, color:'var(--ink-3)' }}>还剩 <strong style={{ color:'var(--ink-2)' }}>{total-idx}</strong> 张</span>
+          </div>
+        )}
+
+        {/* Rating buttons (back only) */}
+        {flipped && (
+          <div style={{ width:'100%', maxWidth:440 }}>
+            <div style={{ fontSize:11, color:'var(--ink-3)', textAlign:'center', marginBottom:10, letterSpacing:'0.04em' }}>记忆程度 · 1 2 3 4</div>
+            <div style={{ display:'flex', gap:8 }}>
+              {[
+                { q:1, label:'忘了', cls:'rate-again' },
+                { q:2, label:'模糊', cls:'rate-hard'  },
+                { q:4, label:'记得', cls:'rate-good'  },
+                { q:5, label:'轻松', cls:'rate-easy'  },
+              ].map(({q,label,cls}) => (
+                <button key={q} className={`rate-btn ${cls} tap`}
+                  onClick={e=>{e.stopPropagation();handleRate(q);}}>
+                  <span>{label}</span>
+                  <span style={{ fontSize:10, opacity:0.65, fontWeight:400 }}>{predictDays(card,q)}d</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+      <div className="safe-bot" />
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   APP ROUTER
+═══════════════════════════════════════════════════════════ */
+function App() {
+  const [dark, setDark] = useTheme();
+  const parseHash = () => {
+    const h = location.hash;
+    if (h.startsWith('#/deck/'))   return { page:'deck',   id:h.slice(7)  };
+    if (h.startsWith('#/review/')) return { page:'review', id:h.slice(9)  };
+    return { page:'home' };
+  };
+  const [route, setRoute] = useState(parseHash);
+
+  const navigate = useCallback((page, id) => {
+    setRoute({ page, id });
+    location.hash = page==='home' ? '/' : page==='deck' ? `/deck/${id}` : `/review/${id}`;
+  }, []);
+
+  useEffect(() => {
+    const h = () => setRoute(parseHash());
+    window.addEventListener('hashchange', h);
+    return () => window.removeEventListener('hashchange', h);
+  }, []);
+
+  const key = `${route.page}-${route.id||''}`;
+  return (
+    <div style={{ height:'100%' }}>
+      {route.page==='home'   && <Home       key={key} navigate={navigate} dark={dark} setDark={setDark} />}
+      {route.page==='deck'   && <DeckDetail key={key} deckId={route.id}  navigate={navigate} />}
+      {route.page==='review' && <Review     key={key} deckId={route.id}  navigate={navigate} />}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
