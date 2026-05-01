@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.8.0 — 2026-05-01 (security + bug fixes)
+
+**安全修复：**
+- renderMarkdown.js 添加 DOMPurify sanitize，防止 HTML 注入
+
+**Bug 修复：**
+- 统一使用本地日期（dateUtils.js）替代 UTC toISOString，修复午夜前后日期偏移
+- Home.jsx reviewedToday 统计改为正确逻辑（基于 updatedAt + repetitions）
+
+---
+
 ## v0.7.3 — 2026-05-01 (fix)
 
 **修复：**

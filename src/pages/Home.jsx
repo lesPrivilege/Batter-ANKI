@@ -151,7 +151,7 @@ export default function Home() {
         {!editing && (
           <div className="px-4 pt-4">
             <StatsBar stats={{
-              reviewedToday: decks.reduce((sum, d) => sum + d.totalCards - d.dueCount, 0),
+              reviewedToday: decks.reduce((sum, d) => sum + d.reviewedToday, 0),
               dueCount: decks.reduce((sum, d) => sum + d.dueCount, 0),
               total: decks.reduce((sum, d) => sum + d.totalCards, 0),
               futureDistribution: (() => {
@@ -161,7 +161,7 @@ export default function Home() {
                 for (let i = 1; i <= 7; i++) {
                   const d = new Date()
                   d.setDate(d.getDate() + i)
-                  const ds = d.toISOString().split('T')[0]
+                  const ds = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
                   dist.push({ date: ds, count: allRecall.filter(c => c.dueDate === ds).length })
                 }
                 return dist

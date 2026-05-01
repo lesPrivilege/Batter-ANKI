@@ -1,5 +1,6 @@
 import { marked } from 'marked'
 import katex from 'katex'
+import DOMPurify from 'dompurify'
 import 'katex/dist/katex.min.css'
 
 marked.use({ breaks: true, gfm: true })
@@ -33,6 +34,12 @@ marked.use({
   },
 })
 
+const SANITIZE_CONFIG = {
+  ALLOWED_TAGS: ['p','br','strong','em','code','pre','ul','ol','li','table','thead','tbody','tr','th','td','blockquote','hr','span','div','a','h1','h2','h3','h4'],
+  ALLOWED_ATTR: ['class','href','target','rel'],
+}
+
 export default function renderMarkdown(raw) {
-  return marked.parse(raw)
+  const html = marked.parse(raw)
+  return DOMPurify.sanitize(html, SANITIZE_CONFIG)
 }

@@ -1,5 +1,6 @@
 // localStorage 读写封装
 // 数据结构: { decks: Deck[], cards: Card[] }
+import { localToday } from './dateUtils'
 
 const STORAGE_KEY = 'mini-srs-data'
 
@@ -77,7 +78,7 @@ export function getCard(id) {
 
 export function addCard(deckId, front, back, type = 'recall', chapter = '', section = '') {
   const data = loadData()
-  const today = new Date().toISOString().split('T')[0]
+  const today = localToday()
   const card = {
     id: crypto.randomUUID(),
     deckId,

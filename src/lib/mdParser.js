@@ -3,6 +3,7 @@
  * Input: .md string following FORMAT.md conventions
  * Output: Card[] array (compatible with storage.js addCard)
  */
+import { localToday } from './dateUtils'
 
 export function parseMdToCards(mdContent, deckName) {
   const lines = mdContent.split('\n')
@@ -26,7 +27,7 @@ export function parseMdToCards(mdContent, deckName) {
         easiness: 2.5,
         interval: 0,
         repetitions: 0,
-        dueDate: todayStr(),
+        dueDate: localToday(),
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       })
@@ -85,8 +86,4 @@ export function parseMdToCards(mdContent, deckName) {
 
   flush()
   return cards
-}
-
-function todayStr() {
-  return new Date().toISOString().split('T')[0]
 }

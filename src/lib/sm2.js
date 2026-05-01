@@ -28,12 +28,13 @@ export function sm2(card, quality) {
 
   const today = new Date()
   today.setDate(today.getDate() + newInterval)
+  const dueDate = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`
 
   return {
     easiness: newE,
     interval: newInterval,
     repetitions: newReps,
-    dueDate: today.toISOString().split('T')[0],
+    dueDate,
     updatedAt: new Date().toISOString(),
   }
 }
