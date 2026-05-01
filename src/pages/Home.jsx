@@ -48,16 +48,6 @@ export default function Home() {
 
   const navigate = useNavigate()
 
-  const [dark, setDark] = useState(() => {
-    return localStorage.getItem('mini-srs-theme') === 'dark' ||
-      (!localStorage.getItem('mini-srs-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)
-  })
-
-  useEffect(() => {
-    document.documentElement.classList.toggle('dark', dark)
-    localStorage.setItem('mini-srs-theme', dark ? 'dark' : 'light')
-  }, [dark])
-
   return (
     <div className="flex flex-col min-h-screen bg-bg">
       {/* Header */}
@@ -71,12 +61,6 @@ export default function Home() {
             </button>
           ) : (
             <>
-              <button
-                onClick={() => setDark(!dark)}
-                className="text-sm text-ink-2 active:scale-[0.97] transition-transform"
-              >
-                {dark ? '\u2600' : '\u263E'}
-              </button>
               {decks.length > 0 && (
                 <button
                   onClick={() => setEditing(true)}
@@ -85,6 +69,9 @@ export default function Home() {
                   Edit
                 </button>
               )}
+              <Link to="/settings" className="text-ink-2 active:scale-[0.97] transition-transform">
+                ⚙
+              </Link>
             </>
           )}
         </div>

@@ -5,6 +5,7 @@ import DeckDetail from './pages/DeckDetail'
 import Review from './pages/Review'
 import Browse from './pages/Browse'
 import PromptGuide from './pages/PromptGuide'
+import Settings from './pages/Settings'
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
         <Route path="/review/:id" element={<Review />} />
         <Route path="/browse/:id" element={<Browse />} />
         <Route path="/prompt-guide" element={<PromptGuide />} />
+        <Route path="/settings" element={<Settings />} />
       </Routes>
     </HashRouter>
   )

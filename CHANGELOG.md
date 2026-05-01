@@ -94,16 +94,14 @@
 
 ---
 
-## v0.7.2 — 2026-05-01 (debug APK build)
+## v0.7.2 — 2026-05-01 (settings)
 
-**构建：**
-- Debug APK 构建成功（26MB）
-- `npm run build` + `npx cap sync android` + `sed` Java 17 patch + `./gradlew assembleDebug`
-- APK 输出：`android/app/build/outputs/apk/debug/app-debug.apk`
-
-**自检：**
-- 15 项 checklist 全部通过
-- 发现 2 个问题记录于 issues.md（Review 重复评分按钮、KaTeX 行内公式需反引号包裹）
+**新增：** Settings 页面（/settings）
+- 主题切换（从首页移入）
+- 数据导出 JSON 备份（从首页移入）
+- 每日复习上限设置
+- 关于信息（名称 + 版本 + GitHub）
+- 首页 header 简化为 Mnemos + Edit + ⚙
 
 ---
 
