@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.5.0 — 2026-05-01 (markdown + latex)
+
+**新增：** 卡片正反面支持 Markdown 和 LaTeX 渲染
+
+**改动：**
+- `src/lib/renderMarkdown.js`: 新建，marked + KaTeX 集成，支持行内 $...$ 和块级 $$...$$ 公式
+- `src/components/ReviewCard.jsx`: 正反面改用 dangerouslySetInnerHTML 渲染
+- `src/styles/markdown.css`: 新建，卡片内 markdown 元素样式（code, table, blockquote 等）
+- `package.json`: 添加 marked + katex 依赖
+
+---
+
 ## v0.4.0 — 2026-05-01 (md import)
 
 **新增：** .md 文件导入，解析结构化 markdown 为卡片

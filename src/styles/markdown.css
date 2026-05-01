@@ -1,0 +1,79 @@
+.card-content code {
+  font-family: var(--font-serif), ui-monospace, monospace;
+  background: var(--bg-raised);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.card-content pre code {
+  display: block;
+  padding: 12px;
+  overflow-x: auto;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.card-content table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.card-content th,
+.card-content td {
+  border: 1px solid var(--border);
+  padding: 6px 10px;
+  text-align: left;
+}
+
+.card-content th {
+  background: var(--bg-raised);
+  font-weight: 600;
+}
+
+.card-content ul,
+.card-content ol {
+  padding-left: 20px;
+  margin: 8px 0;
+}
+
+.card-content li {
+  margin: 4px 0;
+}
+
+.card-content blockquote {
+  border-left: 3px solid var(--accent);
+  padding-left: 12px;
+  color: var(--ink-2);
+  margin: 8px 0;
+}
+
+.card-content p {
+  margin: 8px 0;
+}
+
+.card-content strong {
+  font-weight: 600;
+}
+
+.card-content em {
+  font-style: italic;
+}
+
+.card-content a {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.card-content h1,
+.card-content h2,
+.card-content h3 {
+  font-weight: 600;
+  margin: 12px 0 8px;
+}
+
+.card-content .katex-display {
+  margin: 8px 0;
+  text-align: center;
+}

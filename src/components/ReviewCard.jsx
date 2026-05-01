@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
+import renderMarkdown from '../lib/renderMarkdown'
+import '../styles/markdown.css'
 
 // Props: card, onRate(quality)
 export default function ReviewCard({ card, onRate }) {
@@ -40,11 +42,13 @@ export default function ReviewCard({ card, onRate }) {
             transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
           }}
         >
-          {flipped ? (
-            <span className="text-accent">{card.back}</span>
-          ) : (
-            <span className="text-ink">{card.front}</span>
-          )}
+          <div className="card-content" style={{ textAlign: 'center' }}>
+            {flipped ? (
+              <div className="text-accent" dangerouslySetInnerHTML={{ __html: renderMarkdown(card.back) }} />
+            ) : (
+              <div className="text-ink" dangerouslySetInnerHTML={{ __html: renderMarkdown(card.front) }} />
+            )}
+          </div>
         </span>
       </button>
 
