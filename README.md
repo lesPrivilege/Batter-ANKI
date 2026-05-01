@@ -36,6 +36,7 @@ npx cap sync android
 sed -i '' 's/VERSION_21/VERSION_17/g' android/app/capacitor.build.gradle
 sed -i '' 's/VERSION_21/VERSION_17/g' android/capacitor-cordova-android-plugins/build.gradle
 sed -i '' 's/VERSION_21/VERSION_17/g' node_modules/@capacitor/android/capacitor/build.gradle
+sed -i '' 's/VERSION_21/VERSION_17/g' node_modules/@capacitor/app/android/build.gradle
 cd android
 ./gradlew assembleDebug
 # APK: android/app/build/outputs/apk/debug/app-debug.apk

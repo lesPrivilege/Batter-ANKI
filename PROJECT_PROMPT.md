@@ -95,6 +95,7 @@ npx cap sync android
 # 3. ⚠️ 必须 patch Java 版本（cap sync 会覆盖）
 sed -i '' 's/JavaVersion.VERSION_21/JavaVersion.VERSION_17/g' \
   node_modules/@capacitor/android/capacitor/build.gradle \
+  node_modules/@capacitor/app/android/build.gradle \
   android/app/capacitor.build.gradle \
   android/capacitor-cordova-android-plugins/build.gradle
 
