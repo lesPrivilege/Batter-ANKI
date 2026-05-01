@@ -1,5 +1,20 @@
 # Changelog
 
+## v1.0.8 — 2026-05-01 (Android back button, cross-platform navigation)
+
+**新增：**
+- `@capacitor/app` 监听 Android 系统返回键，返回父页面而非浏览器历史
+- `src/lib/platform.js` — `isNative()` 平台检测
+- `src/lib/useBackButton.js` — 统一返回逻辑 hook（Capacitor backButton 事件 + goBack 函数）
+- 路由父级映射：`getParent()` 根据 pathname 解析父路径（支持 ImportPage 的 deckId 参数）
+
+**改动：**
+- 全部 6 个子页面：`navigate(-1)` → `goBack()`，header 返回按钮与系统返回键行为一致
+- Home 页面：系统返回键退出 app（Capacitor 默认）
+- 移除不再需要的 `useNavigate` import（Review, Browse, Settings, PromptGuide）
+
+---
+
 ## v1.0.7 — 2026-05-01 (deck export, KaTeX lazy-load)
 
 **新增：**
