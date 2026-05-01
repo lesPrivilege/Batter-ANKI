@@ -1,5 +1,18 @@
 # Changelog
 
+## v1.0.4 — 2026-05-01 (splash screen)
+
+**新增：**
+- `@capacitor/splash-screen` 插件：启动时显示 #FAF8F5 背景 + M mark 居中
+- `scripts/gen-splash.mjs`：splash PNG 生成脚本（11 种密度/方向组合）
+- `styles.xml`：Android 12+ SplashScreen API 配置（`windowSplashScreenBackground`）
+
+**修复：**
+- `capacitor.build.gradle` Java 兼容性回退 VERSION_21→VERSION_17（splash-screen 库需要）
+- 远程仓库改名：`Batter-ANKI` → `Mnemos`
+
+---
+
 ## v1.0.3 — 2026-05-01 (card container + click target)
 
 **修复：**
