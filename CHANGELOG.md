@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.8.1 — 2026-05-01 (fixes)
+
+**修复：**
+- .md 导入：修复文件扩展名判断逻辑
+- 制卡指南链接：改为 react-router Link 组件
+
+---
+
 ## v0.8.0 — 2026-05-01 (security + bug fixes)
 
 **安全修复：**
