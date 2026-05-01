@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.7.2 — 2026-05-01 (debug APK build)
+
+**构建：**
+- Debug APK 构建成功（26MB）
+- `npm run build` + `npx cap sync android` + `sed` Java 17 patch + `./gradlew assembleDebug`
+- APK 输出：`android/app/build/outputs/apk/debug/app-debug.apk`
+
+**自检：**
+- 15 项 checklist 全部通过
+- 发现 2 个问题记录于 issues.md（Review 重复评分按钮、KaTeX 行内公式需反引号包裹）
+
+---
+
 ## v0.7.1 — 2026-05-01 (home simplification)
 
 **改动：**
