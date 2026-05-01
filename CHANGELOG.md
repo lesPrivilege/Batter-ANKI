@@ -1,5 +1,29 @@
 # Changelog
 
+## v1.0.6 — 2026-05-01 (KaTeX, import safety, dropdown menu)
+
+**修复：**
+- `renderMarkdown.js` 新增 marked inline/block math extension，`$...$` 和 `$$...$$` 直接渲染 KaTeX，不再必须反引号包裹；保留旧写法兼容
+- `renderMarkdown.js` code/codespan renderer 加 `escapeHtml()`，防止 `<tag>` 被当 HTML 解析
+- `ReviewCard.jsx` / `Browse.jsx` 正反两侧 front 均走 `renderMarkdown()` 渲染
+- `ImportPage.jsx` JSON 导入改为预览页，默认"合并数据"，"替换全部"需二次确认，不再静默覆盖
+- `scheduler.js` `getDueCards()` 读取 `dailyLimit` 限制每日复习数量（"全部复习"不受限）
+- `Browse.jsx` 移除 mount 时 shuffle，浏览顺序稳定
+- `Home.jsx` 未来 7 天分布从 deck stats 聚合，不再额外 `loadData()`
+- `scheduler.js` 删除多余 `today()` wrapper，`isDue()` 直接用 `localToday()`
+- `StatsBar.jsx` `border-soft` → `border-border-soft`（Tailwind token 修正）
+
+**新增：**
+- `DeckDetail.jsx` 三点菜单改为下拉菜单（重命名 / 置顶 / 批量编辑 / 删除）
+- `storage.js` 新增 `mergeData()`、`parseImportData()`、`getDailyLimit()` 工具函数
+
+**文档：**
+- README.md 修正 APK 构建 sed 命令方向和文件列表，补全项目结构
+- ROADMAP.md 标记三点菜单和齿轮对齐为已修复
+- issues.md 标记 KaTeX 问题为已修复
+
+---
+
 ## v1.0.5 — 2026-05-01 (appId + storage migration)
 
 **改动：**

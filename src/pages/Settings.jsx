@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { exportData } from '../lib/storage'
+import { DAILY_LIMIT_KEY, exportData } from '../lib/storage'
 import { BackIcon, SunIcon, MoonIcon, DownloadIcon, UploadIcon, MnemosMark } from '../components/Icons'
 import pkg from '../../package.json'
 
@@ -18,15 +18,15 @@ export default function Settings() {
   }, [dark])
 
   const [dailyLimit, setDailyLimit] = useState(() => {
-    const v = localStorage.getItem('mnemos-daily-limit')
+    const v = localStorage.getItem(DAILY_LIMIT_KEY)
     return v ?? ''
   })
 
   useEffect(() => {
     if (dailyLimit === '' || dailyLimit === null) {
-      localStorage.removeItem('mnemos-daily-limit')
+      localStorage.removeItem(DAILY_LIMIT_KEY)
     } else {
-      localStorage.setItem('mnemos-daily-limit', dailyLimit)
+      localStorage.setItem(DAILY_LIMIT_KEY, dailyLimit)
     }
   }, [dailyLimit])
 
@@ -74,7 +74,7 @@ export default function Settings() {
             placeholder="不限" min="1"
             className="w-full py-[9px] px-3 rounded-md border bg-bg text-ink font-mono text-sm outline-none focus:border-accent"
             style={{ borderColor: 'var(--border)' }} />
-          <div className="text-[11px] text-ink-3 font-mono tracking-wide">设置后首页将显示每日目标</div>
+          <div className="text-[11px] text-ink-3 font-mono tracking-wide">设置后普通复习将限制今日队列数量</div>
         </div>
 
         {/* Data */}

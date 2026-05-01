@@ -36,10 +36,9 @@ export default function ReviewCard({ card }) {
                   <span>QUESTION</span>
                 </div>
                 <div className="flex-1 flex flex-col items-center justify-center text-center gap-3.5 p-2">
-                  <div className="font-zh text-[22px] font-medium leading-relaxed tracking-wide"
-                    style={{ color: 'var(--ink)' }}>
-                    {card.front}
-                  </div>
+                  <div className="card-content font-zh text-[22px] font-medium leading-relaxed tracking-wide"
+                    style={{ color: 'var(--ink)' }}
+                    dangerouslySetInnerHTML={{ __html: renderMarkdown(card.front) }} />
                 </div>
                 <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-8 h-px"
                   style={{ background: 'linear-gradient(90deg, transparent, var(--ink-4), transparent)' }} />
@@ -55,7 +54,8 @@ export default function ReviewCard({ card }) {
                   <span>ANSWER</span>
                 </div>
                 <div className="flex-1 flex flex-col items-center justify-start text-center gap-3.5 p-2 pt-8">
-                  <div className="font-zh text-[18px] text-ink-2">{card.front}</div>
+                  <div className="card-content font-zh text-[18px] text-ink-2"
+                    dangerouslySetInnerHTML={{ __html: renderMarkdown(card.front) }} />
                   <div className="w-full px-2 flex items-center gap-2.5 font-mono text-[9px] text-ink-3 tracking-[0.18em] uppercase">
                     <span className="flex-1 h-px" style={{ background: 'var(--border-soft)' }} />
                     REVERSO

@@ -1,6 +1,6 @@
 import { useState, useRef, useMemo } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { addDeck, addCard, getCards, getDecks, getDeck, importData } from '../lib/storage'
+import { addDeck, addCard, getCards, getDecks, getDeck, importData, mergeData, parseImportData, loadData } from '../lib/storage'
 import { parseMdToCards } from '../lib/mdParser'
 import { BackIcon, UploadIcon, PasteIcon } from '../components/Icons'
 
@@ -12,6 +12,8 @@ export default function ImportPage() {
   const [importMode, setImportMode] = useState(targetDeckId ? 'append' : 'new')
   const [pasteMd, setPasteMd] = useState('')
   const [previewData, setPreviewData] = useState(null)
+  const [jsonPreviewData, setJsonPreviewData] = useState(null)
+  const [jsonMode, setJsonMode] = useState('merge')
   const [previewName, setPreviewName] = useState('')
   const [skipDup, setSkipDup] = useState(false)
   const fileInputRef = useRef(null)
@@ -68,8 +70,23 @@ export default function ImportPage() {
     navigate('/')
   }
 
+  const handleConfirmJsonImport = () => {
+    if (!jsonPreviewData) return
+    if (jsonMode === 'replace') {
+      if (!confirm('Replace all existing decks and cards with this JSON backup? This cannot be undone.')) return
+      importData(jsonPreviewData)
+    } else {
+      mergeData(jsonPreviewData)
+    }
+    setJsonPreviewData(null)
+    setJsonMode('merge')
+    navigate('/')
+  }
+
   const handleCancelImport = () => {
     setPreviewData(null)
+    setJsonPreviewData(null)
+    setJsonMode('merge')
     setPreviewName('')
     setPasteMd('')
     setSkipDup(false)
@@ -83,8 +100,8 @@ export default function ImportPage() {
     reader.onload = (ev) => {
       if (ext === 'json') {
         try {
-          importData(ev.target.result)
-          navigate('/')
+          setJsonPreviewData(parseImportData(ev.target.result))
+          setJsonMode('merge')
         } catch {
           alert('Import failed: invalid JSON format')
         }
@@ -99,6 +116,96 @@ export default function ImportPage() {
   const handlePasteSubmit = () => {
     if (!pasteMd.trim()) return
     processMdContent(pasteMd, 'Pasted Notes')
+  }
+
+  if (jsonPreviewData) {
+    const currentData = loadData()
+    const importedDecks = jsonPreviewData.decks.length
+    const importedCards = jsonPreviewData.cards.length
+    const currentDecks = currentData.decks.length
+    const currentCards = currentData.cards.length
+
+    return (
+      <div className="flex flex-col min-h-screen bg-bg">
+        <header className="sticky top-0 z-10 flex items-center px-[18px] h-[52px] bg-bg border-b" style={{ borderColor: 'var(--border-soft)' }}>
+          <button onClick={handleCancelImport} className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-ink-2 hover:bg-bg-raised hover:text-ink transition-colors">
+            <BackIcon />
+          </button>
+          <h1 className="flex-1 font-zh text-[17px] font-medium text-ink pl-1">JSON 导入预览</h1>
+        </header>
+
+        <main className="flex-1 overflow-y-auto p-[18px] flex flex-col gap-4">
+          <div className="bg-bg-card rounded-md p-4 flex flex-col gap-2.5" style={{ border: '1px solid var(--border-soft)' }}>
+            <div className="font-zh text-sm font-medium text-ink">导入方式</div>
+            <div className="inline-flex p-0.5 rounded-lg" style={{ background: 'var(--bg-raised)', border: '1px solid var(--border-soft)' }}>
+              <button onClick={() => setJsonMode('merge')}
+                className={`flex-1 py-[7px] px-2.5 text-[12px] font-medium rounded-md transition-all ${jsonMode === 'merge' ? 'bg-bg-card text-ink shadow-sm' : 'text-ink-2'}`}>
+                合并数据
+              </button>
+              <button onClick={() => setJsonMode('replace')}
+                className={`flex-1 py-[7px] px-2.5 text-[12px] font-medium rounded-md transition-all ${jsonMode === 'replace' ? 'bg-bg-card text-ink shadow-sm' : 'text-ink-2'}`}>
+                替换全部
+              </button>
+            </div>
+
+            <div className="flex justify-between items-baseline py-1.5 border-b" style={{ borderColor: 'var(--border-soft)' }}>
+              <span className="font-zh text-xs text-ink-2">当前卡组</span>
+              <span className="font-mono text-xs text-ink">{currentDecks}</span>
+            </div>
+            <div className="flex justify-between items-baseline py-1.5 border-b" style={{ borderColor: 'var(--border-soft)' }}>
+              <span className="font-zh text-xs text-ink-2">当前卡片</span>
+              <span className="font-mono text-xs text-ink">{currentCards}</span>
+            </div>
+            <div className="flex justify-between items-baseline py-1.5 border-b" style={{ borderColor: 'var(--border-soft)' }}>
+              <span className="font-zh text-xs text-ink-2">导入卡组</span>
+              <span className="font-mono text-xs" style={{ color: 'var(--accent)' }}>{importedDecks}</span>
+            </div>
+            <div className="flex justify-between items-baseline py-1.5">
+              <span className="font-zh text-xs text-ink-2">导入卡片</span>
+              <span className="font-mono text-xs font-semibold" style={{ color: 'var(--accent)' }}>{importedCards}</span>
+            </div>
+
+            {jsonMode === 'replace' && (
+              <div className="rounded-md p-3 font-zh text-xs leading-relaxed"
+                style={{ background: 'var(--danger-soft)', color: 'var(--danger)', border: '1px solid color-mix(in oklch, var(--danger) 25%, transparent)' }}>
+                替换全部会覆盖当前所有卡组和卡片。确认导入前还会再次询问。
+              </div>
+            )}
+          </div>
+
+          <div className="bg-bg-card rounded-md p-4 flex flex-col gap-2.5" style={{ border: '1px solid var(--border-soft)' }}>
+            <div className="font-zh text-sm font-medium text-ink">卡组预览</div>
+            <div className="flex flex-col gap-1.5">
+              {jsonPreviewData.decks.slice(0, 5).map((deck, i) => (
+                <div key={deck.id || i} className="flex gap-2 py-[7px] px-2.5 rounded-md font-zh text-xs text-ink"
+                  style={{ borderLeft: '2px solid var(--accent-line)', background: 'var(--bg)' }}>
+                  <span className="font-mono text-[10px] text-ink-3 min-w-[18px]">{String(i+1).padStart(2,'0')}</span>
+                  {deck.name || 'Imported Deck'}
+                </div>
+              ))}
+              {jsonPreviewData.decks.length > 5 && (
+                <div className="flex gap-2 py-[7px] px-2.5 rounded-md font-mono text-[11px] text-ink-3"
+                  style={{ borderLeft: '2px solid var(--border)', background: 'var(--bg)' }}>
+                  <span className="min-w-[18px]">...</span>还有 {jsonPreviewData.decks.length - 5} 个
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <button onClick={handleCancelImport}
+              className="inline-flex items-center justify-center py-2.5 rounded-md font-body text-sm text-ink-2 border active:scale-[0.97] transition-transform"
+              style={{ borderColor: 'var(--border)' }}>
+              取消
+            </button>
+            <button onClick={handleConfirmJsonImport}
+              className="inline-flex items-center justify-center py-2.5 rounded-md font-body text-sm font-medium bg-ink text-bg active:scale-[0.97] transition-transform">
+              确认导入
+            </button>
+          </div>
+        </main>
+      </div>
+    )
   }
 
   // Preview mode

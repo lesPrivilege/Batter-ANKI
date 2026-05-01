@@ -4,6 +4,7 @@ export default function StatsBar({ stats }) {
   if (!stats) return null
 
   const maxCount = Math.max(1, ...stats.futureDistribution.map((d) => d.count))
+  const dailyGoal = stats.dailyLimit ? `${Math.min(stats.reviewedToday, stats.dailyLimit)}/${stats.dailyLimit}` : '7 天'
 
   const days = stats.futureDistribution.map((d) => {
     const dow = new Date(d.date).getDay()
@@ -11,7 +12,7 @@ export default function StatsBar({ stats }) {
   })
 
   return (
-    <div className="bg-bg-card border border-soft rounded-lg p-[18px] pt-[18px] relative overflow-hidden shadow-md"
+    <div className="bg-bg-card border border-border-soft rounded-lg p-[18px] pt-[18px] relative overflow-hidden shadow-md"
       style={{ borderColor: 'var(--border-soft)' }}>
       <div className="absolute top-0 left-[18px] right-[18px] h-px"
         style={{ background: 'linear-gradient(90deg, transparent, var(--accent-line), transparent)' }} />
@@ -21,7 +22,7 @@ export default function StatsBar({ stats }) {
         <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full"
           style={{ background: 'var(--accent-soft)', border: '1px solid var(--accent-line)' }}>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="var(--accent)"><path d="M12 2c0 0-5 4.5-5 9a5 5 0 0010 0c0-4.5-5-9-5-9zm0 12a2 2 0 110-4 2 2 0 010 4z"/></svg>
-          <span className="font-mono text-[11px] font-semibold text-accent tracking-wide">7 天</span>
+          <span className="font-mono text-[11px] font-semibold text-accent tracking-wide">{dailyGoal}</span>
         </div>
       </div>
 

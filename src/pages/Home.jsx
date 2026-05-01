@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import StatsBar from '../components/StatsBar'
-import { MnemosMark, SettingsIcon, PlusIcon, UploadIcon, CheckIcon, PinIcon } from '../components/Icons'
+import { MnemosMark, SettingsIcon, PlusIcon, UploadIcon, CheckIcon } from '../components/Icons'
 import { getAllDeckStats } from '../lib/scheduler'
-import { addDeck, deleteDecks, loadData, togglePin } from '../lib/storage'
-import { isRecall } from '../lib/cardUtils'
+import { addDeck, deleteDecks, getDailyLimit, togglePin } from '../lib/storage'
 
 export default function Home() {
   const [decks, setDecks] = useState([])
@@ -50,6 +49,16 @@ export default function Home() {
 
   const navigate = useNavigate()
   const sorted = [...decks].sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0))
+  const futureDistribution = decks.reduce((merged, deck) => {
+    if (merged.length === 0) {
+      return deck.futureDistribution.map((d) => ({ ...d }))
+    }
+    return merged.map((d, i) => ({
+      ...d,
+      count: d.count + (deck.futureDistribution[i]?.count || 0),
+    }))
+  }, [])
+  const dailyLimit = getDailyLimit()
 
   const DECK_COLORS = ['h0', 'h1', 'h2', 'h3']
 
@@ -73,8 +82,8 @@ export default function Home() {
                   Edit
                 </button>
               )}
-              <button onClick={() => navigate('/settings')} className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-ink-2 hover:bg-bg-raised hover:text-ink transition-colors">
-                <SettingsIcon />
+              <button onClick={() => navigate('/settings')} className="w-8 h-8 shrink-0 inline-flex items-center justify-center rounded-lg text-ink-2 hover:bg-bg-raised hover:text-ink transition-colors" aria-label="Settings">
+                <SettingsIcon size={18} />
               </button>
             </>
           )}
@@ -89,18 +98,8 @@ export default function Home() {
               reviewedToday: decks.reduce((sum, d) => sum + d.reviewedToday, 0),
               dueCount: decks.reduce((sum, d) => sum + d.dueCount, 0),
               total: decks.reduce((sum, d) => sum + d.totalCards, 0),
-              futureDistribution: (() => {
-                const data = loadData()
-                const allRecall = data.cards.filter(c => isRecall(c))
-                const dist = []
-                for (let i = 1; i <= 7; i++) {
-                  const d = new Date()
-                  d.setDate(d.getDate() + i)
-                  const ds = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
-                  dist.push({ date: ds, count: allRecall.filter(c => c.dueDate === ds).length })
-                }
-                return dist
-              })(),
+              futureDistribution,
+              dailyLimit,
             }} />
           )}
 

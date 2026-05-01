@@ -33,7 +33,10 @@ npm run dev        # http://localhost:5173
 ```bash
 npm run build
 npx cap sync android
-cd android && sed -i '' 's/VERSION_17/VERSION_21/' app/capacitor.build.gradle
+sed -i '' 's/VERSION_21/VERSION_17/g' android/app/capacitor.build.gradle
+sed -i '' 's/VERSION_21/VERSION_17/g' android/capacitor-cordova-android-plugins/build.gradle
+sed -i '' 's/VERSION_21/VERSION_17/g' node_modules/@capacitor/android/capacitor/build.gradle
+cd android
 ./gradlew assembleDebug
 # APK: android/app/build/outputs/apk/debug/app-debug.apk
 ```
@@ -44,16 +47,18 @@ cd android && sed -i '' 's/VERSION_17/VERSION_21/' app/capacitor.build.gradle
 src/
   pages/          Home, DeckDetail, Review, Browse, ImportPage, Settings, PromptGuide
   components/     ReviewCard, CardEditor, StatsBar, Icons
-  lib/            scheduler, mdParser, storage, formatSpec, renderMarkdown, sm2, utils
+  lib/            scheduler, mdParser, storage, formatSpec, renderMarkdown, sm2, utils, cardUtils, dateUtils
   styles/         index.css, markdown.css
-design/           mnemos-v2.html（权威设计稿）
-scripts/          gen-icons.mjs, ic_foreground.svg
+design/           mnemos-v2.html（权威设计稿）, anki-v1.html（旧稿）, MIMO/LLM 任务文档
+scripts/          gen-icons.mjs, gen-splash.mjs, ic_foreground.svg
 android/          Capacitor Android 工程
 ```
 
 ## 设计
 
 `design/mnemos-v2.html` 是权威设计稿，所有 UI 改动以此为基准。双主题（light parchment + dark blue-grey），11 屏交互原型。
+
+`design/anki-v1.html` 是旧版参考稿；`design/*.md` 记录 LLM prompt、解析器和 v0.7.0 任务说明。
 
 ## 制卡流程
 

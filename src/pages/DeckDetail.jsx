@@ -1,7 +1,7 @@
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useState, useEffect, useMemo } from 'react'
 import CardEditor from '../components/CardEditor'
-import { BackIcon, PinIcon, MoreIcon, LayersIcon, SparkIcon, UploadIcon, PlusIcon, SearchIcon } from '../components/Icons'
+import { BackIcon, PinIcon, MoreIcon, LayersIcon, SparkIcon, UploadIcon, PlusIcon, SearchIcon, EditIcon, TrashIcon } from '../components/Icons'
 import { isRecall } from '../lib/cardUtils'
 import { localToday } from '../lib/dateUtils'
 import { getDeck, getCards, addCard, updateCard, updateDeck, deleteCard, deleteCards, deleteDeck, togglePin, toggleStar } from '../lib/storage'
@@ -34,6 +34,7 @@ export default function DeckDetail() {
   const [filter, setFilter] = useState('all')
   const [editingName, setEditingName] = useState(false)
   const [nameInput, setNameInput] = useState('')
+  const [showDeckMenu, setShowDeckMenu] = useState(false)
 
   const refresh = () => {
     setDeck(getDeck(id))
@@ -173,10 +174,57 @@ export default function DeckDetail() {
                 className={`w-8 h-8 inline-flex items-center justify-center rounded-lg transition-colors ${deck.pinned ? 'text-accent' : 'text-ink-3'} hover:bg-bg-raised`}>
                 <PinIcon />
               </button>
-              <button onClick={handleDeleteDeck}
-                className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-ink-3 hover:bg-bg-raised hover:text-ink transition-colors">
-                <MoreIcon />
-              </button>
+              <div className="relative">
+                <button onClick={() => setShowDeckMenu((open) => !open)}
+                  className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-ink-3 hover:bg-bg-raised hover:text-ink transition-colors"
+                  aria-haspopup="menu"
+                  aria-expanded={showDeckMenu}>
+                  <MoreIcon />
+                </button>
+                {showDeckMenu && (
+                  <>
+                    <button className="fixed inset-0 z-10 cursor-default" onClick={() => setShowDeckMenu(false)} aria-label="Close menu" />
+                    <div className="absolute right-0 top-9 z-20 min-w-[168px] rounded-md bg-bg-card shadow-lg overflow-hidden"
+                      role="menu"
+                      style={{ border: '1px solid var(--border-soft)' }}>
+                      <button onClick={() => {
+                        setShowDeckMenu(false)
+                        setEditingName(true)
+                        setNameInput(deck.name)
+                      }}
+                        className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left text-[13px] font-body text-ink-2 hover:bg-bg-raised hover:text-ink transition-colors"
+                        role="menuitem">
+                        <EditIcon size={15} /> 重命名卡组
+                      </button>
+                      <button onClick={() => {
+                        setShowDeckMenu(false)
+                        togglePin(id)
+                        refresh()
+                      }}
+                        className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left text-[13px] font-body text-ink-2 hover:bg-bg-raised hover:text-ink transition-colors"
+                        role="menuitem">
+                        <PinIcon size={15} /> {deck.pinned ? '取消置顶' : '置顶卡组'}
+                      </button>
+                      <button onClick={() => {
+                        setShowDeckMenu(false)
+                        setEditing(true)
+                      }}
+                        className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left text-[13px] font-body text-ink-2 hover:bg-bg-raised hover:text-ink transition-colors"
+                        role="menuitem">
+                        <EditIcon size={15} /> 批量编辑卡片
+                      </button>
+                      <button onClick={() => {
+                        setShowDeckMenu(false)
+                        handleDeleteDeck()
+                      }}
+                        className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left text-[13px] font-body text-danger hover:bg-bg-raised transition-colors"
+                        role="menuitem">
+                        <TrashIcon size={15} /> 删除卡组
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
             </>
           )}
         </div>

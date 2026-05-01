@@ -3,6 +3,7 @@
 import { localToday } from './dateUtils'
 
 const STORAGE_KEY = 'mnemos-data'
+export const DAILY_LIMIT_KEY = 'mnemos-daily-limit'
 
 function getDefaultData() {
   return { decks: [], cards: [] }
@@ -19,6 +20,22 @@ export function loadData() {
 
 export function saveData(data) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+}
+
+function normalizeData(data) {
+  if (!data || !Array.isArray(data.decks) || !Array.isArray(data.cards)) {
+    throw new Error('Invalid format')
+  }
+  return {
+    decks: data.decks,
+    cards: data.cards,
+  }
+}
+
+export function getDailyLimit() {
+  const value = localStorage.getItem(DAILY_LIMIT_KEY)
+  const parsed = Number.parseInt(value, 10)
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null
 }
 
 // --- Deck CRUD ---
@@ -135,8 +152,57 @@ export function exportData() {
 }
 
 export function importData(jsonString) {
-  const data = JSON.parse(jsonString)
-  if (!data.decks || !data.cards) throw new Error('Invalid format')
+  const data = typeof jsonString === 'string' ? JSON.parse(jsonString) : jsonString
+  saveData(normalizeData(data))
+}
+
+export function parseImportData(jsonString) {
+  return normalizeData(JSON.parse(jsonString))
+}
+
+export function mergeData(importedData) {
+  const imported = normalizeData(importedData)
+  const data = loadData()
+  const now = new Date().toISOString()
+  const existingDeckIds = new Set(data.decks.map((deck) => deck.id))
+  const existingCardIds = new Set(data.cards.map((card) => card.id))
+  const deckIdMap = new Map()
+
+  for (const deck of imported.decks) {
+    const sourceId = deck.id || crypto.randomUUID()
+    const id = existingDeckIds.has(sourceId) ? crypto.randomUUID() : sourceId
+    existingDeckIds.add(id)
+    deckIdMap.set(sourceId, id)
+    data.decks.push({
+      ...deck,
+      id,
+      name: deck.name || 'Imported Deck',
+      pinned: deck.pinned ?? false,
+      createdAt: deck.createdAt || now,
+    })
+  }
+
+  for (const card of imported.cards) {
+    const sourceId = card.id || crypto.randomUUID()
+    const id = existingCardIds.has(sourceId) ? crypto.randomUUID() : sourceId
+    const deckId = deckIdMap.get(card.deckId) || card.deckId
+    if (!existingDeckIds.has(deckId)) continue
+    existingCardIds.add(id)
+    data.cards.push({
+      ...card,
+      id,
+      deckId,
+      type: card.type || 'recall',
+      easiness: card.easiness ?? 2.5,
+      interval: card.interval ?? 0,
+      repetitions: card.repetitions ?? 0,
+      starred: card.starred ?? false,
+      dueDate: card.dueDate || localToday(),
+      createdAt: card.createdAt || now,
+      updatedAt: card.updatedAt || now,
+    })
+  }
+
   saveData(data)
 }
 

@@ -5,31 +5,89 @@ import 'katex/dist/katex.min.css'
 
 marked.use({ breaks: true, gfm: true })
 
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+function renderKatex(latex, displayMode = false) {
+  try {
+    return katex.renderToString(latex, { displayMode, output: 'html', throwOnError: false })
+  } catch {
+    return `<code class="katex-error">${escapeHtml(latex)}</code>`
+  }
+}
+
 marked.use({
+  extensions: [
+    {
+      name: 'mathBlock',
+      level: 'block',
+      start(src) {
+        return src.match(/\$\$/)?.index
+      },
+      tokenizer(src) {
+        const match = src.match(/^\$\$[ \t]*\n?([\s\S]+?)\n?\$\$(?:\n|$)/)
+        if (!match) return false
+        const latex = match[1].trim()
+        if (!latex) return false
+        return {
+          type: 'mathBlock',
+          raw: match[0],
+          text: latex,
+        }
+      },
+      renderer(token) {
+        return `<div class="katex-display">${renderKatex(token.text, true)}</div>`
+      },
+    },
+    {
+      name: 'mathInline',
+      level: 'inline',
+      start(src) {
+        return src.match(/\$/)?.index
+      },
+      tokenizer(src) {
+        if (src.startsWith('$$')) return false
+
+        const match = src.match(/^\$([^\s$](?:\\.|[^$])*?)\$(?![\d])/)
+        if (!match) return false
+
+        const latex = match[1].trim()
+        if (!latex) return false
+
+        return {
+          type: 'mathInline',
+          raw: match[0],
+          text: latex,
+        }
+      },
+      renderer(token) {
+        return renderKatex(token.text)
+      },
+    },
+  ],
   renderer: {
     codespan({ text }) {
       const trimmed = text.trim()
       if (trimmed.startsWith('$') && trimmed.endsWith('$') && trimmed.length >= 2) {
         const latex = trimmed.slice(1, -1).trim()
-        try {
-          return katex.renderToString(latex, { output: 'html', throwOnError: false })
-        } catch {
-          return `<code class="katex-error">${latex}</code>`
-        }
+        return renderKatex(latex)
       }
-      return `<code>${text}</code>`
+      return `<code>${escapeHtml(text)}</code>`
     },
     code({ text, lang }) {
       const trimmed = text.trim()
       if (trimmed.startsWith('$$') && trimmed.endsWith('$$') && trimmed.length >= 4) {
         const latex = trimmed.slice(2, -2).trim()
-        try {
-          return `<div class="katex-display">${katex.renderToString(latex, { displayMode: true, throwOnError: false })}</div>`
-        } catch {
-          return `<pre><code class="katex-error">${latex}</code></pre>`
-        }
+        return `<div class="katex-display">${renderKatex(latex, true)}</div>`
       }
-      return `<pre><code${lang ? ` class="language-${lang}"` : ''}>${text}</code></pre>`
+      const language = lang ? String(lang).replace(/[^a-zA-Z0-9_-]/g, '') : ''
+      return `<pre><code${language ? ` class="language-${language}"` : ''}>${escapeHtml(text)}</code></pre>`
     },
   },
 })
