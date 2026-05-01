@@ -152,6 +152,15 @@ export default function DeckDetail() {
               Review
             </Link>
             {cards.length > 0 && (
+              <Link
+                to={`/browse/${id}`}
+                className="px-4 py-2.5 rounded-lg font-medium text-sm font-ui
+                  border border-border text-ink active:scale-[0.97] transition-transform"
+              >
+                Browse
+              </Link>
+            )}
+            {cards.length > 0 && (
               <button
                 onClick={() => setEditing(true)}
                 className="px-4 py-2.5 rounded-lg font-medium text-sm font-ui

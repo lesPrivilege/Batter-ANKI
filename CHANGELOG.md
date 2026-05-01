@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.6.0 — 2026-05-01 (rename + browse)
+
+**改动：**
+- App 名称从 MiniSRS 改为 Mnemos
+- 新增 Browse 页面（/browse/:id）：浏览牌组全部卡片，不影响 SM-2 调度
+- DeckDetail 新增 Browse 按钮
+
+---
+
 ## v0.5.0 — 2026-05-01 (markdown + latex)
 
 **新增：** 卡片正反面支持 Markdown 和 LaTeX 渲染
