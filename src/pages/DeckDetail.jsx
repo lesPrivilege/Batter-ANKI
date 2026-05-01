@@ -1,10 +1,10 @@
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useState, useEffect, useMemo } from 'react'
 import CardEditor from '../components/CardEditor'
-import { BackIcon, PinIcon, MoreIcon, LayersIcon, SparkIcon, UploadIcon, PlusIcon, SearchIcon, EditIcon, TrashIcon } from '../components/Icons'
+import { BackIcon, PinIcon, MoreIcon, LayersIcon, SparkIcon, UploadIcon, PlusIcon, SearchIcon, EditIcon, TrashIcon, DownloadIcon } from '../components/Icons'
 import { isRecall } from '../lib/cardUtils'
 import { localToday } from '../lib/dateUtils'
-import { getDeck, getCards, addCard, updateCard, updateDeck, deleteCard, deleteCards, deleteDeck, togglePin, toggleStar } from '../lib/storage'
+import { getDeck, getCards, addCard, updateCard, updateDeck, deleteCard, deleteCards, deleteDeck, togglePin, toggleStar, exportDeck } from '../lib/storage'
 
 function buildOutline(cards) {
   const map = new Map()
@@ -201,6 +201,22 @@ export default function DeckDetail() {
                     className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left text-[13px] font-body text-ink-2 hover:bg-bg-raised hover:text-ink transition-colors"
                     role="menuitem">
                     <EditIcon size={15} /> {editing ? '完成编辑' : '批量编辑卡片'}
+                  </button>
+                  <button onClick={() => {
+                    setShowDeckMenu(false)
+                    const json = exportDeck(id)
+                    if (!json) return
+                    const blob = new Blob([json], { type: 'application/json' })
+                    const url = URL.createObjectURL(blob)
+                    const a = document.createElement('a')
+                    a.href = url
+                    a.download = `${deck.name || 'deck'}.json`
+                    a.click()
+                    URL.revokeObjectURL(url)
+                  }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left text-[13px] font-body text-ink-2 hover:bg-bg-raised hover:text-ink transition-colors"
+                    role="menuitem">
+                    <DownloadIcon size={15} /> 导出卡组
                   </button>
                   <button onClick={() => {
                     setShowDeckMenu(false)

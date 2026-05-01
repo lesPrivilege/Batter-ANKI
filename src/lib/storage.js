@@ -151,6 +151,14 @@ export function exportData() {
   return JSON.stringify(loadData(), null, 2)
 }
 
+export function exportDeck(deckId) {
+  const data = loadData()
+  const deck = data.decks.find((d) => d.id === deckId)
+  if (!deck) return null
+  const cards = data.cards.filter((c) => c.deckId === deckId)
+  return JSON.stringify({ decks: [deck], cards }, null, 2)
+}
+
 export function importData(jsonString) {
   const data = typeof jsonString === 'string' ? JSON.parse(jsonString) : jsonString
   saveData(normalizeData(data))
