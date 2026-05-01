@@ -90,7 +90,8 @@ export default function Home() {
   const processMdContent = (mdContent, defaultDeckName) => {
     const cards = parseMdToCards(mdContent, defaultDeckName)
     if (cards.length === 0) {
-      alert('No cards found in the markdown. Check the FORMAT.md structure.')
+      alert('未识别到卡片。请确认 .md 格式是否符合格式要求。')
+      window.location.hash = '#/prompt-guide'
       return
     }
     const deckName = prompt(`Import ${cards.length} card(s). Enter deck name:`, defaultDeckName)
@@ -261,12 +262,6 @@ export default function Home() {
               >
                 Import
               </button>
-              <p className="text-center text-xs text-ink-2/60 mt-1.5">
-                支持 .md 和 .json ·{' '}
-                <Link to="/prompt-guide" className="text-accent underline">
-                  如何制作 .md？
-                </Link>
-              </p>
             </div>
 
             {/* Paste .md button */}
@@ -276,12 +271,15 @@ export default function Home() {
                 className="w-full py-2.5 rounded-lg font-ui text-sm text-ink-2
                   border border-border active:scale-[0.97] transition-transform"
               >
-                {showPasteMd ? 'Cancel' : 'Paste .md'}
+                {showPasteMd ? 'Cancel' : 'Paste'}
               </button>
             </div>
 
             {showPasteMd && (
               <div className="px-4 pt-2">
+                <p className="text-xs text-ink-2 mb-1.5">
+                  粘贴符合格式的 markdown · <Link to="/prompt-guide" className="text-accent">查看格式说明</Link>
+                </p>
                 <textarea
                   ref={pasteTextareaRef}
                   value={pasteMdText}
