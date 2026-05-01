@@ -1,5 +1,28 @@
 # Changelog
 
+## v1.0.3 — 2026-05-01 (card container + click target)
+
+**修复：**
+- 卡片容器不显示：将 bg/border/shadow 从 3D flip faces 内移出到外层 wrapper，避免 rotateY stacking context 吞掉背景
+- 翻卡点击区域：onClick 移到最外层 card container，整个卡片矩形区域可点击
+- Java 兼容性：capacitor.build.gradle VERSION_17 → VERSION_21
+
+**新增：**
+- README.md、ROADMAP.md
+
+---
+
+## v1.0.2 — 2026-05-01 (adaptive icon centering)
+
+**修复：**
+- Android adaptive icon：M mark 重新居中（translateX=22, translateY=23），补偿 V chevron 视觉重量
+- 描边加粗：outer M 5→6dp，inner V 3→4dp
+- sharp 渲染参数：lanczos3 kernel + compressionLevel:0
+- 背景色统一 #FAF8F5（values XML + PNG）
+- 新增 scripts/ic_foreground.svg 作为 icon 前景单一来源
+
+---
+
 ## v1.0.1 — 2026-05-01 (bug fixes + UI audit)
 
 **修复：**
