@@ -130,7 +130,7 @@ export default function DeckDetail() {
               className="text-sm shrink-0 px-2 py-1 rounded active:scale-[0.97]"
               title={deck.pinned ? 'Unpin' : 'Pin'}
             >
-              {deck.pinned ? '📌' : '△'}
+              {deck.pinned ? '▲' : '△'}
             </button>
             <button
               onClick={handleDeleteDeck}

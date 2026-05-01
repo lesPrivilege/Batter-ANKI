@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.6.1 — 2026-05-01 (fixes)
+
+**修复：**
+- 修复首页点击卡组无法进入 DeckDetail 的 regression
+- 按钮可见性：Review 按钮加 border，Confirm 按钮改实心背景
+- 置顶标记从 📌 emoji 改为 ▲ 纯文字
+
+---
+
 ## v0.5.1 — 2026-05-01 (navigation + quick review)
 
 **改动：**

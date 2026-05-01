@@ -147,31 +147,32 @@ export default function Home() {
                   </div>
                 </button>
               ) : (
-                <div
+                <Link
+                  to={`/deck/${deck.id}`}
                   key={deck.id}
                   className="flex justify-between items-center p-4 rounded-lg border border-border bg-bg-card
                     active:bg-bg-raised transition-colors"
                 >
-                  <Link to={`/deck/${deck.id}`} className="flex-1 min-w-0">
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
                       <span className="text-base font-ui font-medium text-ink truncate">{deck.name}</span>
-                      {deck.pinned && <span className="text-xs">📌</span>}
+                      {deck.pinned && <span className="text-xs">▲</span>}
                     </div>
                     <div className="text-sm text-ink-2 mt-1">
                       {deck.dueCount} due &middot; {deck.totalCards} total
                     </div>
-                  </Link>
+                  </div>
                   <div className="flex items-center gap-1 shrink-0 ml-2">
                     <button
-                      onClick={(e) => { e.stopPropagation(); togglePin(deck.id); refresh() }}
+                      onClick={(e) => { e.stopPropagation(); e.preventDefault(); togglePin(deck.id); refresh() }}
                       className="text-xs px-1.5 py-1 rounded text-ink-2 active:scale-[0.97] transition-transform"
                       title={deck.pinned ? 'Unpin' : 'Pin'}
                     >
-                      {deck.pinned ? '📌' : '△'}
+                      {deck.pinned ? '▲' : '△'}
                     </button>
                     {deck.dueCount > 0 ? (
                       <button
-                        onClick={(e) => { e.stopPropagation(); navigate(`/review/${deck.id}`) }}
+                        onClick={(e) => { e.stopPropagation(); e.preventDefault(); navigate(`/review/${deck.id}`) }}
                         className="text-xs px-2 py-1 rounded bg-accent text-white shrink-0
                           active:scale-[0.97] transition-transform"
                       >
@@ -181,7 +182,7 @@ export default function Home() {
                       <span className="text-xs text-success">✓</span>
                     )}
                   </div>
-                </div>
+                </Link>
               )
             ))
           )}
