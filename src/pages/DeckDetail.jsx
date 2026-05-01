@@ -103,23 +103,23 @@ export default function DeckDetail() {
 
   if (!deck) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-bg-primary text-text-secondary">
+      <div className="flex items-center justify-center min-h-screen bg-bg text-ink-2">
         Deck not found
       </div>
     )
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-bg-primary">
+    <div className="flex flex-col min-h-screen bg-bg">
       {/* Header */}
       <header className="sticky top-0 z-10 flex items-center px-4 h-12
-        bg-bg-surface border-b border-border">
-        <Link to="/" className="text-text-secondary text-sm mr-3">←</Link>
-        <h1 className="flex-1 text-lg font-display font-bold text-text-primary truncate">
+        bg-bg-card border-b border-border">
+        <Link to="/" className="text-ink-2 text-sm mr-3">←</Link>
+        <h1 className="flex-1 text-lg font-serif font-bold text-ink truncate">
           {deck.name}
         </h1>
         {editing ? (
-          <button onClick={exitEdit} className="text-sm text-text-secondary shrink-0">
+          <button onClick={exitEdit} className="text-sm text-ink-2 shrink-0">
             Done
           </button>
         ) : (
@@ -139,14 +139,14 @@ export default function DeckDetail() {
           <div className="flex gap-2">
             <button
               onClick={() => { setShowEditor(!showEditor); setEditingCard(null) }}
-              className="flex-1 py-2.5 rounded-lg font-medium text-sm font-body
+              className="flex-1 py-2.5 rounded-lg font-medium text-sm font-ui
                 border border-accent text-accent active:scale-[0.97] transition-transform"
             >
               {showEditor ? 'Close' : '+ New Card'}
             </button>
             <Link
               to={`/review/${id}`}
-              className="px-4 py-2.5 rounded-lg font-medium text-sm font-body
+              className="px-4 py-2.5 rounded-lg font-medium text-sm font-ui
                 border border-success text-success active:scale-[0.97] transition-transform"
             >
               Review
@@ -154,8 +154,8 @@ export default function DeckDetail() {
             {cards.length > 0 && (
               <button
                 onClick={() => setEditing(true)}
-                className="px-4 py-2.5 rounded-lg font-medium text-sm font-body
-                  border border-border text-text-secondary active:scale-[0.97] transition-transform"
+                className="px-4 py-2.5 rounded-lg font-medium text-sm font-ui
+                  border border-border text-ink-2 active:scale-[0.97] transition-transform"
               >
                 Edit
               </button>
@@ -165,7 +165,7 @@ export default function DeckDetail() {
 
         {/* Editor */}
         {showEditor && (
-          <div className="p-4 rounded-lg border border-border bg-bg-surface">
+          <div className="p-4 rounded-lg border border-border bg-bg-card">
             <CardEditor onSave={handleAdd} onCancel={() => setShowEditor(false)} />
           </div>
         )}
@@ -176,7 +176,7 @@ export default function DeckDetail() {
             {selected.size > 0 && (
               <button
                 onClick={handleBatchDelete}
-                className="flex-1 py-2.5 rounded-lg font-body text-sm text-danger
+                className="flex-1 py-2.5 rounded-lg font-ui text-sm text-danger
                   border border-danger/30 active:scale-[0.97] transition-transform"
               >
                 Delete ({selected.size})
@@ -190,7 +190,7 @@ export default function DeckDetail() {
                 setEditing(false)
                 refresh()
               }}
-              className="flex-1 py-2.5 rounded-lg font-body text-sm text-danger
+              className="flex-1 py-2.5 rounded-lg font-ui text-sm text-danger
                 border border-danger/30 active:scale-[0.97] transition-transform"
             >
               Delete All
@@ -200,7 +200,7 @@ export default function DeckDetail() {
 
         {/* Outline view */}
         {cards.length === 0 ? (
-          <p className="text-center text-text-secondary py-8 text-sm">
+          <p className="text-center text-ink-2 py-8 text-sm">
             No cards yet.
           </p>
         ) : (
@@ -216,15 +216,15 @@ export default function DeckDetail() {
                   <button
                     onClick={() => toggleChapter(chapterKey)}
                     className="w-full flex items-center gap-2 py-2 px-2 rounded-lg
-                      text-left hover:bg-bg-elevated transition-colors"
+                      text-left hover:bg-bg-raised transition-colors"
                   >
-                    <span className="text-text-secondary text-xs w-4 text-center shrink-0">
+                    <span className="text-ink-2 text-xs w-4 text-center shrink-0">
                       {isChapterOpen ? '▼' : '▶'}
                     </span>
-                    <span className="font-medium text-text-primary text-sm font-body flex-1 truncate">
+                    <span className="font-medium text-ink text-sm font-ui flex-1 truncate">
                       {chapter || '未分类'}
                     </span>
-                    <span className="text-xs text-text-secondary font-display shrink-0">
+                    <span className="text-xs text-ink-2 font-serif shrink-0">
                       {chapterCount}
                     </span>
                   </button>
@@ -264,15 +264,15 @@ export default function DeckDetail() {
                             <button
                               onClick={() => toggleSection(sectionKey)}
                               className="w-full flex items-center gap-2 py-1.5 px-2 rounded-lg
-                                text-left hover:bg-bg-elevated transition-colors"
+                                text-left hover:bg-bg-raised transition-colors"
                             >
-                              <span className="text-text-secondary text-xs w-4 text-center shrink-0">
+                              <span className="text-ink-2 text-xs w-4 text-center shrink-0">
                                 {isSectionOpen ? '▼' : '▶'}
                               </span>
-                              <span className="text-text-secondary text-sm font-body flex-1 truncate">
+                              <span className="text-ink-2 text-sm font-ui flex-1 truncate">
                                 {section}
                               </span>
-                              <span className="text-xs text-text-secondary font-display shrink-0">
+                              <span className="text-xs text-ink-2 font-serif shrink-0">
                                 {sectionCards.length}
                               </span>
                             </button>
@@ -325,7 +325,7 @@ function CardRow({ card, editing, selected, onToggleSelect, onEdit, onDelete, is
       <div
         onClick={onToggleSelect}
         className={`flex items-center gap-2 py-2 px-2 rounded-lg cursor-pointer transition-colors
-          ${selected ? 'bg-accent/5 border border-accent' : 'border border-border hover:bg-bg-elevated'}`}
+          ${selected ? 'bg-accent/5 border border-accent' : 'border border-border hover:bg-bg-raised'}`}
       >
         <div className={`w-4 h-4 rounded border shrink-0 flex items-center justify-center
           ${selected ? 'bg-accent border-accent' : 'border-border'}`}>
@@ -335,9 +335,9 @@ function CardRow({ card, editing, selected, onToggleSelect, onEdit, onDelete, is
             </svg>
           )}
         </div>
-        <span className="text-sm text-text-primary truncate flex-1">{card.front}</span>
+        <span className="text-sm text-ink truncate flex-1">{card.front}</span>
         {(card.type || 'recall') === 'reference' && (
-          <span className="text-[10px] px-1.5 py-0.5 rounded border border-text-secondary/30 text-text-secondary shrink-0">ref</span>
+          <span className="text-[10px] px-1.5 py-0.5 rounded border border-ink-2/30 text-ink-2 shrink-0">ref</span>
         )}
       </div>
     )
@@ -345,15 +345,15 @@ function CardRow({ card, editing, selected, onToggleSelect, onEdit, onDelete, is
 
   return (
     <div className="flex items-center gap-2 py-2 px-2 rounded-lg
-      hover:bg-bg-elevated transition-colors group">
-      <span className="text-sm text-text-primary truncate flex-1">{card.front}</span>
+      hover:bg-bg-raised transition-colors group">
+      <span className="text-sm text-ink truncate flex-1">{card.front}</span>
       {(card.type || 'recall') === 'reference' && (
-        <span className="text-[10px] px-1.5 py-0.5 rounded border border-text-secondary/30 text-text-secondary shrink-0">ref</span>
+        <span className="text-[10px] px-1.5 py-0.5 rounded border border-ink-2/30 text-ink-2 shrink-0">ref</span>
       )}
       <div className="flex gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
         <button
           onClick={onEdit}
-          className="text-xs px-1.5 py-0.5 rounded border border-border text-text-secondary"
+          className="text-xs px-1.5 py-0.5 rounded border border-border text-ink-2"
         >
           Edit
         </button>

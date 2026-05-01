@@ -89,28 +89,28 @@ export default function Home() {
   }, [dark])
 
   return (
-    <div className="flex flex-col min-h-screen bg-bg-primary">
+    <div className="flex flex-col min-h-screen bg-bg">
       {/* Header */}
       <header className="sticky top-0 z-10 flex items-center justify-between px-4 h-12
-        bg-bg-surface border-b border-border shrink-0">
-        <h1 className="text-lg font-display font-bold text-text-primary">MiniSRS</h1>
+        bg-bg-card border-b border-border shrink-0">
+        <h1 className="text-lg font-serif font-bold text-ink">MiniSRS</h1>
         <div className="flex items-center gap-3">
           {editing ? (
-            <button onClick={exitEdit} className="text-sm text-text-secondary active:scale-[0.97]">
+            <button onClick={exitEdit} className="text-sm text-ink-2 active:scale-[0.97]">
               Done
             </button>
           ) : (
             <>
               <button
                 onClick={() => setDark(!dark)}
-                className="text-sm text-text-secondary active:scale-[0.97] transition-transform"
+                className="text-sm text-ink-2 active:scale-[0.97] transition-transform"
               >
                 {dark ? '\u2600' : '\u263E'}
               </button>
               {decks.length > 0 && (
                 <button
                   onClick={() => setEditing(true)}
-                  className="text-sm text-text-secondary active:scale-[0.97]"
+                  className="text-sm text-ink-2 active:scale-[0.97]"
                 >
                   Edit
                 </button>
@@ -146,7 +146,7 @@ export default function Home() {
         <div className="px-4 pt-4 space-y-2">
           {decks.length === 0 ? (
             <div className="py-12 text-center">
-              <span className="text-sm text-text-secondary">No decks yet.</span>
+              <span className="text-sm text-ink-2">No decks yet.</span>
             </div>
           ) : (
             decks.map((deck) => (
@@ -154,7 +154,7 @@ export default function Home() {
                 <button
                   key={deck.id}
                   onClick={() => toggleSelect(deck.id)}
-                  className={`w-full flex items-center gap-3 p-4 rounded-lg border bg-bg-surface
+                  className={`w-full flex items-center gap-3 p-4 rounded-lg border bg-bg-card
                     transition-colors text-left
                     ${selected.has(deck.id) ? 'border-accent bg-accent/5' : 'border-border'}`}
                 >
@@ -167,8 +167,8 @@ export default function Home() {
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-base font-body font-medium text-text-primary truncate">{deck.name}</div>
-                    <div className="text-sm text-text-secondary mt-1">
+                    <div className="text-base font-ui font-medium text-ink truncate">{deck.name}</div>
+                    <div className="text-sm text-ink-2 mt-1">
                       {deck.dueCount} due &middot; {deck.totalCards} total
                     </div>
                   </div>
@@ -177,16 +177,16 @@ export default function Home() {
                 <Link
                   key={deck.id}
                   to={`/deck/${deck.id}`}
-                  className="flex justify-between items-center p-4 rounded-lg border border-border bg-bg-surface
-                    active:bg-bg-elevated transition-colors"
+                  className="flex justify-between items-center p-4 rounded-lg border border-border bg-bg-card
+                    active:bg-bg-raised transition-colors"
                 >
                   <div>
-                    <div className="text-base font-body font-medium text-text-primary">{deck.name}</div>
-                    <div className="text-sm text-text-secondary mt-1">
+                    <div className="text-base font-ui font-medium text-ink">{deck.name}</div>
+                    <div className="text-sm text-ink-2 mt-1">
                       {deck.dueCount} due &middot; {deck.totalCards} total
                     </div>
                   </div>
-                  <span className="text-text-secondary text-sm shrink-0 ml-2">→</span>
+                  <span className="text-ink-2 text-sm shrink-0 ml-2">→</span>
                 </Link>
               )
             ))
@@ -199,7 +199,7 @@ export default function Home() {
             {selected.size > 0 && (
               <button
                 onClick={handleBatchDelete}
-                className="flex-1 py-2.5 rounded-lg font-body text-sm text-danger
+                className="flex-1 py-2.5 rounded-lg font-ui text-sm text-danger
                   border border-danger/30 active:scale-[0.97] transition-transform"
               >
                 Delete ({selected.size})
@@ -213,7 +213,7 @@ export default function Home() {
                 setEditing(false)
                 refresh()
               }}
-              className="flex-1 py-2.5 rounded-lg font-body text-sm text-danger
+              className="flex-1 py-2.5 rounded-lg font-ui text-sm text-danger
                 border border-danger/30 active:scale-[0.97] transition-transform"
             >
               Delete All
@@ -227,14 +227,14 @@ export default function Home() {
             <div className="px-4 pt-4 flex gap-2">
               <button
                 onClick={handleExport}
-                className="flex-1 py-2.5 rounded-lg font-body text-sm text-text-secondary
+                className="flex-1 py-2.5 rounded-lg font-ui text-sm text-ink-2
                   border border-border active:scale-[0.97] transition-transform"
               >
                 Export
               </button>
               <button
                 onClick={handleImport}
-                className="flex-1 py-2.5 rounded-lg font-body text-sm text-text-secondary
+                className="flex-1 py-2.5 rounded-lg font-ui text-sm text-ink-2
                   border border-border active:scale-[0.97] transition-transform"
               >
                 Import
@@ -249,13 +249,13 @@ export default function Home() {
                     onChange={(e) => setNewDeckName(e.target.value)}
                     placeholder="Deck name"
                     autoFocus
-                    className="flex-1 px-3 py-2.5 rounded-lg border border-border bg-bg-surface text-text-primary
-                      font-body text-sm placeholder:text-text-secondary/50
+                    className="flex-1 px-3 py-2.5 rounded-lg border border-border bg-bg-card text-ink
+                      font-ui text-sm placeholder:text-ink-2/50
                       focus:outline-none focus:border-accent"
                   />
                   <button
                     type="submit"
-                    className="px-4 py-2.5 rounded-lg font-medium text-sm font-body
+                    className="px-4 py-2.5 rounded-lg font-medium text-sm font-ui
                       border border-accent text-accent
                       active:scale-[0.97] transition-transform
                       disabled:opacity-40"
@@ -266,8 +266,8 @@ export default function Home() {
                   <button
                     type="button"
                     onClick={() => { setShowNewDeck(false); setNewDeckName('') }}
-                    className="px-4 py-2.5 rounded-lg font-body text-sm
-                      border border-border text-text-secondary
+                    className="px-4 py-2.5 rounded-lg font-ui text-sm
+                      border border-border text-ink-2
                       active:scale-[0.97] transition-transform"
                   >
                     Cancel
@@ -276,7 +276,7 @@ export default function Home() {
               ) : (
                 <button
                   onClick={() => setShowNewDeck(true)}
-                  className="w-full py-3 rounded-lg font-body text-base font-medium text-accent
+                  className="w-full py-3 rounded-lg font-ui text-base font-medium text-accent
                     border border-border active:scale-[0.97] transition-transform"
                 >
                   + New Deck

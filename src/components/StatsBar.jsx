@@ -13,10 +13,10 @@ export default function StatsBar({ stats }) {
   })
 
   return (
-    <div className="p-4 rounded-lg border border-border bg-bg-surface">
+    <div className="p-4 rounded-lg border border-border bg-bg-card">
       {/* Summary line */}
       <div className="flex justify-between items-baseline mb-3">
-        <span className="text-sm font-body text-text-secondary">
+        <span className="text-sm font-ui text-ink-2">
           Today: {stats.reviewedToday} reviewed &middot; {stats.dueCount} due
         </span>
       </div>
@@ -26,13 +26,13 @@ export default function StatsBar({ stats }) {
         {days.map((day) => (
           <div key={day.date} className="flex-1 flex flex-col items-center gap-0.5">
             <div
-              className="w-full bg-accent-muted rounded-t-sm transition-all"
+              className="w-full bg-accent-bg rounded-t-sm transition-all"
               style={{
                 height: `${(day.count / maxCount) * 100}%`,
                 minHeight: day.count > 0 ? '4px' : '0',
               }}
             />
-            <span className="text-xs font-body text-text-secondary">{day.label}</span>
+            <span className="text-xs font-ui text-ink-2">{day.label}</span>
           </div>
         ))}
       </div>

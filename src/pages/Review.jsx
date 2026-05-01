@@ -34,20 +34,20 @@ export default function Review() {
   // Done screen
   if (dueCards.length === 0) {
     return (
-      <div className="flex flex-col min-h-screen bg-bg-primary">
+      <div className="flex flex-col min-h-screen bg-bg">
         <header className="sticky top-0 z-10 flex items-center px-4 h-12
-          bg-bg-surface border-b border-border">
-          <Link to="/" className="text-text-secondary text-sm">\u2190</Link>
+          bg-bg-card border-b border-border">
+          <Link to="/" className="text-ink-2 text-sm">\u2190</Link>
         </header>
         <div className="flex-1 flex flex-col items-center justify-center gap-4 p-4">
           <div className="text-4xl text-success">&#10003;</div>
-          <h1 className="text-xl font-display font-bold text-text-primary">
+          <h1 className="text-xl font-display font-bold text-ink">
             Done
           </h1>
           <div className="flex gap-2 mt-2">
             <Link
               to={`/deck/${id}`}
-              className="px-6 py-2 rounded-lg border border-border text-text-secondary font-medium text-sm font-body
+              className="px-6 py-2 rounded-lg border border-border text-ink-2 font-medium text-sm font-body
                 active:scale-[0.97] transition-transform"
             >
               Back to deck
@@ -69,12 +69,12 @@ export default function Review() {
   const remaining = dueCards.length - currentIndex
 
   return (
-    <div className="flex flex-col min-h-screen bg-bg-primary">
+    <div className="flex flex-col min-h-screen bg-bg">
       {/* Header */}
       <header className="sticky top-0 z-10 flex items-center justify-between px-4 h-12
-        bg-bg-surface border-b border-border">
-        <Link to="/" className="text-text-secondary text-sm">\u2190</Link>
-        <span className="text-xs text-text-secondary font-display">
+        bg-bg-card border-b border-border">
+        <Link to="/" className="text-ink-2 text-sm">\u2190</Link>
+        <span className="text-xs text-ink-2 font-display">
           {currentIndex + 1} / {dueCards.length}
         </span>
         <span className="w-6" />
@@ -98,34 +98,34 @@ export default function Review() {
         <button
           onClick={() => handleRate(1)}
           className="flex-1 py-3 rounded-lg font-medium text-sm font-body border transition-all active:scale-[0.97]
-            bg-danger/15 text-danger border-danger/30"
+            bg-danger-bg text-danger border-danger/30"
         >
           <span className="block">Again</span>
-          <span className="block text-[10px] text-text-secondary mt-0.5">{predictInterval(card, 1)}d</span>
+          <span className="block text-[10px] text-ink-2 mt-0.5">{predictInterval(card, 1)}d</span>
         </button>
         <button
           onClick={() => handleRate(2)}
           className="flex-1 py-3 rounded-lg font-medium text-sm font-body border transition-all active:scale-[0.97]
-            bg-warning/15 text-warning border-warning/30"
+            bg-warning-bg text-warning border-warning/30"
         >
           <span className="block">Hard</span>
-          <span className="block text-[10px] text-text-secondary mt-0.5">{predictInterval(card, 2)}d</span>
+          <span className="block text-[10px] text-ink-2 mt-0.5">{predictInterval(card, 2)}d</span>
         </button>
         <button
           onClick={() => handleRate(4)}
           className="flex-1 py-3 rounded-lg font-medium text-sm font-body border transition-all active:scale-[0.97]
-            bg-accent/15 text-accent border-accent/30"
+            bg-accent-bg text-accent border-accent/30"
         >
           <span className="block">Good</span>
-          <span className="block text-[10px] text-text-secondary mt-0.5">{predictInterval(card, 4)}d</span>
+          <span className="block text-[10px] text-ink-2 mt-0.5">{predictInterval(card, 4)}d</span>
         </button>
         <button
           onClick={() => handleRate(5)}
           className="flex-1 py-3 rounded-lg font-medium text-sm font-body border transition-all active:scale-[0.97]
-            bg-success/15 text-success border-success/30"
+            bg-success-bg text-success border-success/30"
         >
           <span className="block">Easy</span>
-          <span className="block text-[10px] text-text-secondary mt-0.5">{predictInterval(card, 5)}d</span>
+          <span className="block text-[10px] text-ink-2 mt-0.5">{predictInterval(card, 5)}d</span>
         </button>
       </div>
     </div>

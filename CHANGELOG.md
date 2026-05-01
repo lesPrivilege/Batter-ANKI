@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.3.0 — 2026-05-01 (design migration)
+
+**设计迁移：** anki.html → Tailwind 项目
+
+**改动：**
+- `index.css`: 色板从蓝灰 (hue 260) 迁移到暖棕 (hue 60)，新增 shadow/radius 变量
+- `tailwind.config.js`: 全新 color token 体系 (bg/ink/accent/success/warning/danger)，新增 shadow-card/raised，字体改为 DM Sans + Noto Serif SC
+- `main.jsx`: @fontsource 字体从 JetBrains Mono + IBM Plex Sans → DM Sans + Noto Serif SC
+- `index.html`: 移除 Google Fonts CDN
+- `package.json`: @fontsource/dm-sans + @fontsource/noto-serif-sc 替换旧字体
+- 全部组件 Tailwind 类名更新：bg-bg-primary→bg-bg, bg-bg-surface→bg-bg-card, text-text-primary→text-ink, font-body→font-ui, font-display→font-serif 等
+
+---
+
 ## v0.2.0 — 2026-05-01 (demo baseline)
 
 **来源：** ANKI.zip（Claude Design 重绘输出）

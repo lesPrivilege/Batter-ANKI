@@ -6,26 +6,40 @@ export default {
     extend: {
       colors: {
         bg: {
-          primary: 'var(--bg-primary)',
-          surface: 'var(--bg-surface)',
-          elevated: 'var(--bg-elevated)',
+          DEFAULT: 'var(--bg)',
+          card: 'var(--bg-card)',
+          raised: 'var(--bg-raised)',
         },
-        border: 'var(--border)',
-        text: {
-          primary: 'var(--text-primary)',
-          secondary: 'var(--text-secondary)',
+        border: {
+          DEFAULT: 'var(--border)',
+          strong: 'var(--border-strong)',
+        },
+        ink: {
+          DEFAULT: 'var(--ink)',
+          2: 'var(--ink-2)',
+          3: 'var(--ink-3)',
         },
         accent: {
           DEFAULT: 'var(--accent)',
-          muted: 'var(--accent-muted)',
+          bg: 'var(--accent-bg)',
+          border: 'var(--accent-border)',
         },
-        success: 'var(--success)',
-        warning: 'var(--warning)',
-        danger: 'var(--danger)',
+        success: {
+          DEFAULT: 'var(--success)',
+          bg: 'var(--success-bg)',
+        },
+        warning: {
+          DEFAULT: 'var(--warning)',
+          bg: 'var(--warning-bg)',
+        },
+        danger: {
+          DEFAULT: 'var(--danger)',
+          bg: 'var(--danger-bg)',
+        },
       },
       fontFamily: {
-        display: ['"JetBrains Mono"', 'monospace'],
-        body: ['"IBM Plex Sans"', 'system-ui', 'sans-serif'],
+        ui: ['"DM Sans"', 'system-ui', 'sans-serif'],
+        serif: ['"Noto Serif SC"', '"Songti SC"', 'Georgia', 'serif'],
       },
       fontSize: {
         xs: ['11px', '1.4'],
@@ -36,7 +50,12 @@ export default {
         '2xl': ['28px', '1.2'],
       },
       borderRadius: {
-        lg: '8px',
+        lg: '14px',
+        sm: '8px',
+      },
+      boxShadow: {
+        card: 'var(--shadow-card)',
+        raised: 'var(--shadow-raised)',
       },
       spacing: {
         1: '4px',

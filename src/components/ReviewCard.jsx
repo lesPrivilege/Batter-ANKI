@@ -24,9 +24,9 @@ export default function ReviewCard({ card, onRate }) {
       <button
         ref={cardRef}
         onClick={handleClick}
-        className="w-full min-h-[240px] rounded-lg border border-border bg-bg-surface
+        className="w-full min-h-[240px] rounded-lg border border-border bg-bg-card
           p-6 flex items-center justify-center
-          text-center text-base font-body cursor-pointer select-none
+          text-center text-base font-ui cursor-pointer select-none
           transition-transform duration-300 ease-in-out"
         style={{
           transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
@@ -43,7 +43,7 @@ export default function ReviewCard({ card, onRate }) {
           {flipped ? (
             <span className="text-accent">{card.back}</span>
           ) : (
-            <span className="text-text-primary">{card.front}</span>
+            <span className="text-ink">{card.front}</span>
           )}
         </span>
       </button>
@@ -53,32 +53,32 @@ export default function ReviewCard({ card, onRate }) {
         <div className="flex gap-2 w-full">
           <button
             onClick={() => handleRate(1)}
-            className="flex-1 py-3 rounded-lg font-medium text-sm font-body
-              bg-danger/15 text-danger border border-danger/30
+            className="flex-1 py-3 rounded-lg font-medium text-sm font-ui
+              bg-danger-bg text-danger border border-danger/30
               active:scale-[0.97] transition-all"
           >
             Again
           </button>
           <button
             onClick={() => handleRate(2)}
-            className="flex-1 py-3 rounded-lg font-medium text-sm font-body
-              bg-warning/15 text-warning border border-warning/30
+            className="flex-1 py-3 rounded-lg font-medium text-sm font-ui
+              bg-warning-bg text-warning border border-warning/30
               active:scale-[0.97] transition-all"
           >
             Hard
           </button>
           <button
             onClick={() => handleRate(4)}
-            className="flex-1 py-3 rounded-lg font-medium text-sm font-body
-              bg-accent/15 text-accent border border-accent/30
+            className="flex-1 py-3 rounded-lg font-medium text-sm font-ui
+              bg-accent-bg text-accent border border-accent/30
               active:scale-[0.97] transition-all"
           >
             Good
           </button>
           <button
             onClick={() => handleRate(5)}
-            className="flex-1 py-3 rounded-lg font-medium text-sm font-body
-              bg-success/15 text-success border border-success/30
+            className="flex-1 py-3 rounded-lg font-medium text-sm font-ui
+              bg-success-bg text-success border border-success/30
               active:scale-[0.97] transition-all"
           >
             Easy
@@ -87,7 +87,7 @@ export default function ReviewCard({ card, onRate }) {
       )}
 
       {!flipped && (
-        <p className="text-xs text-text-secondary">Tap to flip</p>
+        <p className="text-xs text-ink-2">Tap to flip</p>
       )}
     </div>
   )

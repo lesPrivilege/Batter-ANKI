@@ -20,8 +20,8 @@ export default function CardEditor({ initial, onSave, onCancel }) {
         onChange={(e) => setFront(e.target.value)}
         placeholder="Front"
         rows={3}
-        className="w-full p-3 rounded-lg border border-border bg-bg-surface text-text-primary
-          font-display text-sm placeholder:text-text-secondary/50
+        className="w-full p-3 rounded-lg border border-border bg-bg-card text-ink
+          font-serif text-sm placeholder:text-ink-2/50
           focus:outline-none focus:border-accent resize-none"
       />
       <textarea
@@ -29,8 +29,8 @@ export default function CardEditor({ initial, onSave, onCancel }) {
         onChange={(e) => setBack(e.target.value)}
         placeholder="Back"
         rows={3}
-        className="w-full p-3 rounded-lg border border-border bg-bg-surface text-text-primary
-          font-display text-sm placeholder:text-text-secondary/50
+        className="w-full p-3 rounded-lg border border-border bg-bg-card text-ink
+          font-serif text-sm placeholder:text-ink-2/50
           focus:outline-none focus:border-accent resize-none"
       />
       <div className="flex justify-end gap-2">
@@ -48,7 +48,7 @@ export default function CardEditor({ initial, onSave, onCancel }) {
             type="button"
             onClick={onCancel}
             className="px-4 py-2 rounded-lg font-medium text-sm font-body
-              border border-border text-text-secondary
+              border border-border text-ink-2
               active:scale-[0.97] transition-transform"
           >
             Cancel
