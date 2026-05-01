@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { exportData } from '../lib/storage'
+import { BackIcon, SunIcon, MoonIcon, DownloadIcon, UploadIcon, MnemosMark } from '../components/Icons'
+import pkg from '../../package.json'
 
 export default function Settings() {
   const navigate = useNavigate()
@@ -29,8 +31,8 @@ export default function Settings() {
   }, [dailyLimit])
 
   const handleExport = () => {
-    const data = exportData()
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+    const json = exportData()
+    const blob = new Blob([json], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     const date = new Date().toISOString().slice(0, 10)
@@ -42,80 +44,64 @@ export default function Settings() {
 
   return (
     <div className="flex flex-col min-h-screen bg-bg">
-      <header className="sticky top-0 z-10 flex items-center gap-3 px-4 h-12
-        bg-bg-card border-b border-border shrink-0">
-        <button onClick={() => navigate(-1)} className="text-ink-2 active:scale-[0.97] transition-transform">
-          ←
+      <header className="sticky top-0 z-10 flex items-center px-[18px] h-[52px] bg-bg border-b" style={{ borderColor: 'var(--border-soft)' }}>
+        <button onClick={() => navigate(-1)} className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-ink-2 hover:bg-bg-raised hover:text-ink transition-colors">
+          <BackIcon />
         </button>
-        <h1 className="text-lg font-serif font-bold text-ink">Settings</h1>
+        <h1 className="flex-1 font-zh text-[17px] font-medium text-ink pl-1">设置</h1>
       </header>
 
-      <main className="flex-1 overflow-y-auto max-w-[480px] w-full mx-auto px-4 py-4 space-y-4">
-        {/* Theme */}
-        <div className="bg-bg-card border border-border rounded-lg p-4">
-          <div className="text-sm font-ui text-ink-2 mb-3">Theme</div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setDark(false)}
-              className={`flex-1 py-2 rounded-lg font-ui text-sm transition-colors
-                ${!dark ? 'bg-accent text-white' : 'border border-border text-ink-2 active:scale-[0.97]'}`}
-            >
-              Light
+      <main className="flex-1 overflow-y-auto p-[18px] flex flex-col gap-4">
+        {/* Appearance */}
+        <div className="bg-bg-card rounded-md p-4 flex flex-col gap-2.5" style={{ border: '1px solid var(--border-soft)' }}>
+          <div className="font-mono text-[10px] tracking-[0.16em] uppercase text-ink-3">外观 · APPEARANCE</div>
+          <div className="inline-flex p-0.5 rounded-lg" style={{ background: 'var(--bg-raised)', border: '1px solid var(--border-soft)' }}>
+            <button onClick={() => setDark(false)}
+              className={`flex-1 inline-flex items-center justify-center gap-1.5 py-[7px] px-2.5 text-[12px] font-medium rounded-md transition-all ${!dark ? 'bg-bg-card text-ink shadow-sm' : 'text-ink-2'}`}>
+              <SunIcon size={16} /> Light
             </button>
-            <button
-              onClick={() => setDark(true)}
-              className={`flex-1 py-2 rounded-lg font-ui text-sm transition-colors
-                ${dark ? 'bg-accent text-white' : 'border border-border text-ink-2 active:scale-[0.97]'}`}
-            >
-              Dark
+            <button onClick={() => setDark(true)}
+              className={`flex-1 inline-flex items-center justify-center gap-1.5 py-[7px] px-2.5 text-[12px] font-medium rounded-md transition-all ${dark ? 'bg-bg-card text-ink shadow-sm' : 'text-ink-2'}`}>
+              <MoonIcon size={16} /> Dark
             </button>
           </div>
         </div>
 
-        {/* Export */}
-        <div className="bg-bg-card border border-border rounded-lg p-4">
-          <div className="text-sm font-ui text-ink-2 mb-3">Export Data</div>
-          <button
-            onClick={handleExport}
-            className="w-full py-2.5 rounded-lg font-ui text-sm
-              border border-border text-ink-2 active:scale-[0.97] transition-transform"
-          >
-            Export JSON
+        {/* Daily limit */}
+        <div className="bg-bg-card rounded-md p-4 flex flex-col gap-2.5" style={{ border: '1px solid var(--border-soft)' }}>
+          <div className="font-mono text-[10px] tracking-[0.16em] uppercase text-ink-3">每日复习上限 · DAILY LIMIT</div>
+          <input type="number" value={dailyLimit} onChange={(e) => setDailyLimit(e.target.value)}
+            placeholder="不限" min="1"
+            className="w-full py-[9px] px-3 rounded-md border bg-bg text-ink font-mono text-sm outline-none focus:border-accent"
+            style={{ borderColor: 'var(--border)' }} />
+          <div className="text-[11px] text-ink-3 font-mono tracking-wide">设置后首页将显示每日目标</div>
+        </div>
+
+        {/* Data */}
+        <div className="bg-bg-card rounded-md p-4 flex flex-col gap-2.5" style={{ border: '1px solid var(--border-soft)' }}>
+          <div className="font-mono text-[10px] tracking-[0.16em] uppercase text-ink-3">数据 · DATA</div>
+          <button onClick={handleExport}
+            className="w-full inline-flex items-center justify-center gap-1.5 py-2.5 rounded-md font-body text-sm bg-bg-card border text-ink-2 active:scale-[0.97] transition-transform hover:bg-bg-raised"
+            style={{ borderColor: 'var(--border)' }}>
+            <DownloadIcon size={16} /> 导出 JSON
           </button>
         </div>
 
-        {/* Daily Review Limit */}
-        <div className="bg-bg-card border border-border rounded-lg p-4">
-          <div className="text-sm font-ui text-ink-2 mb-3">Daily Review Limit</div>
-          <input
-            type="number"
-            value={dailyLimit}
-            onChange={(e) => setDailyLimit(e.target.value)}
-            placeholder="No limit"
-            min="1"
-            className="w-full px-3 py-2.5 rounded-lg border border-border bg-bg text-ink
-              font-ui text-sm placeholder:text-ink-2/50
-              focus:outline-none focus:border-accent"
-          />
-          <div className="text-xs text-ink-2/60 mt-2">
-            设置后首页统计将显示每日目标
-          </div>
-        </div>
-
         {/* About */}
-        <div className="bg-bg-card border border-border rounded-lg p-4">
-          <div className="text-sm font-ui text-ink-2 mb-3">About</div>
-          <div className="space-y-1.5 text-sm font-ui text-ink">
-            <div className="font-serif font-bold text-base">Mnemos</div>
-            <div className="text-ink-2">v0.7.2</div>
-            <a
-              href="https://github.com/lesPrivilege/Batter-ANKI"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-accent underline"
-            >
-              github.com/lesPrivilege/Batter-ANKI
-            </a>
+        <div className="bg-bg-card rounded-md p-4 flex flex-col gap-2.5" style={{ border: '1px solid var(--border-soft)' }}>
+          <div className="font-mono text-[10px] tracking-[0.16em] uppercase text-ink-3">关于 · ABOUT</div>
+          <div className="flex flex-col items-center gap-2 py-3.5">
+            <MnemosMark size={36} accent="var(--accent)" />
+            <div className="font-display text-[26px] tracking-wide text-ink">Mnemos</div>
+            <div className="font-mono text-[10px] text-ink-3 tracking-[0.18em]">VERSION {pkg.version}</div>
+          </div>
+          <div className="flex justify-between items-baseline py-1.5 border-b" style={{ borderColor: 'var(--border-soft)' }}>
+            <span className="font-zh text-xs text-ink-2">间隔算法</span>
+            <span className="font-mono text-xs text-ink">SM-2</span>
+          </div>
+          <div className="flex justify-between items-baseline py-1.5">
+            <span className="font-zh text-xs text-ink-2">中文字体</span>
+            <span className="font-mono text-xs text-ink">Noto Serif SC</span>
           </div>
         </div>
       </main>

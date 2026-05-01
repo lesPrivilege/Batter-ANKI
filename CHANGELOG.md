@@ -1,37 +1,76 @@
 # Changelog
 
-## v0.7.0 — 2026-05-01 (star, stats, rename, dedup)
-
-**新增：**
-- 卡片收藏功能（☆/★ 标记 + DeckDetail 筛选）
-- 复习结果统计（正确率 + 评分分布）
-- Deck 重命名（header 点击编辑）
-- 导入去重检测（front 匹配，跳过/全部导入选项）
-
----
-
-## v0.6.2 — 2026-05-01 (improvements)
-
-**改进：**
-- .md 导入自动提取 h1 标题作为 deck name（可手动修改）
-- Review/Browse 界面显示章节标签（chapter > section）
-
----
-
-## v0.6.1 — 2026-05-01 (fixes)
+## v1.0.1 — 2026-05-01 (bug fixes + UI audit)
 
 **修复：**
-- 修复首页点击卡组无法进入 DeckDetail 的 regression
-- 按钮可见性：Review 按钮加 border，Confirm 按钮改实心背景
-- 置顶标记从 📌 emoji 改为 ▲ 纯文字
+- `Settings.jsx` 导出 JSON 双重 stringify 导致备份文件损坏
+- `DeckDetail.jsx` 进度条/百分比错误计入 reference 类型卡片，现只统计 recall 卡片
+- `DeckDetail.jsx` 恢复 Edit 模式入口按钮（header 内 Edit/Done 切换）
+- `DeckDetail.jsx` 手写日期格式化替换为 `localToday()` 工具函数
+- `formatSpec.js` prompt 模板追加禁止引用/脚注规则（防 Gemini 附引用）
+- `DESIGN.md` 顶部加归档声明，标注 v1.0.0 已重设计
+- `ReviewCard.jsx` 移除卡片内重复的收藏星按钮，只保留 header 右上角的 ☆
+- `ReviewCard.jsx` 卡片容器对齐设计稿：shadow-md、cursor-pointer、内容垂直居中
+
+**UI 校对（对照 design/mnemos-v2.html）：**
+- Home header 标题改用 Instrument Serif 斜体（font-display italic）
+- StatsBar 统计卡片加 shadow-md
+- Home deck 卡片加 shadow-sm
+- DeckDetail 进度条改为 rounded-full（pill 形）
+- DeckDetail 主 CTA（START REVIEW）加 shadow-md
+- Done 评分网格圆角改为 rounded-sm（8px）
+- Browse 卡片容器 shadow-sm → shadow-md
 
 ---
 
-## v0.5.1 — 2026-05-01 (navigation + quick review)
+## v1.0.0 — 2026-05-01 (UI redesign · v2)
 
-**改动：**
-- 全部子页面返回按钮统一为 navigate(-1)（Review, Browse, PromptGuide, ImportPage）
-- 首页 deck 卡片加快捷 Review 按钮（dueCount > 0 时显示）
+**设计系统：**
+- 全新色板：暖纸 parchment (hue 80) + 蓝灰 dark (hue 250)，新增 `--teal`/`--bg-sunken`/`--ink-4`/`--border-soft` 等 token
+- 字体体系：Inter (UI) + Instrument Serif (Display) + Noto Serif SC (中文) + JetBrains Mono (数字/代码)，移除 DM Sans
+- 新增 Mnemos 品牌 logo (MnemosMark SVG)
+
+**组件重设计：**
+- Home：StatsBar 三栏统计 + streak chip + 7 日柱状图；deck 卡片带左侧色条 + 复习 CTA
+- DeckDetail：进度条 + 主 CTA (START REVIEW) + 4 图标网格操作 + filter chips (全部/收藏/参考)
+- Review：Q/A 角标 + ornament 装饰线 + 翻转动画 (480ms cubic-bezier) + 四色评分按钮 + Done 统计网格
+- Browse：共享 Review 卡片样式 + 上下张导航
+- Import：dropzone 风格 + segmented control 预览
+- PromptGuide：行号 + 语法高亮 code block
+- Settings：segmented control 主题切换 + Mnemos 品牌 about 区域
+
+**图标规范：**
+- Icons.jsx 所有 icon 默认 size=20，支持 `size` prop 透传
+- 按钮容器统一 `w-8 h-8 flex items-center justify-center`，icon 用 size={18}
+- 操作按钮（底部 CTA、网格）icon 用 size={16}，与文字保持呼吸间距
+- DeckDetail 搜索框修复：移除重复 SearchIcon，定位 icon size={16}
+
+**新增文件：**
+- `src/components/Icons.jsx` — 统一 SVG icon 组件库（20px 默认，支持 size prop）
+- `design/mnemos-v2.html` — v2 设计稿归档
+- `scripts/gen-icons.mjs` — Android app icon 生成脚本
+- `android/app/src/main/res/mipmap-*/` — MnemosMark 品牌图标（5 密度）
+
+---
+
+## v0.9.2 — 2026-05-01 (code cleanup)
+
+**修复：**
+- `updatedAt` UTC 时区问题：reviewedToday 比较改用 `isoToLocalDate()` 本地日期，修复 UTC+N 时区凌晨统计不准确
+- DeckDetail 删除卡组后改用 `useNavigate()` 导航，不再整页刷新
+- ReviewCard.jsx 移除未使用的 `onRate` prop 和 `handleRate` 函数
+- Settings.jsx 版本号从 package.json 动态读取，不再硬编码
+- mdParser.js 移除无效的 `!line.match(/^## /)` 判断
+
+**重构：**
+- `shuffle()` 从 Review.jsx 和 Browse.jsx 提取到 `src/lib/utils.js`
+- 新建 `src/lib/cardUtils.js`，导出 `isRecall(card)` helper，替换散落的 `(c.type || 'recall') === 'recall'`
+- scheduler.js 引入 `isoToLocalDate` 和 `isRecall`，代码更清晰
+
+**文档：**
+- issues.md 标记 #1（重复评分按钮）为已修复
+- PROJECT_PROMPT.md 标题统一为 Mnemos
+- CHANGELOG.md 按版本降序排列，删除重复的 v0.7.0
 
 ---
 
@@ -116,7 +155,13 @@
 
 ---
 
-## v0.7.0 — 2026-05-01 (prompt guide)
+## v0.7.0 — 2026-05-01 (star, stats, rename, dedup)
+
+**新增：**
+- 卡片收藏功能（☆/★ 标记 + DeckDetail 筛选）
+- 复习结果统计（正确率 + 评分分布）
+- Deck 重命名（header 点击编辑）
+- 导入去重检测（front 匹配，跳过/全部导入选项）
 
 **新增：** 制卡指南页面（/prompt-guide），内置 prompt 模板一键复制
 
@@ -128,6 +173,23 @@
 
 ---
 
+## v0.6.2 — 2026-05-01 (improvements)
+
+**改进：**
+- .md 导入自动提取 h1 标题作为 deck name（可手动修改）
+- Review/Browse 界面显示章节标签（chapter > section）
+
+---
+
+## v0.6.1 — 2026-05-01 (fixes)
+
+**修复：**
+- 修复首页点击卡组无法进入 DeckDetail 的 regression
+- 按钮可见性：Review 按钮加 border，Confirm 按钮改实心背景
+- 置顶标记从 📌 emoji 改为 ▲ 纯文字
+
+---
+
 ## v0.6.0 — 2026-05-01 (shuffle, pin, preview, search)
 
 **新增：**
@@ -135,6 +197,14 @@
 - 卡组置顶功能（storage.js pinned 字段 + togglePin）
 - 导入预览（解析后展示卡片列表，确认再写入）
 - 卡片搜索（DeckDetail 实时过滤，匹配 front/back）
+
+---
+
+## v0.5.1 — 2026-05-01 (navigation + quick review)
+
+**改动：**
+- 全部子页面返回按钮统一为 navigate(-1)（Review, Browse, PromptGuide, ImportPage）
+- 首页 deck 卡片加快捷 Review 按钮（dueCount > 0 时显示）
 
 ---
 

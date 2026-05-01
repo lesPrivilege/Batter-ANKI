@@ -1,18 +1,12 @@
 import { useParams, Link, useSearchParams, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import ReviewCard from '../components/ReviewCard'
+import { BackIcon, CheckIcon } from '../components/Icons'
 import { getDueCards } from '../lib/scheduler'
 import { getCards, updateCardSM2, toggleStar } from '../lib/storage'
 import { sm2 } from '../lib/sm2'
-
-function shuffle(arr) {
-  const a = [...arr]
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]]
-  }
-  return a
-}
+import { shuffle } from '../lib/utils'
+import { isRecall } from '../lib/cardUtils'
 
 function predictInterval(card, quality) {
   const result = sm2(card, quality)
@@ -30,7 +24,7 @@ export default function Review() {
 
   useEffect(() => {
     if (reviewAll) {
-      const allCards = getCards(id).filter(c => (c.type || 'recall') === 'recall')
+      const allCards = getCards(id).filter(c => isRecall(c))
       setDueCards(shuffle(allCards))
     } else {
       setDueCards(shuffle(getDueCards(id)))
@@ -66,38 +60,52 @@ export default function Review() {
 
     return (
       <div className="flex flex-col min-h-screen bg-bg">
-        <header className="sticky top-0 z-10 flex items-center px-4 h-12
-          bg-bg-card border-b border-border">
-          <button onClick={() => navigate(-1)} className="text-ink-2 text-sm">←</button>
+        <header className="sticky top-0 z-10 flex items-center px-[18px] h-[52px] bg-bg border-b" style={{ borderColor: 'var(--border-soft)' }}>
+          <button onClick={() => navigate(-1)} className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-ink-2 hover:bg-bg-raised hover:text-ink transition-colors">
+            <BackIcon />
+          </button>
         </header>
-        <div className="flex-1 flex flex-col items-center justify-center gap-4 p-4">
-          <div className="text-4xl text-success">&#10003;</div>
-          <h1 className="text-xl font-display font-bold text-ink">
-            Done
-          </h1>
+        <div className="flex-1 flex flex-col items-center justify-center gap-[18px] p-6 text-center">
+          <div className="w-[76px] h-[76px] rounded-full inline-flex items-center justify-center"
+            style={{ background: 'var(--good-soft)', border: '1px solid color-mix(in oklch, var(--good) 30%, transparent)', color: 'var(--good)' }}>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5 9-12"/></svg>
+          </div>
+          <div className="font-display text-[32px] text-ink mt-1">Mnēmosúnē</div>
+          <div className="font-zh text-sm text-ink-2 tracking-wider -mt-2">— 今日已记 —</div>
+
           {total > 0 && (
-            <div className="text-sm text-ink-2 font-ui space-y-1 text-center">
-              <p>Total reviewed: <span className="text-ink font-medium">{total}</span></p>
-              <p>Correct rate: <span className="text-success font-medium">{correctRate}%</span></p>
-              <p className="text-xs text-ink-2">
-                Again: {stats.again} · Hard: {stats.hard} · Good: {stats.good} · Easy: {stats.easy}
-              </p>
-            </div>
+            <>
+              <div className="flex gap-[18px] font-mono text-xs text-ink-3 mt-1">
+                <span>已复习 <span className="text-ink font-semibold">{total}</span></span>
+                <span>正确率 <span className="text-ink font-semibold">{correctRate}%</span></span>
+              </div>
+
+              <div className="grid grid-cols-4 gap-1.5 w-full mt-2">
+                <div className="py-2 px-1 rounded-sm font-mono text-[11px] flex flex-col items-center gap-0.5 text-danger" style={{ background: 'var(--danger-soft)' }}>
+                  <span className="text-base font-semibold">{stats.again}</span><span>Again</span>
+                </div>
+                <div className="py-2 px-1 rounded-sm font-mono text-[11px] flex flex-col items-center gap-0.5 text-warn" style={{ background: 'var(--warn-soft)' }}>
+                  <span className="text-base font-semibold">{stats.hard}</span><span>Hard</span>
+                </div>
+                <div className="py-2 px-1 rounded-sm font-mono text-[11px] flex flex-col items-center gap-0.5 text-accent" style={{ background: 'var(--accent-soft)' }}>
+                  <span className="text-base font-semibold">{stats.good}</span><span>Good</span>
+                </div>
+                <div className="py-2 px-1 rounded-sm font-mono text-[11px] flex flex-col items-center gap-0.5 text-good" style={{ background: 'var(--good-soft)' }}>
+                  <span className="text-base font-semibold">{stats.easy}</span><span>Easy</span>
+                </div>
+              </div>
+            </>
           )}
-          <div className="flex gap-2 mt-2">
-            <Link
-              to={`/deck/${id}`}
-              className="px-6 py-2 rounded-lg border border-border text-ink-2 font-medium text-sm font-body
-                active:scale-[0.97] transition-transform"
-            >
-              Back to deck
+
+          <div className="flex gap-2 w-full mt-2">
+            <Link to={`/deck/${id}`}
+              className="flex-1 py-2.5 rounded-md bg-bg-card border text-ink-2 font-medium text-sm font-body text-center active:scale-[0.97] transition-transform"
+              style={{ borderColor: 'var(--border)' }}>
+              返回卡组
             </Link>
-            <Link
-              to="/"
-              className="px-6 py-2 rounded-lg bg-accent text-white font-medium text-sm font-body
-                active:scale-[0.97] transition-transform"
-            >
-              Home
+            <Link to="/"
+              className="flex-1 py-2.5 rounded-md bg-ink text-bg font-medium text-sm font-body text-center active:scale-[0.97] transition-transform">
+              主页
             </Link>
           </div>
         </div>
@@ -111,68 +119,70 @@ export default function Review() {
   return (
     <div className="flex flex-col min-h-screen bg-bg">
       {/* Header */}
-      <header className="sticky top-0 z-10 flex items-center justify-between px-4 h-12
-        bg-bg-card border-b border-border">
-        <button onClick={() => navigate(-1)} className="text-ink-2 text-sm">←</button>
-        <span className="text-xs text-ink-2 font-display">
-          {currentIndex + 1} / {dueCards.length}
+      <header className="sticky top-0 z-10 flex items-center justify-between px-[18px] h-[52px]
+        bg-bg border-b" style={{ borderColor: 'var(--border-soft)' }}>
+        <button onClick={() => navigate(-1)} className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-ink-2 hover:bg-bg-raised hover:text-ink transition-colors">
+          <BackIcon />
+        </button>
+        <span className="font-mono text-[11px]">
+          <span className="text-ink font-semibold">{currentIndex + 1}</span>
+          <span className="text-ink-3"> / {dueCards.length}</span>
         </span>
-        <span className="w-6" />
+        <button onClick={() => {
+          toggleStar(card.id)
+          setDueCards(prev => prev.map((c, i) => i === currentIndex ? { ...c, starred: !c.starred } : c))
+        }}
+          className="w-8 h-8 inline-flex items-center justify-center rounded-lg hover:bg-bg-raised transition-colors"
+          style={{ color: card.starred ? 'var(--accent)' : 'var(--ink-3)' }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill={card.starred ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round">
+            <path d="M12 3l2.7 5.9 6.3.6-4.8 4.5 1.5 6.5L12 17l-5.7 3.5 1.5-6.5L3 9.5l6.3-.6z"/>
+          </svg>
+        </button>
       </header>
 
       {/* Progress bar */}
-      <div className="h-[3px] w-full bg-border">
-        <div
-          className="h-full bg-accent transition-all duration-200"
-          style={{ width: `${(currentIndex / dueCards.length) * 100}%` }}
-        />
+      <div className="h-1 w-full" style={{ background: 'var(--bg-raised)' }}>
+        <div className="h-full transition-all duration-200" style={{ background: 'var(--accent)', width: `${(currentIndex / dueCards.length) * 100}%` }} />
       </div>
 
       {/* Breadcrumb */}
       {(card.chapter || card.section) && (
-        <div className="text-xs text-ink-2 text-center">
-          {card.chapter}{card.section && ` > ${card.section}`}
+        <div className="px-[18px] pt-2.5 flex items-center justify-between font-mono text-[11px] text-ink-3">
+          <span className="font-zh text-ink-2 text-xs">
+            {card.chapter}{card.section && <><span className="text-ink-4 mx-1">›</span>{card.section}</>}
+          </span>
+          <span className="tracking-wider"><span className="text-ink font-semibold">REVIEW</span></span>
         </div>
       )}
 
-      {/* Card area */}
-      <div className="flex-1 flex items-center justify-center p-4">
-        <ReviewCard card={card} onRate={handleRate} starred={card.starred} onToggleStar={() => { toggleStar(card.id); setDueCards(prev => prev.map((c, i) => i === currentIndex ? { ...c, starred: !c.starred } : c)) }} />
-      </div>
+      {/* Card */}
+      <ReviewCard card={card} />
 
-      {/* Bottom bar with interval previews */}
-      <div className="flex gap-2 px-4 pb-4 max-w-[480px] w-full mx-auto">
-        <button
-          onClick={() => handleRate(1)}
-          className="flex-1 py-3 rounded-lg font-medium text-sm font-body border transition-all active:scale-[0.97]
-            bg-danger-bg text-danger border-danger/30"
-        >
-          <span className="block">Again</span>
-          <span className="block text-[10px] text-ink-2 mt-0.5">{predictInterval(card, 1)}d</span>
+      {/* Rating buttons */}
+      <div className="grid grid-cols-4 gap-1.5 px-[18px] pb-[18px]">
+        <button onClick={() => handleRate(1)}
+          className="flex flex-col items-center gap-0.5 py-3 px-1 rounded-md border font-body font-medium text-[13px] active:scale-[0.96] transition-transform"
+          style={{ background: 'var(--danger-soft)', color: 'var(--danger)', borderColor: 'color-mix(in oklch, var(--danger) 22%, transparent)' }}>
+          <span>Again</span>
+          <span className="font-mono text-[10px] opacity-70 tracking-wide">{predictInterval(card, 1)}d</span>
         </button>
-        <button
-          onClick={() => handleRate(2)}
-          className="flex-1 py-3 rounded-lg font-medium text-sm font-body border transition-all active:scale-[0.97]
-            bg-warning-bg text-warning border-warning/30"
-        >
-          <span className="block">Hard</span>
-          <span className="block text-[10px] text-ink-2 mt-0.5">{predictInterval(card, 2)}d</span>
+        <button onClick={() => handleRate(2)}
+          className="flex flex-col items-center gap-0.5 py-3 px-1 rounded-md border font-body font-medium text-[13px] active:scale-[0.96] transition-transform"
+          style={{ background: 'var(--warn-soft)', color: 'var(--warn)', borderColor: 'color-mix(in oklch, var(--warn) 22%, transparent)' }}>
+          <span>Hard</span>
+          <span className="font-mono text-[10px] opacity-70 tracking-wide">{predictInterval(card, 2)}d</span>
         </button>
-        <button
-          onClick={() => handleRate(4)}
-          className="flex-1 py-3 rounded-lg font-medium text-sm font-body border transition-all active:scale-[0.97]
-            bg-accent-bg text-accent border-accent/30"
-        >
-          <span className="block">Good</span>
-          <span className="block text-[10px] text-ink-2 mt-0.5">{predictInterval(card, 4)}d</span>
+        <button onClick={() => handleRate(4)}
+          className="flex flex-col items-center gap-0.5 py-3 px-1 rounded-md border font-body font-medium text-[13px] active:scale-[0.96] transition-transform"
+          style={{ background: 'var(--accent-soft)', color: 'var(--accent)', borderColor: 'var(--accent-line)' }}>
+          <span>Good</span>
+          <span className="font-mono text-[10px] opacity-70 tracking-wide">{predictInterval(card, 4)}d</span>
         </button>
-        <button
-          onClick={() => handleRate(5)}
-          className="flex-1 py-3 rounded-lg font-medium text-sm font-body border transition-all active:scale-[0.97]
-            bg-success-bg text-success border-success/30"
-        >
-          <span className="block">Easy</span>
-          <span className="block text-[10px] text-ink-2 mt-0.5">{predictInterval(card, 5)}d</span>
+        <button onClick={() => handleRate(5)}
+          className="flex flex-col items-center gap-0.5 py-3 px-1 rounded-md border font-body font-medium text-[13px] active:scale-[0.96] transition-transform"
+          style={{ background: 'var(--good-soft)', color: 'var(--good)', borderColor: 'color-mix(in oklch, var(--good) 22%, transparent)' }}>
+          <span>Easy</span>
+          <span className="font-mono text-[10px] opacity-70 tracking-wide">{predictInterval(card, 5)}d</span>
         </button>
       </div>
     </div>

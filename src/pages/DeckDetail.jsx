@@ -1,6 +1,9 @@
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useState, useEffect, useMemo } from 'react'
 import CardEditor from '../components/CardEditor'
+import { BackIcon, PinIcon, MoreIcon, LayersIcon, SparkIcon, UploadIcon, PlusIcon, SearchIcon } from '../components/Icons'
+import { isRecall } from '../lib/cardUtils'
+import { localToday } from '../lib/dateUtils'
 import { getDeck, getCards, addCard, updateCard, updateDeck, deleteCard, deleteCards, deleteDeck, togglePin, toggleStar } from '../lib/storage'
 
 function buildOutline(cards) {
@@ -18,6 +21,7 @@ function buildOutline(cards) {
 
 export default function DeckDetail() {
   const { id } = useParams()
+  const navigate = useNavigate()
   const [deck, setDeck] = useState(null)
   const [cards, setCards] = useState([])
   const [showEditor, setShowEditor] = useState(false)
@@ -38,7 +42,11 @@ export default function DeckDetail() {
 
   useEffect(refresh, [id])
 
-  const filteredCards = useMemo(() => filter === 'starred' ? cards.filter(c => c.starred) : cards, [cards, filter])
+  const filteredCards = useMemo(() => {
+    if (filter === 'starred') return cards.filter(c => c.starred)
+    if (filter === 'ref') return cards.filter(c => !isRecall(c))
+    return cards
+  }, [cards, filter])
 
   const outline = useMemo(() => buildOutline(filteredCards), [filteredCards])
 
@@ -80,7 +88,7 @@ export default function DeckDetail() {
   const handleDeleteDeck = () => {
     if (confirm('Delete this deck and all cards?')) {
       deleteDeck(id)
-      window.location.href = '/'
+      navigate('/')
     }
   }
 
@@ -107,6 +115,12 @@ export default function DeckDetail() {
     setSelected(new Set())
   }
 
+  const recallCards = cards.filter(c => isRecall(c))
+  const t = localToday()
+  const dueCount = recallCards.filter(c => c.dueDate <= t).length
+  const total = recallCards.length
+  const learned = total - dueCount
+
   if (!deck) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-bg text-ink-2">
@@ -118,14 +132,13 @@ export default function DeckDetail() {
   return (
     <div className="flex flex-col min-h-screen bg-bg">
       {/* Header */}
-      <header className="sticky top-0 z-10 flex items-center px-4 h-12
-        bg-bg-card border-b border-border">
-        <Link to="/" className="text-ink-2 text-sm mr-3">←</Link>
+      <header className="sticky top-0 z-10 flex items-center justify-between px-[18px] h-[52px]
+        bg-bg border-b" style={{ borderColor: 'var(--border-soft)' }}>
+        <button onClick={() => navigate(-1)} className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-ink-2 hover:bg-bg-raised hover:text-ink transition-colors">
+          <BackIcon />
+        </button>
         {editingName ? (
-          <input
-            autoFocus
-            type="text"
-            value={nameInput}
+          <input autoFocus type="text" value={nameInput}
             onChange={(e) => setNameInput(e.target.value)}
             onBlur={() => {
               const trimmed = nameInput.trim()
@@ -137,280 +150,192 @@ export default function DeckDetail() {
               if (e.key === 'Enter') e.target.blur()
               else if (e.key === 'Escape') { setEditingName(false) }
             }}
-            className="flex-1 text-lg font-serif font-bold text-ink bg-transparent border-b border-accent outline-none"
-          />
+            className="flex-1 font-zh text-[17px] font-medium text-ink bg-transparent border-b border-accent outline-none px-2" />
         ) : (
-          <h1
-            onClick={() => { setEditingName(true); setNameInput(deck.name) }}
-            className="flex-1 text-lg font-serif font-bold text-ink truncate cursor-pointer hover:text-accent transition-colors"
-          >
+          <h1 onClick={() => { setEditingName(true); setNameInput(deck.name) }}
+            className="flex-1 font-zh text-[17px] font-medium text-ink truncate cursor-pointer hover:text-accent transition-colors pl-1">
             {deck.name}
-            <span className="text-xs text-ink-2 ml-1 opacity-0 group-hover:opacity-100">✎</span>
           </h1>
         )}
-        {editing ? (
-          <button onClick={exitEdit} className="text-sm text-ink-2 shrink-0">
-            Done
-          </button>
-        ) : (
-          <>
-            <button
-              onClick={() => { togglePin(id); refresh() }}
-              className="text-sm shrink-0 px-2 py-1 rounded active:scale-[0.97]"
-              title={deck.pinned ? 'Unpin' : 'Pin'}
-            >
-              {deck.pinned ? '▲' : '△'}
+        <div className="flex gap-1 items-center">
+          {editing ? (
+            <button onClick={exitEdit}
+              className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-ink-2 hover:bg-bg-raised hover:text-ink transition-colors text-sm">
+              Done
             </button>
-            <button
-              onClick={handleDeleteDeck}
-              className="text-danger text-sm shrink-0"
-            >
-              Delete
-            </button>
-          </>
-        )}
-      </header>
-
-      {/* Content */}
-      <main className="flex-1 overflow-y-auto p-4 max-w-[480px] w-full mx-auto space-y-4">
-        {/* Actions */}
-        {!editing && (
-          <div className="flex gap-2">
-            <button
-              onClick={() => { setShowEditor(!showEditor); setEditingCard(null) }}
-              className="flex-1 py-2.5 rounded-lg font-medium text-sm font-ui
-                border border-accent text-accent active:scale-[0.97] transition-transform"
-            >
-              {showEditor ? 'Close' : '+ New Card'}
-            </button>
-            <Link
-              to={`/review/${id}`}
-              className="px-4 py-2.5 rounded-lg font-medium text-sm font-ui
-                border border-success text-success active:scale-[0.97] transition-transform"
-            >
-              Review
-            </Link>
-            {cards.length > 0 && (
-              <Link
-                to={`/browse/${id}`}
-                className="px-4 py-2.5 rounded-lg font-medium text-sm font-ui
-                  border border-border text-ink active:scale-[0.97] transition-transform"
-              >
-                Browse
-              </Link>
-            )}
-            {cards.length > 0 && (
-              <button
-                onClick={() => setEditing(true)}
-                className="px-4 py-2.5 rounded-lg font-medium text-sm font-ui
-                  border border-border text-ink-2 active:scale-[0.97] transition-transform"
-              >
+          ) : (
+            <>
+              <button onClick={() => setEditing(true)}
+                className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-ink-2 hover:bg-bg-raised hover:text-ink transition-colors text-sm">
                 Edit
               </button>
-            )}
-            <Link
-              to={`/review/${id}?all=true`}
-              className="px-4 py-2.5 rounded-lg font-medium text-sm font-ui
-                border border-success text-success active:scale-[0.97] transition-transform"
-            >
-              Review All
-            </Link>
-            <Link
-              to={`/import?deckId=${id}`}
-              className="px-4 py-2.5 rounded-lg font-medium text-sm font-ui
-                border border-border text-ink-2 active:scale-[0.97] transition-transform"
-            >
-              Import
-            </Link>
+              <button onClick={() => { togglePin(id); refresh() }}
+                className={`w-8 h-8 inline-flex items-center justify-center rounded-lg transition-colors ${deck.pinned ? 'text-accent' : 'text-ink-3'} hover:bg-bg-raised`}>
+                <PinIcon />
+              </button>
+              <button onClick={handleDeleteDeck}
+                className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-ink-3 hover:bg-bg-raised hover:text-ink transition-colors">
+                <MoreIcon />
+              </button>
+            </>
+          )}
+        </div>
+      </header>
+
+      <main className="flex-1 overflow-y-auto">
+        {/* Title block + progress */}
+        <div className="p-[18px] pb-2 flex flex-col gap-1.5">
+          <div className="font-mono text-[11px] text-ink-3 tracking-wide flex items-center gap-2">
+            <span>{total} 张</span>
+            <span className="text-ink-4">/</span>
+            <span style={{ color: 'var(--accent)' }}>{dueCount} 待复习</span>
+            <span className="text-ink-4">/</span>
+            <span>{learned} 已学</span>
           </div>
-        )}
+          <div className="mt-1.5 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--bg-raised)' }}>
+            <div className="h-full rounded-full" style={{ background: 'var(--accent)', width: `${total > 0 ? (learned/total)*100 : 0}%` }} />
+          </div>
+          <div className="mt-2 flex justify-between font-mono text-[10px] text-ink-3">
+            <span>PROGRESS</span>
+            <span>{total > 0 ? Math.round((learned/total)*100) : 0}%</span>
+          </div>
+        </div>
+
+        {/* Primary CTA */}
+        <div className="px-[18px] mt-1">
+          <Link to={`/review/${id}`}
+            className="flex items-center justify-between p-3.5 px-4 rounded-md bg-ink text-bg shadow-md">
+            <div className="flex flex-col items-start gap-0.5">
+              <div className="font-display text-[22px] leading-none">
+                <span className="font-mono font-medium text-[18px] mr-1.5">{dueCount}</span> 张待复习
+              </div>
+              <div className="font-mono text-[10px] tracking-[0.14em] uppercase opacity-60">START REVIEW</div>
+            </div>
+            <span className="font-mono text-[22px]">→</span>
+          </Link>
+        </div>
+
+        {/* Secondary actions — 4-up grid */}
+        <div className="mx-[18px] mt-2 grid grid-cols-4 gap-1.5 p-1.5 rounded-md bg-bg-card"
+          style={{ border: '1px solid var(--border-soft)' }}>
+          <Link to={`/browse/${id}`} className="flex flex-col items-center gap-1.5 py-2.5 px-1 rounded-lg text-ink-2 hover:bg-bg-raised hover:text-ink transition-colors">
+            <LayersIcon size={18} /><span className="text-[10px] font-medium font-body">浏览</span>
+          </Link>
+          <Link to={`/review/${id}?all=true`} className="flex flex-col items-center gap-1.5 py-2.5 px-1 rounded-lg text-ink-2 hover:bg-bg-raised hover:text-ink transition-colors">
+            <SparkIcon size={18} /><span className="text-[10px] font-medium font-body">全部复习</span>
+          </Link>
+          <Link to={`/import?deckId=${id}`} className="flex flex-col items-center gap-1.5 py-2.5 px-1 rounded-lg text-ink-2 hover:bg-bg-raised hover:text-ink transition-colors">
+            <UploadIcon size={18} /><span className="text-[10px] font-medium font-body">导入</span>
+          </Link>
+          <button onClick={() => setShowEditor(!showEditor)} className="flex flex-col items-center gap-1.5 py-2.5 px-1 rounded-lg text-ink-2 hover:bg-bg-raised hover:text-ink transition-colors">
+            <PlusIcon size={18} /><span className="text-[10px] font-medium font-body">新卡片</span>
+          </button>
+        </div>
 
         {/* Editor */}
         {showEditor && (
-          <div className="p-4 rounded-lg border border-border bg-bg-card">
+          <div className="mx-[18px] mt-2 p-4 rounded-md border bg-bg-card" style={{ borderColor: 'var(--border-soft)' }}>
             <CardEditor onSave={handleAdd} onCancel={() => setShowEditor(false)} />
           </div>
         )}
 
-        {/* Star filter toggle */}
-        {!editing && cards.length > 0 && (
-          <div className="flex gap-2">
-            <button
-              onClick={() => setFilter('all')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-ui transition-colors ${
-                filter === 'all' ? 'bg-accent text-white' : 'border border-border text-ink-2'
-              }`}
-            >
-              All
-            </button>
-            <button
-              onClick={() => setFilter('starred')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-ui transition-colors ${
-                filter === 'starred' ? 'bg-accent text-white' : 'border border-border text-ink-2'
-              }`}
-            >
-              ★ Starred
-            </button>
-          </div>
-        )}
+        {/* Filter chips */}
+        <div className="mx-[18px] mt-3 flex gap-1.5 items-center">
+          <button onClick={() => setFilter('all')}
+            className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full border text-[12px] font-body transition-all
+              ${filter === 'all' ? 'bg-ink text-bg border-ink' : 'bg-bg-card text-ink-2 hover:border-border-strong hover:text-ink'}`}
+            style={{ borderColor: filter === 'all' ? undefined : 'var(--border)' }}>
+            全部 · {total}
+          </button>
+          <button onClick={() => setFilter('starred')}
+            className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full border text-[12px] font-body transition-all
+              ${filter === 'starred' ? 'bg-ink text-bg border-ink' : 'bg-bg-card text-ink-2 hover:border-border-strong hover:text-ink'}`}
+            style={{ borderColor: filter === 'starred' ? undefined : 'var(--border)' }}>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l2.7 5.9 6.3.6-4.8 4.5 1.5 6.5L12 17l-5.7 3.5 1.5-6.5L3 9.5l6.3-.6z"/></svg>
+            收藏
+          </button>
+          <button onClick={() => setFilter('ref')}
+            className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full border text-[12px] font-body transition-all
+              ${filter === 'ref' ? 'bg-ink text-bg border-ink' : 'bg-bg-card text-ink-2 hover:border-border-strong hover:text-ink'}`}
+            style={{ borderColor: filter === 'ref' ? undefined : 'var(--border)' }}>
+            参考
+          </button>
+        </div>
 
-        {/* Batch delete bar — edit mode only */}
-        {editing && (
-          <div className="flex gap-2">
-            {selected.size > 0 && (
-              <button
-                onClick={handleBatchDelete}
-                className="flex-1 py-2.5 rounded-lg font-ui text-sm text-danger
-                  border border-danger/30 active:scale-[0.97] transition-transform"
-              >
-                Delete ({selected.size})
-              </button>
-            )}
-            <button
-              onClick={() => {
-                if (!confirm(`Delete ALL ${cards.length} cards in this deck?`)) return
-                deleteCards(cards.map((c) => c.id))
-                setSelected(new Set())
-                setEditing(false)
-                refresh()
-              }}
-              className="flex-1 py-2.5 rounded-lg font-ui text-sm text-danger
-                border border-danger/30 active:scale-[0.97] transition-transform"
-            >
-              Delete All
-            </button>
+        {/* Search */}
+        <div className="mx-[18px] mt-2 relative">
+          <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="搜索卡片..."
+            className="w-full py-[9px] px-3 bg-bg-card rounded-md text-[13px] outline-none transition-colors focus:border-accent"
+            style={{ border: '1px solid var(--border)', paddingLeft: 36 }} />
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-3 flex items-center">
+            <SearchIcon size={16} />
           </div>
-        )}
+        </div>
 
-        {/* Outline view */}
-        {filteredCards.length === 0 ? (
-          <p className="text-center text-ink-2 py-8 text-sm">
-            No cards yet.
-          </p>
-        ) : (
-          <div className="space-y-1">
-            {filteredCards.length > 4 && (
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search cards..."
-                className="w-full px-3 py-2.5 rounded-lg border border-border bg-bg-card text-ink
-                  font-ui text-sm placeholder:text-ink-2/50
-                  focus:outline-none focus:border-accent mb-2"
-              />
-            )}
-            {searchQuery.trim()
-              ? filteredCards
-                  .filter(c => {
-                    const q = searchQuery.toLowerCase()
-                    return c.front.toLowerCase().includes(q) || c.back.toLowerCase().includes(q)
-                  })
-                  .map(card => (
-                    <div
-                      key={card.id}
-                      className="flex items-center gap-2 py-2 px-2 rounded-lg
-                        hover:bg-bg-raised transition-colors"
-                    >
-                      <span className="text-sm text-ink truncate flex-1">{card.front}</span>
-                      {card.starred && <span className="text-xs shrink-0">★</span>}
-                      {(card.type || 'recall') === 'reference' && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded border border-ink-2/30 text-ink-2 shrink-0">ref</span>
-                      )}
-                      <div className="text-right shrink-0">
-                        {card.chapter && <div className="text-xs text-ink-2 truncate max-w-[80px]">{card.chapter}</div>}
-                        {card.section && <div className="text-[10px] text-ink-2/60 truncate max-w-[80px]">{card.section}</div>}
-                      </div>
-                    </div>
-                  ))
-              : [...outline.entries()].map(([chapter, secMap]) => {
+        {/* Outline */}
+        <div className="mx-[18px] my-2 mb-6 flex flex-col gap-px">
+          {searchQuery.trim() ? (
+            filteredCards
+              .filter(c => {
+                const q = searchQuery.toLowerCase()
+                return c.front.toLowerCase().includes(q) || c.back.toLowerCase().includes(q)
+              })
+              .map(card => (
+                <div key={card.id} className="flex items-center gap-2 py-1.5 px-2 rounded-md hover:bg-bg-raised font-zh text-[13px] text-ink relative"
+                  style={{ paddingLeft: 40 }}>
+                  <div className="absolute left-[28px] top-1/2 w-1.5 h-px" style={{ background: 'var(--ink-4)' }} />
+                  <span className="flex-1 truncate">{card.front}</span>
+                  {card.starred && <span className="text-accent text-[11px] shrink-0">★</span>}
+                  {!isRecall(card) && <span className="font-mono text-[9px] px-1.5 py-0.5 rounded border text-ink-3 shrink-0" style={{ borderColor: 'var(--border)' }}>REF</span>}
+                </div>
+              ))
+          ) : (
+            [...outline.entries()].map(([chapter, secMap]) => {
               const chapterKey = chapter || '__uncategorized__'
               const chapterCount = [...secMap.values()].reduce((sum, arr) => sum + arr.length, 0)
               const isChapterOpen = expandedChapters.has(chapterKey)
 
               return (
                 <div key={chapterKey}>
-                  {/* Chapter row */}
-                  <button
-                    onClick={() => toggleChapter(chapterKey)}
-                    className="w-full flex items-center gap-2 py-2 px-2 rounded-lg
-                      text-left hover:bg-bg-raised transition-colors"
-                  >
-                    <span className="text-ink-2 text-xs w-4 text-center shrink-0">
-                      {isChapterOpen ? '▼' : '▶'}
-                    </span>
-                    <span className="font-medium text-ink text-sm font-ui flex-1 truncate">
-                      {chapter || '未分类'}
-                    </span>
-                    <span className="text-xs text-ink-2 font-serif shrink-0">
-                      {chapterCount}
-                    </span>
-                  </button>
-
-                  {/* Chapter content */}
+                  <div onClick={() => toggleChapter(chapterKey)}
+                    className="flex items-center gap-2 py-2 px-1 rounded-md cursor-pointer hover:bg-bg-raised transition-colors">
+                    <span className={`w-4 h-4 inline-flex items-center justify-center text-ink-3 font-mono text-[10px] transition-transform ${isChapterOpen ? 'rotate-90' : ''}`}>›</span>
+                    <span className="font-zh text-sm font-medium text-ink flex-1">{chapter || '未分类'}</span>
+                    <span className="font-mono text-[10px] text-ink-3">{chapterCount}</span>
+                  </div>
                   {isChapterOpen && (
-                    <div className="ml-4 space-y-1">
+                    <div className="ml-5">
                       {[...secMap.entries()].map(([section, sectionCards]) => {
                         const sectionKey = `${chapterKey}::${section}`
                         const isSectionOpen = expandedSections.has(sectionKey)
-
                         if (!section) {
-                          // No section — cards hang directly under chapter
                           return (
-                            <div key={sectionKey} className="ml-4 space-y-1">
+                            <div key={sectionKey} className="ml-4">
                               {sectionCards.map((card) => (
-                                <CardRow
-                                  key={card.id}
-                                  card={card}
-                                  editing={editing}
-                                  selected={selected.has(card.id)}
+                                <CardRow key={card.id} card={card} editing={editing} selected={selected.has(card.id)}
                                   onToggleSelect={() => toggleSelect(card.id)}
-                                  onEdit={() => setEditingCard(card)}
-                                  onDelete={() => handleDelete(card.id)}
-                                  isEditingThis={editingCard?.id === card.id}
-                                  onSave={handleEdit}
-                                  onCancel={() => setEditingCard(null)}
-                                />
+                                  onEdit={() => setEditingCard(card)} onDelete={() => handleDelete(card.id)}
+                                  isEditingThis={editingCard?.id === card.id} onSave={handleEdit} onCancel={() => setEditingCard(null)} />
                               ))}
                             </div>
                           )
                         }
-
                         return (
                           <div key={sectionKey}>
-                            {/* Section row */}
-                            <button
-                              onClick={() => toggleSection(sectionKey)}
-                              className="w-full flex items-center gap-2 py-1.5 px-2 rounded-lg
-                                text-left hover:bg-bg-raised transition-colors"
-                            >
-                              <span className="text-ink-2 text-xs w-4 text-center shrink-0">
-                                {isSectionOpen ? '▼' : '▶'}
-                              </span>
-                              <span className="text-ink-2 text-sm font-ui flex-1 truncate">
-                                {section}
-                              </span>
-                              <span className="text-xs text-ink-2 font-serif shrink-0">
-                                {sectionCards.length}
-                              </span>
-                            </button>
-
-                            {/* Section cards */}
+                            <div onClick={() => toggleSection(sectionKey)}
+                              className="flex items-center gap-2 py-1.5 px-2 rounded-md cursor-pointer hover:bg-bg-raised transition-colors">
+                              <span className={`w-4 h-4 inline-flex items-center justify-center text-ink-3 font-mono text-[10px] transition-transform ${isSectionOpen ? 'rotate-90' : ''}`}>›</span>
+                              <span className="font-zh text-[13px] text-ink-2 flex-1">{section}</span>
+                              <span className="font-mono text-[10px] text-ink-3">{sectionCards.length}</span>
+                            </div>
                             {isSectionOpen && (
-                              <div className="ml-4 space-y-1">
+                              <div className="ml-4">
                                 {sectionCards.map((card) => (
-                                  <CardRow
-                                    key={card.id}
-                                    card={card}
-                                    editing={editing}
-                                    selected={selected.has(card.id)}
+                                  <CardRow key={card.id} card={card} editing={editing} selected={selected.has(card.id)}
                                     onToggleSelect={() => toggleSelect(card.id)}
-                                    onEdit={() => setEditingCard(card)}
-                                    onDelete={() => handleDelete(card.id)}
-                                    isEditingThis={editingCard?.id === card.id}
-                                    onSave={handleEdit}
-                                    onCancel={() => setEditingCard(null)}
-                                  />
+                                    onEdit={() => setEditingCard(card)} onDelete={() => handleDelete(card.id)}
+                                    isEditingThis={editingCard?.id === card.id} onSave={handleEdit} onCancel={() => setEditingCard(null)} />
                                 ))}
                               </div>
                             )}
@@ -421,7 +346,31 @@ export default function DeckDetail() {
                   )}
                 </div>
               )
-            })}
+            })
+          )}
+        </div>
+
+        {/* Edit mode batch delete */}
+        {editing && (
+          <div className="mx-[18px] mb-4 flex gap-2">
+            {selected.size > 0 && (
+              <button onClick={handleBatchDelete}
+                className="flex-1 py-2.5 rounded-md font-body text-sm text-danger border active:scale-[0.97] transition-transform"
+                style={{ borderColor: 'color-mix(in oklch, var(--danger) 30%, transparent)' }}>
+                Delete ({selected.size})
+              </button>
+            )}
+            <button onClick={() => {
+              if (!confirm(`Delete ALL ${cards.length} cards in this deck?`)) return
+              deleteCards(cards.map((c) => c.id))
+              setSelected(new Set())
+              setEditing(false)
+              refresh()
+            }}
+              className="flex-1 py-2.5 rounded-md font-body text-sm text-danger border active:scale-[0.97] transition-transform"
+              style={{ borderColor: 'color-mix(in oklch, var(--danger) 30%, transparent)' }}>
+              Delete All
+            </button>
           </div>
         )}
       </main>
@@ -440,11 +389,10 @@ function CardRow({ card, editing, selected, onToggleSelect, onEdit, onDelete, is
 
   if (editing) {
     return (
-      <div
-        onClick={onToggleSelect}
-        className={`flex items-center gap-2 py-2 px-2 rounded-lg cursor-pointer transition-colors
-          ${selected ? 'bg-accent/5 border border-accent' : 'border border-border hover:bg-bg-raised'}`}
-      >
+      <div onClick={onToggleSelect}
+        className={`flex items-center gap-2 py-2 px-2 rounded-md cursor-pointer transition-colors
+          ${selected ? 'bg-accent/5 border border-accent' : 'border hover:bg-bg-raised'}`}
+        style={{ borderColor: selected ? undefined : 'var(--border)' }}>
         <div className={`w-4 h-4 rounded border shrink-0 flex items-center justify-center
           ${selected ? 'bg-accent border-accent' : 'border-border'}`}>
           {selected && (
@@ -454,35 +402,26 @@ function CardRow({ card, editing, selected, onToggleSelect, onEdit, onDelete, is
           )}
         </div>
         <span className="text-sm text-ink truncate flex-1">{card.front}</span>
-        {card.starred && <span className="text-xs shrink-0">★</span>}
-        {(card.type || 'recall') === 'reference' && (
-          <span className="text-[10px] px-1.5 py-0.5 rounded border border-ink-2/30 text-ink-2 shrink-0">ref</span>
+        {card.starred && <span className="text-xs shrink-0 text-accent">★</span>}
+        {!isRecall(card) && (
+          <span className="font-mono text-[9px] px-1.5 py-0.5 rounded border text-ink-3 shrink-0" style={{ borderColor: 'var(--border)' }}>REF</span>
         )}
       </div>
     )
   }
 
   return (
-    <div className="flex items-center gap-2 py-2 px-2 rounded-lg
-      hover:bg-bg-raised transition-colors group">
-      <span className="text-sm text-ink truncate flex-1">{card.front}</span>
-      {card.starred && <span className="text-xs shrink-0">★</span>}
-      {(card.type || 'recall') === 'reference' && (
-        <span className="text-[10px] px-1.5 py-0.5 rounded border border-ink-2/30 text-ink-2 shrink-0">ref</span>
+    <div className="flex items-center gap-2 py-1.5 px-2 rounded-md hover:bg-bg-raised transition-colors group font-zh text-[13px] text-ink relative"
+      style={{ paddingLeft: 40 }}>
+      <div className="absolute left-[28px] top-1/2 w-1.5 h-px" style={{ background: 'var(--ink-4)' }} />
+      <span className="flex-1 truncate">{card.front}</span>
+      {card.starred && <span className="text-accent text-[11px] shrink-0">★</span>}
+      {!isRecall(card) && (
+        <span className="font-mono text-[9px] px-1.5 py-0.5 rounded border text-ink-3 shrink-0" style={{ borderColor: 'var(--border)' }}>REF</span>
       )}
       <div className="flex gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-        <button
-          onClick={onEdit}
-          className="text-xs px-1.5 py-0.5 rounded border border-border text-ink-2"
-        >
-          Edit
-        </button>
-        <button
-          onClick={onDelete}
-          className="text-xs px-1.5 py-0.5 rounded border border-danger/30 text-danger"
-        >
-          Del
-        </button>
+        <button onClick={onEdit} className="text-[11px] px-1.5 py-0.5 rounded border text-ink-2" style={{ borderColor: 'var(--border)' }}>Edit</button>
+        <button onClick={onDelete} className="text-[11px] px-1.5 py-0.5 rounded border text-danger" style={{ borderColor: 'color-mix(in oklch, var(--danger) 30%, transparent)' }}>Del</button>
       </div>
     </div>
   )

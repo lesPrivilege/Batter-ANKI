@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import StatsBar from '../components/StatsBar'
+import { MnemosMark, SettingsIcon, PlusIcon, UploadIcon, CheckIcon, PinIcon } from '../components/Icons'
 import { getAllDeckStats } from '../lib/scheduler'
 import { addDeck, deleteDecks, loadData, togglePin } from '../lib/storage'
+import { isRecall } from '../lib/cardUtils'
 
 export default function Home() {
   const [decks, setDecks] = useState([])
@@ -47,48 +49,49 @@ export default function Home() {
   }
 
   const navigate = useNavigate()
+  const sorted = [...decks].sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0))
+
+  const DECK_COLORS = ['h0', 'h1', 'h2', 'h3']
 
   return (
     <div className="flex flex-col min-h-screen bg-bg">
-      {/* Header */}
-      <header className="sticky top-0 z-10 flex items-center justify-between px-4 h-12
-        bg-bg-card border-b border-border shrink-0">
-        <h1 className="text-lg font-serif font-bold text-ink">Mnemos</h1>
-        <div className="flex items-center gap-3">
+      {/* Topbar */}
+      <header className="sticky top-0 z-10 flex items-center justify-between px-[18px] h-[52px]
+        bg-bg border-b" style={{ borderColor: 'var(--border-soft)' }}>
+        <h1 className="font-display italic text-[22px] tracking-tight text-ink flex items-center gap-2.5">
+          <MnemosMark size={20} accent="var(--accent)" />Mnemos
+        </h1>
+        <div className="flex gap-1 items-center">
           {editing ? (
-            <button onClick={exitEdit} className="text-sm text-ink-2 active:scale-[0.97]">
+            <button onClick={exitEdit} className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-ink-2 hover:bg-bg-raised hover:text-ink transition-colors text-sm">
               Done
             </button>
           ) : (
             <>
               {decks.length > 0 && (
-                <button
-                  onClick={() => setEditing(true)}
-                  className="text-sm text-ink-2 active:scale-[0.97]"
-                >
+                <button onClick={() => setEditing(true)} className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-ink-2 hover:bg-bg-raised hover:text-ink transition-colors text-sm">
                   Edit
                 </button>
               )}
-              <Link to="/settings" className="text-ink-2 active:scale-[0.97] transition-transform">
-                ⚙
-              </Link>
+              <button onClick={() => navigate('/settings')} className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-ink-2 hover:bg-bg-raised hover:text-ink transition-colors">
+                <SettingsIcon />
+              </button>
             </>
           )}
         </div>
       </header>
 
-      {/* Content */}
-      <main className="flex-1 overflow-y-auto max-w-[480px] w-full mx-auto">
-        {/* Stats — hidden in edit mode */}
-        {!editing && (
-          <div className="px-4 pt-4">
+      <main className="flex-1 overflow-y-auto">
+        <div className="p-[18px] pb-8 flex flex-col gap-4">
+          {/* Stats — hidden in edit mode */}
+          {!editing && (
             <StatsBar stats={{
               reviewedToday: decks.reduce((sum, d) => sum + d.reviewedToday, 0),
               dueCount: decks.reduce((sum, d) => sum + d.dueCount, 0),
               total: decks.reduce((sum, d) => sum + d.totalCards, 0),
               futureDistribution: (() => {
                 const data = loadData()
-                const allRecall = data.cards.filter(c => (c.type || 'recall') === 'recall')
+                const allRecall = data.cards.filter(c => isRecall(c))
                 const dist = []
                 for (let i = 1; i <= 7; i++) {
                   const d = new Date()
@@ -99,167 +102,161 @@ export default function Home() {
                 return dist
               })(),
             }} />
-          </div>
-        )}
+          )}
 
-        {/* Deck list */}
-        <div className="px-4 pt-4 space-y-2">
+          {/* Decks section header */}
+          <div className="flex items-center justify-between px-1">
+            <div className="font-mono text-[10px] tracking-[0.18em] text-ink-3 uppercase flex items-center gap-2">
+              卡组 · DECKS
+              <span className="flex-1 h-px" style={{ background: 'var(--border-soft)' }} />
+            </div>
+            <span className="font-mono text-[11px] text-ink-3">{decks.length}</span>
+          </div>
+
+          {/* Deck list */}
           {decks.length === 0 ? (
-            <div className="py-12 text-center">
-              <span className="text-sm text-ink-2">No decks yet.</span>
+            <div className="flex-1 flex flex-col items-center justify-center gap-3 py-12 text-center text-ink-3">
+              <MnemosMark size={56} color="var(--ink-4)" accent="var(--ink-4)" />
+              <div className="font-display text-[26px] text-ink-2 mt-2">
+                <em>memoria principium</em>
+              </div>
+              <div className="font-zh text-sm">记忆是一切的开端</div>
             </div>
           ) : (
-            decks.map((deck) => (
-              editing ? (
-                <button
-                  key={deck.id}
-                  onClick={() => toggleSelect(deck.id)}
-                  className={`w-full flex items-center gap-3 p-4 rounded-lg border bg-bg-card
-                    transition-colors text-left
-                    ${selected.has(deck.id) ? 'border-accent bg-accent/5' : 'border-border'}`}
-                >
-                  <div className={`w-5 h-5 rounded border shrink-0 flex items-center justify-center
-                    ${selected.has(deck.id) ? 'bg-accent border-accent' : 'border-border'}`}>
-                    {selected.has(deck.id) && (
-                      <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                      </svg>
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-base font-ui font-medium text-ink truncate">{deck.name}</div>
-                    <div className="text-sm text-ink-2 mt-1">
-                      {deck.dueCount} due &middot; {deck.totalCards} total
+            <div className="flex flex-col gap-2">
+              {sorted.map((deck) => {
+                const hueClass = DECK_COLORS[Math.abs(deck.name.charCodeAt(0)) % 4]
+                const glyph = deck.name.charAt(0)
+                return editing ? (
+                  <button key={deck.id} onClick={() => toggleSelect(deck.id)}
+                    className={`w-full flex items-center gap-3 p-4 rounded-md transition-colors text-left
+                      ${selected.has(deck.id)
+                        ? 'bg-accent/5 border border-accent'
+                        : 'bg-bg-card border'}`}
+                    style={{ borderColor: selected.has(deck.id) ? undefined : 'var(--border-soft)' }}>
+                    <div className={`w-5 h-5 rounded border shrink-0 flex items-center justify-center
+                      ${selected.has(deck.id) ? 'bg-accent border-accent' : 'border-border'}`}>
+                      {selected.has(deck.id) && (
+                        <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
                     </div>
-                  </div>
-                </button>
-              ) : (
-                <Link
-                  to={`/deck/${deck.id}`}
-                  key={deck.id}
-                  className="flex justify-between items-center p-4 rounded-lg border border-border bg-bg-card
-                    active:bg-bg-raised transition-colors"
-                >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-base font-ui font-medium text-ink truncate">{deck.name}</span>
-                      {deck.pinned && <span className="text-xs">▲</span>}
+                    <div className="flex-1 min-w-0">
+                      <div className="font-zh text-[15px] font-medium text-ink truncate">{deck.name}</div>
+                      <div className="font-mono text-[11px] text-ink-3 mt-1">
+                        {deck.dueCount} due · {deck.totalCards} total
+                      </div>
                     </div>
-                    <div className="text-sm text-ink-2 mt-1">
-                      {deck.dueCount} due &middot; {deck.totalCards} total
+                  </button>
+                ) : (
+                  <Link key={deck.id} to={`/deck/${deck.id}`}
+                    className="bg-bg-card grid grid-cols-[56px_1fr_auto] items-center gap-3 cursor-pointer transition-all hover:border-border active:scale-[0.99] rounded-md p-0 pr-3.5 shadow-sm"
+                    style={{ border: '1px solid var(--border-soft)' }}>
+                    <div className={`deck-spine ${hueClass} h-14 ml-3.5 rounded relative overflow-hidden`}
+                      style={{ position: 'relative' }}>
+                      <div className="absolute inset-0 flex items-center justify-center font-zh text-[26px] text-ink-2 font-medium pl-1.5">{glyph}</div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-1 shrink-0 ml-2">
-                    <button
-                      onClick={(e) => { e.stopPropagation(); e.preventDefault(); togglePin(deck.id); refresh() }}
-                      className="text-xs px-1.5 py-1 rounded text-ink-2 active:scale-[0.97] transition-transform"
-                      title={deck.pinned ? 'Unpin' : 'Pin'}
-                    >
-                      {deck.pinned ? '▲' : '△'}
-                    </button>
-                    {deck.dueCount > 0 ? (
-                      <button
-                        onClick={(e) => { e.stopPropagation(); e.preventDefault(); navigate(`/review/${deck.id}`) }}
-                        className="text-xs px-2 py-1 rounded bg-accent text-white shrink-0
-                          active:scale-[0.97] transition-transform"
-                      >
-                        Review
+                    <div className="min-w-0 py-3.5">
+                      <div className="font-zh text-[15px] font-medium text-ink truncate flex items-center gap-1.5">
+                        {deck.name}
+                        {deck.pinned && <span className="text-accent text-[10px]">◆</span>}
+                      </div>
+                      <div className="font-mono text-[11px] text-ink-3 mt-1 flex items-center gap-1.5">
+                        {deck.dueCount > 0
+                          ? <><span className="text-accent font-semibold">{deck.dueCount}</span><span>待复习</span></>
+                          : <span style={{ color: 'var(--good)' }}>已完成</span>}
+                        <span className="text-ink-4">·</span>
+                        <span>{deck.totalCards} 张</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <button onClick={(e) => { e.stopPropagation(); e.preventDefault(); togglePin(deck.id); refresh() }}
+                        className={`w-7 h-7 inline-flex items-center justify-center rounded-md ${deck.pinned ? 'text-accent' : 'text-ink-3'} hover:bg-bg-raised`}
+                        title={deck.pinned ? 'Unpin' : 'Pin'}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill={deck.pinned ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round">
+                          <path d="M12 3l3 5 5 1-4 4 1 5-5-3-5 3 1-5-4-4 5-1z" />
+                        </svg>
                       </button>
-                    ) : (
-                      <span className="text-xs text-success">✓</span>
-                    )}
-                  </div>
-                </Link>
-              )
-            ))
+                      {deck.dueCount > 0 ? (
+                        <button onClick={(e) => { e.stopPropagation(); e.preventDefault(); navigate(`/review/${deck.id}`) }}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-ink text-[11px] font-medium font-body tracking-wide whitespace-nowrap"
+                          style={{ background: 'var(--ink)' }}>
+                          <span style={{ color: 'var(--bg)' }}>复习</span>
+                          <span className="font-mono text-[12px]" style={{ color: 'var(--bg)' }}>→</span>
+                        </button>
+                      ) : (
+                        <span className="w-[26px] h-[26px] rounded-full inline-flex items-center justify-center text-[12px]"
+                          style={{ background: 'var(--good-soft)', color: 'var(--good)' }}>
+                          <CheckIcon size={14} />
+                        </span>
+                      )}
+                    </div>
+                  </Link>
+                )
+              })}
+            </div>
           )}
-        </div>
 
-        {/* Batch delete bar — edit mode only */}
-        {editing && (
-          <div className="px-4 pt-4 flex gap-2">
-            {selected.size > 0 && (
-              <button
-                onClick={handleBatchDelete}
-                className="flex-1 py-2.5 rounded-lg font-ui text-sm text-danger
-                  border border-danger/30 active:scale-[0.97] transition-transform"
-              >
-                Delete ({selected.size})
-              </button>
-            )}
-            <button
-              onClick={() => {
+          {/* Edit mode batch delete */}
+          {editing && (
+            <div className="flex gap-2 mt-2">
+              {selected.size > 0 && (
+                <button onClick={handleBatchDelete}
+                  className="flex-1 py-2.5 rounded-md font-body text-sm text-danger border active:scale-[0.97] transition-transform"
+                  style={{ borderColor: 'color-mix(in oklch, var(--danger) 30%, transparent)' }}>
+                  Delete ({selected.size})
+                </button>
+              )}
+              <button onClick={() => {
                 if (!confirm(`Delete ALL ${decks.length} decks and all their cards?`)) return
                 deleteDecks(decks.map((d) => d.id))
                 setSelected(new Set())
                 setEditing(false)
                 refresh()
               }}
-              className="flex-1 py-2.5 rounded-lg font-ui text-sm text-danger
-                border border-danger/30 active:scale-[0.97] transition-transform"
-            >
-              Delete All
-            </button>
-          </div>
-        )}
-
-        {/* Bottom actions — hidden in edit mode */}
-        {!editing && (
-          <>
-            <div className="px-4 pt-4">
-              <Link
-                to="/import"
-                className="block w-full py-2.5 rounded-lg font-ui text-sm text-ink-2
-                  border border-border text-center active:scale-[0.97] transition-transform"
-              >
-                Import
-              </Link>
+                className="flex-1 py-2.5 rounded-md font-body text-sm text-danger border active:scale-[0.97] transition-transform"
+                style={{ borderColor: 'color-mix(in oklch, var(--danger) 30%, transparent)' }}>
+                Delete All
+              </button>
             </div>
+          )}
 
-            <div className="px-4 pb-4 pt-2">
+          {/* Bottom actions — hidden in edit mode */}
+          {!editing && (
+            <div className="grid grid-cols-2 gap-2 mt-2">
               {showNewDeck ? (
-                <form onSubmit={handleAddDeck} className="flex gap-2">
-                  <input
-                    value={newDeckName}
-                    onChange={(e) => setNewDeckName(e.target.value)}
-                    placeholder="Deck name"
-                    autoFocus
-                    className="flex-1 px-3 py-2.5 rounded-lg border border-border bg-bg-card text-ink
-                      font-ui text-sm placeholder:text-ink-2/50
-                      focus:outline-none focus:border-accent"
-                  />
-                  <button
-                    type="submit"
-                    className="px-4 py-2.5 rounded-lg font-medium text-sm font-ui
-                      border border-accent text-accent
-                      active:scale-[0.97] transition-transform
-                      disabled:opacity-40"
-                    disabled={!newDeckName.trim()}
-                  >
+                <form onSubmit={handleAddDeck} className="col-span-2 flex gap-2">
+                  <input value={newDeckName} onChange={(e) => setNewDeckName(e.target.value)}
+                    placeholder="Deck name" autoFocus
+                    className="flex-1 px-3 py-2.5 rounded-md border bg-bg-card text-ink font-body text-sm placeholder:text-ink-3 focus:outline-none focus:border-accent"
+                    style={{ borderColor: 'var(--border)' }} />
+                  <button type="submit" disabled={!newDeckName.trim()}
+                    className="px-4 py-2.5 rounded-md font-medium text-sm font-body bg-ink text-bg active:scale-[0.97] transition-transform disabled:opacity-40">
                     Add
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => { setShowNewDeck(false); setNewDeckName('') }}
-                    className="px-4 py-2.5 rounded-lg font-ui text-sm
-                      border border-border text-ink-2
-                      active:scale-[0.97] transition-transform"
-                  >
+                  <button type="button" onClick={() => { setShowNewDeck(false); setNewDeckName('') }}
+                    className="px-4 py-2.5 rounded-md font-body text-sm border text-ink-2 active:scale-[0.97] transition-transform"
+                    style={{ borderColor: 'var(--border)' }}>
                     Cancel
                   </button>
                 </form>
               ) : (
-                <button
-                  onClick={() => setShowNewDeck(true)}
-                  className="w-full py-3 rounded-lg font-ui text-base font-medium text-accent
-                    border border-border active:scale-[0.97] transition-transform"
-                >
-                  + New Deck
-                </button>
+                <>
+                  <Link to="/import"
+                    className="inline-flex items-center justify-center gap-1.5 py-[11px] px-3.5 rounded-md font-body text-[13px] font-medium bg-bg-card border text-ink active:scale-[0.97] transition-transform hover:bg-bg-raised"
+                    style={{ borderColor: 'var(--border)' }}>
+                    <UploadIcon size={16} /> 导入
+                  </Link>
+                  <button onClick={() => setShowNewDeck(true)}
+                    className="inline-flex items-center justify-center gap-1.5 py-[11px] px-3.5 rounded-md font-body text-[13px] font-medium bg-ink text-bg active:scale-[0.97] transition-transform hover:opacity-80">
+                    <PlusIcon size={16} /> 新建卡组
+                  </button>
+                </>
               )}
             </div>
-          </>
-        )}
+          )}
+        </div>
       </main>
     </div>
   )
