@@ -1,4 +1,4 @@
-import { useParams, Link, useSearchParams, useNavigate } from 'react-router-dom'
+import { useParams, Link, useSearchParams } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import ReviewCard from '../components/ReviewCard'
 import { BackIcon, CheckIcon } from '../components/Icons'
@@ -7,6 +7,7 @@ import { getCards, updateCardSM2, toggleStar } from '../lib/storage'
 import { sm2 } from '../lib/sm2'
 import { shuffle } from '../lib/utils'
 import { isRecall } from '../lib/cardUtils'
+import { useBackButton } from '../lib/useBackButton'
 
 function predictInterval(card, quality) {
   const result = sm2(card, quality)
@@ -15,7 +16,7 @@ function predictInterval(card, quality) {
 
 export default function Review() {
   const { id } = useParams()
-  const navigate = useNavigate()
+  const { goBack } = useBackButton()
   const [searchParams] = useSearchParams()
   const reviewAll = searchParams.get('all') === 'true'
   const [dueCards, setDueCards] = useState([])
@@ -61,7 +62,7 @@ export default function Review() {
     return (
       <div className="flex flex-col min-h-screen bg-bg">
         <header className="sticky top-0 z-10 flex items-center px-[18px] h-[52px] bg-bg border-b" style={{ borderColor: 'var(--border-soft)' }}>
-          <button onClick={() => navigate(-1)} className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-ink-2 hover:bg-bg-raised hover:text-ink transition-colors">
+          <button onClick={goBack} className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-ink-2 hover:bg-bg-raised hover:text-ink transition-colors">
             <BackIcon />
           </button>
         </header>
@@ -121,7 +122,7 @@ export default function Review() {
       {/* Header */}
       <header className="sticky top-0 z-10 flex items-center justify-between px-[18px] h-[52px]
         bg-bg border-b" style={{ borderColor: 'var(--border-soft)' }}>
-        <button onClick={() => navigate(-1)} className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-ink-2 hover:bg-bg-raised hover:text-ink transition-colors">
+        <button onClick={goBack} className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-ink-2 hover:bg-bg-raised hover:text-ink transition-colors">
           <BackIcon />
         </button>
         <span className="font-mono text-[11px]">

@@ -3,9 +3,11 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { addDeck, addCard, getCards, getDecks, getDeck, importData, mergeData, parseImportData, loadData } from '../lib/storage'
 import { parseMdToCards } from '../lib/mdParser'
 import { BackIcon, UploadIcon, PasteIcon } from '../components/Icons'
+import { useBackButton } from '../lib/useBackButton'
 
 export default function ImportPage() {
   const navigate = useNavigate()
+  const { goBack } = useBackButton()
   const [searchParams] = useSearchParams()
   const targetDeckId = searchParams.get('deckId')
   const targetDeck = targetDeckId ? getDeck(targetDeckId) : null
@@ -302,7 +304,7 @@ export default function ImportPage() {
   return (
     <div className="flex flex-col min-h-screen bg-bg">
       <header className="sticky top-0 z-10 flex items-center px-[18px] h-[52px] bg-bg border-b" style={{ borderColor: 'var(--border-soft)' }}>
-        <button onClick={() => navigate(-1)} className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-ink-2 hover:bg-bg-raised hover:text-ink transition-colors">
+        <button onClick={goBack} className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-ink-2 hover:bg-bg-raised hover:text-ink transition-colors">
           <BackIcon />
         </button>
         <h1 className="flex-1 font-zh text-[17px] font-medium text-ink pl-1">导入</h1>

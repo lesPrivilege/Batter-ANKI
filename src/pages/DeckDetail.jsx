@@ -5,6 +5,7 @@ import { BackIcon, PinIcon, MoreIcon, LayersIcon, SparkIcon, UploadIcon, PlusIco
 import { isRecall } from '../lib/cardUtils'
 import { localToday } from '../lib/dateUtils'
 import { getDeck, getCards, addCard, updateCard, updateDeck, deleteCard, deleteCards, deleteDeck, togglePin, toggleStar, exportDeck } from '../lib/storage'
+import { useBackButton } from '../lib/useBackButton'
 
 function buildOutline(cards) {
   const map = new Map()
@@ -22,6 +23,7 @@ function buildOutline(cards) {
 export default function DeckDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { goBack } = useBackButton()
   const [deck, setDeck] = useState(null)
   const [cards, setCards] = useState([])
   const [showEditor, setShowEditor] = useState(false)
@@ -135,7 +137,7 @@ export default function DeckDetail() {
       {/* Header */}
       <header className="sticky top-0 z-10 flex items-center justify-between px-[18px] h-[52px]
         bg-bg border-b" style={{ borderColor: 'var(--border-soft)' }}>
-        <button onClick={() => navigate(-1)} className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-ink-2 hover:bg-bg-raised hover:text-ink transition-colors">
+        <button onClick={goBack} className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-ink-2 hover:bg-bg-raised hover:text-ink transition-colors">
           <BackIcon />
         </button>
         {editingName ? (
