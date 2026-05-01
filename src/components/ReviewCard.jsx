@@ -52,44 +52,6 @@ export default function ReviewCard({ card, onRate }) {
         </span>
       </button>
 
-      {/* Rating buttons only show when flipped */}
-      {flipped && (
-        <div className="flex gap-2 w-full">
-          <button
-            onClick={() => handleRate(1)}
-            className="flex-1 py-3 rounded-lg font-medium text-sm font-ui
-              bg-danger-bg text-danger border border-danger/30
-              active:scale-[0.97] transition-all"
-          >
-            Again
-          </button>
-          <button
-            onClick={() => handleRate(2)}
-            className="flex-1 py-3 rounded-lg font-medium text-sm font-ui
-              bg-warning-bg text-warning border border-warning/30
-              active:scale-[0.97] transition-all"
-          >
-            Hard
-          </button>
-          <button
-            onClick={() => handleRate(4)}
-            className="flex-1 py-3 rounded-lg font-medium text-sm font-ui
-              bg-accent-bg text-accent border border-accent/30
-              active:scale-[0.97] transition-all"
-          >
-            Good
-          </button>
-          <button
-            onClick={() => handleRate(5)}
-            className="flex-1 py-3 rounded-lg font-medium text-sm font-ui
-              bg-success-bg text-success border border-success/30
-              active:scale-[0.97] transition-all"
-          >
-            Easy
-          </button>
-        </div>
-      )}
-
       {!flipped && (
         <p className="text-xs text-ink-2">Tap to flip</p>
       )}

@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.7.3 — 2026-05-01 (fix)
+
+**修复：**
+- 移除 ReviewCard.jsx 中重复的评分按钮（仅保留 Review.jsx 中的版本）
+- Prompt 模板补充 LaTeX 语法说明（反引号包裹要求）
+
+---
+
 ## v0.7.2 — 2026-05-01 (debug APK build)
 
 **构建：**
