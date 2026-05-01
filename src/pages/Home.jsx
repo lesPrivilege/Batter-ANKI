@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import StatsBar from '../components/StatsBar'
-import { MnemosMark, SettingsIcon, PlusIcon, UploadIcon, CheckIcon } from '../components/Icons'
+import { MnemosMark, SettingsIcon, PlusIcon, UploadIcon, CheckIcon, ArrowRIcon } from '../components/Icons'
 import { getAllDeckStats } from '../lib/scheduler'
 import { addDeck, deleteDecks, getDailyLimit, togglePin } from '../lib/storage'
 
@@ -182,7 +182,7 @@ export default function Home() {
                           className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-ink text-[11px] font-medium font-body tracking-wide whitespace-nowrap"
                           style={{ background: 'var(--ink)' }}>
                           <span style={{ color: 'var(--bg)' }}>复习</span>
-                          <span className="font-mono text-[12px]" style={{ color: 'var(--bg)' }}>→</span>
+                          <ArrowRIcon size={12} style={{ color: 'var(--bg)' }} />
                         </button>
                       ) : (
                         <span className="w-[26px] h-[26px] rounded-full inline-flex items-center justify-center text-[12px]"
