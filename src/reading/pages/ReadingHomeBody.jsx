@@ -3,7 +3,7 @@
 import { useNavigate, Link } from 'react-router-dom'
 import { getDocumentsByCollection } from '../lib/storage'
 import { getWeeklyMinutes } from '../lib/stats'
-import { PlusIcon, TrashIcon, UploadIcon, LayersIcon, ArrowRIcon, SparkIcon } from '../../components/Icons'
+import { PlusIcon, TrashIcon, UploadIcon, LayersIcon, SparkIcon } from '../../components/Icons'
 import { HeroSection } from '../../components/HeroSection'
 
 export default function ReadingHomeBody({ h }) {
@@ -52,7 +52,7 @@ export default function ReadingHomeBody({ h }) {
             )
           })()}
 
-          {h.continueDoc && (
+          {h.continueDoc && !h.dismissedContinue && (
             <div className="deck group" onClick={() => navigate(`/reading/doc/${h.continueDoc.id}`)}>
               <div className={`deck-spine ${['h0','h1','h2','h3'][Math.abs(h.continueDoc.title.charCodeAt(0)) % 4]}`}>
                 <span className="glyph">{h.continueDoc.title.charAt(0)}</span>
@@ -66,9 +66,8 @@ export default function ReadingHomeBody({ h }) {
                 </div>
               </div>
               <div className="deck-cta">
-                <div className="h-1 w-12 rounded-full overflow-hidden" style={{ background: 'var(--bg-raised)' }}>
-                  <div className="h-full rounded-full" style={{ width: `${h.continueDoc.scrollPct}%`, background: 'var(--accent)' }} />
-                </div>
+                <button onClick={(e) => { e.stopPropagation(); h.setDismissedContinue(true) }}
+                  className="text-ink-3 hover:text-ink text-xs px-1">✕</button>
               </div>
             </div>
           )}

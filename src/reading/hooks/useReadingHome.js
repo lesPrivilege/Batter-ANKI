@@ -16,15 +16,16 @@ export function useReadingHome() {
   const [searchResults, setSearchResults] = useState([])
   const [recentDocs, setRecentDocs] = useState([])
   const [continueDoc, setContinueDoc] = useState(null)
+  const [dismissedContinue, setDismissedContinue] = useState(false)
   const [stats, setStats] = useState({ totalMinutes: 0, docsCompleted: 0, streakDays: 0 })
   const debounceRef = useRef(null)
 
   const refresh = useCallback(() => {
     setCollections(getCollections())
     setRecentDocs(getRecentDocuments(5))
-    setContinueDoc(getContinueReading())
+    if (!dismissedContinue) setContinueDoc(getContinueReading())
     setStats(getReadingStats())
-  }, [])
+  }, [dismissedContinue])
 
   useEffect(refresh, [])
 
@@ -78,7 +79,7 @@ export function useReadingHome() {
     collections, sorted, showNewCol, newColName,
     sortBy, setSortBy,
     query, setQuery, searchResults,
-    recentDocs, continueDoc, stats,
+    recentDocs, continueDoc, dismissedContinue, setDismissedContinue, stats,
     setShowNewCol, setNewColName,
     refresh,
     handleAddCollection, handleDeleteCollection,

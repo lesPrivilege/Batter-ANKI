@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { getSubjectStats, getSubjectList, getChapterList, loadLastSession, loadQuestions, loadProgress, deleteSubject, addQuestions } from '../quiz/lib/storage'
+import { getSubjectStats, getSubjectList, getChapterList, loadLastSession, loadQuestions, loadProgress, deleteSubject, addQuestions, clearLastSession } from '../quiz/lib/storage'
 import { parseQuestionsJson } from '../quiz/lib/questionParser'
 import { getSubjectDisplayName } from '../quiz/lib/subjectNames'
 import { SUBJECT_HUE, SUBJECT_GLYPH } from '../quiz/lib/subjectMeta'
-import { ArrowRIcon, UploadIcon, SparkIcon, PlusIcon, PasteIcon } from '../components/Icons'
+import { UploadIcon, SparkIcon, PlusIcon, PasteIcon } from '../components/Icons'
 import { HeroSection } from '../components/HeroSection'
 
 function getTimeAgo(ts) {
@@ -17,7 +17,7 @@ function getTimeAgo(ts) {
   return `${days}天前`
 }
 
-function ContinueCard({ subjects }) {
+function ContinueCard({ subjects, onDismiss }) {
   const session = loadLastSession()
   const navigate = useNavigate()
   if (!session) return null
@@ -27,7 +27,7 @@ function ContinueCard({ subjects }) {
   const timeStr = ago < 60 ? `${ago}分钟前` : ago < 1440 ? `${Math.floor(ago / 60)}小时前` : `${Math.floor(ago / 1440)}天前`
 
   return (
-    <div className="deck" onClick={() => navigate(session.route)}>
+    <div className="deck group" onClick={() => navigate(session.route)}>
       <div className={`deck-spine h${SUBJECT_HUE[session.subject] || 0}`}>
         <span className="glyph">{SUBJECT_GLYPH[session.subject] || '继'}</span>
       </div>
@@ -44,7 +44,8 @@ function ContinueCard({ subjects }) {
         </div>
       </div>
       <div className="deck-cta">
-        <ArrowRIcon size={12} style={{ color: 'var(--accent)' }} />
+        <button onClick={(e) => { e.stopPropagation(); onDismiss?.() }}
+          className="text-ink-3 hover:text-ink text-xs px-1">✕</button>
       </div>
     </div>
   )
@@ -208,7 +209,7 @@ export function QuizHomeContent() {
       />
 
       {/* Continue card */}
-      <ContinueCard subjects={subjects} />
+      <ContinueCard subjects={subjects} onDismiss={() => { clearLastSession(); refresh() }} />
 
       {/* Subject list header */}
       {subjects.length > 0 && (
