@@ -26,6 +26,7 @@ function getParent(pathname, searchParams) {
   if (pathname.startsWith('/quiz/') || pathname.startsWith('/quiz-review/')) return '/'
   if (pathname.startsWith('/set/')) return '/'
   if (pathname.startsWith('/reading/doc/')) return '/reading'
+  if (pathname.startsWith('/collection/')) return '/reading'
   if (pathname === '/reading') return '/'
   if (pathname === '/import' && searchParams) {
     const deckId = searchParams.get('deckId')

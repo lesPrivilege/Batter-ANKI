@@ -1,8 +1,8 @@
 // Shared body for ReadingHome and ReadingHomeContent
 // Accepts h (useReadingHome return) as props so both wrappers share one hook instance
 import { useNavigate, Link } from 'react-router-dom'
-import { getDocumentsByCollection, moveCollectionUp, moveCollectionDown } from '../lib/storage'
-import { PlusIcon, TrashIcon, UploadIcon, LayersIcon } from '../../components/Icons'
+import { getDocumentsByCollection } from '../lib/storage'
+import { PlusIcon, TrashIcon, UploadIcon, LayersIcon, ArrowRIcon } from '../../components/Icons'
 
 export default function ReadingHomeBody({ h }) {
   const navigate = useNavigate()
@@ -67,39 +67,36 @@ export default function ReadingHomeBody({ h }) {
             <div className="empty"><LayersIcon size={48} style={{ color: 'var(--ink-4)' }} /><div className="msg">还没有阅读集合</div><div className="motto-zh">新建集合以开始阅读</div></div>
           )}
 
-          {h.sorted.map((col, colIdx) => {
+          {h.sorted.map((col) => {
             const docs = getDocumentsByCollection(col.id)
-            const isExpanded = h.expandedCol === col.id
+            const COLORS = ['h0', 'h1', 'h2', 'h3']
+            const hueClass = COLORS[Math.abs(col.name.charCodeAt(0)) % 4]
+            const glyph = col.name.charAt(0)
+
             return (
-              <div key={col.id} className="settings-card">
-                <div className="flex items-center justify-between cursor-pointer"
-                  onClick={() => h.setExpandedCol(isExpanded ? null : col.id)}>
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">{col.icon}</span>
-                    <span className="font-zh text-[15px] font-medium text-ink">{col.name}</span>
-                    <span className="font-mono text-[11px] text-ink-3">{docs.length}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    {colIdx > 0 && <button onClick={(e) => { e.stopPropagation(); moveCollectionUp(col.id); h.refresh() }} className="text-ink-3 text-xs">↑</button>}
-                    {colIdx < h.sorted.length - 1 && <button onClick={(e) => { e.stopPropagation(); moveCollectionDown(col.id); h.refresh() }} className="text-ink-3 text-xs">↓</button>}
-                    <button onClick={(e) => { e.stopPropagation(); h.setImportTarget(col.id); h.fileInputRef.current?.click() }} className="text-ink-3 hover:text-ink"><UploadIcon size={14} /></button>
-                    <button onClick={(e) => { e.stopPropagation(); h.setShowNewDoc(col.id) }} className="text-ink-3 hover:text-ink"><PlusIcon size={14} /></button>
-                    <button onClick={(e) => { e.stopPropagation(); h.handleDeleteCollection(col.id, col.name) }} className="text-ink-3 hover:text-danger"><TrashIcon size={14} /></button>
-                    <span className={`ch-caret ${isExpanded ? 'open' : ''}`}>›</span>
+              <div key={col.id} className="deck group" onClick={() => navigate(`/collection/${col.id}`)}>
+                <div className={`deck-spine ${hueClass}`}>
+                  <span className="glyph">{glyph}</span>
+                </div>
+                <div className="deck-meta">
+                  <div className="deck-name">{col.name}</div>
+                  <div className="deck-stats">
+                    <span>{docs.length} 篇文档</span>
                   </div>
                 </div>
-                {isExpanded && (
-                  <div className="mt-3 flex flex-col gap-1">
-                    {docs.length === 0 ? <div className="text-center text-ink-3 text-xs py-3">暂无文档</div> : docs.map(doc => (
-                      <div key={doc.id} className="flex items-center justify-between py-2 px-2 rounded-md hover:bg-bg-raised cursor-pointer group"
-                        onClick={() => navigate(`/reading/doc/${doc.id}`)}>
-                        <div className="flex-1 min-w-0"><div className="font-zh text-[14px] text-ink truncate">{doc.title}</div></div>
-                        <button onClick={(e) => { e.stopPropagation(); h.handleDeleteDocument(doc.id) }}
-                          className="hidden group-hover:inline-flex text-ink-3 hover:text-danger"><TrashIcon size={14} /></button>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                <div className="deck-cta" style={{ gap: 6 }}>
+                  <button
+                    className="inline-flex items-center justify-center w-7 h-7 rounded-md text-ink-3 opacity-40 hover:opacity-100 hover:text-danger hover:bg-danger-soft transition-colors flex-shrink-0"
+                    onClick={(e) => { e.stopPropagation(); h.handleDeleteCollection(col.id, col.name) }}
+                    title="删除集合">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" />
+                    </svg>
+                  </button>
+                  <button className="cta-pill" onClick={(e) => { e.stopPropagation(); navigate(`/collection/${col.id}`) }}>
+                    阅读<span className="arr">→</span>
+                  </button>
+                </div>
               </div>
             )
           })}
@@ -158,7 +155,6 @@ export default function ReadingHomeBody({ h }) {
         )}
       </div>
 
-      <input ref={h.fileInputRef} type="file" accept=".md,.tex,.txt" onChange={h.handleFileImport} className="hidden" />
     </>
   )
 }

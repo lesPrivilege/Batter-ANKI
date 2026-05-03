@@ -1,14 +1,9 @@
 // Shared hook for ReadingHome and ReadingHomeContent
-// Extracts all common state, handlers, and logic
-
 import { useState, useEffect, useRef, useCallback } from 'react'
 import {
   getCollections, addCollection, deleteCollection,
-  getDocumentsByCollection, addDocument, deleteDocument,
-  getRecentDocuments, getContinueReading,
-  moveCollectionUp, moveCollectionDown,
+  getDocumentsByCollection, getRecentDocuments, getContinueReading,
 } from '../lib/storage'
-import { readFileAsDocument, ACCEPT } from '../lib/importer'
 import { searchDocuments } from '../lib/search'
 import { getReadingStats } from '../lib/stats'
 
@@ -16,11 +11,6 @@ export function useReadingHome() {
   const [collections, setCollections] = useState([])
   const [showNewCol, setShowNewCol] = useState(false)
   const [newColName, setNewColName] = useState('')
-  const [expandedCol, setExpandedCol] = useState(null)
-  const [showNewDoc, setShowNewDoc] = useState(null)
-  const [newDocTitle, setNewDocTitle] = useState('')
-  const [newDocContent, setNewDocContent] = useState('')
-  const [newDocFormat, setNewDocFormat] = useState('md')
   const [sortBy, setSortBy] = useState('order')
   const [query, setQuery] = useState('')
   const [searchResults, setSearchResults] = useState([])
@@ -49,21 +39,6 @@ export function useReadingHome() {
     return () => clearTimeout(debounceRef.current)
   }, [query])
 
-  // ── File import ─────────────────────────────────────
-
-  const [importTarget, setImportTarget] = useState(null)
-
-  const handleFileImport = async (e) => {
-    const file = e.target.files?.[0]
-    if (!file || !importTarget) return
-    try {
-      const { title, content, format } = await readFileAsDocument(file)
-      addDocument(importTarget, title, content, format)
-      refresh()
-    } catch { alert('文件导入失败，请检查文件格式') }
-    e.target.value = ''
-  }
-
   // ── Collection CRUD ─────────────────────────────────
 
   const handleAddCollection = (e) => {
@@ -78,25 +53,6 @@ export function useReadingHome() {
   const handleDeleteCollection = (id, name) => {
     if (!confirm(`删除集合「${name}」及其所有文档？`)) return
     deleteCollection(id)
-    if (expandedCol === id) setExpandedCol(null)
-    refresh()
-  }
-
-  // ── Document CRUD ───────────────────────────────────
-
-  const handleAddDocument = (e) => {
-    e.preventDefault()
-    if (!newDocTitle.trim() || !newDocContent.trim()) return
-    addDocument(showNewDoc, newDocTitle.trim(), newDocContent.trim(), newDocFormat)
-    setNewDocTitle('')
-    setNewDocContent('')
-    setShowNewDoc(null)
-    refresh()
-  }
-
-  const handleDeleteDocument = (id) => {
-    if (!confirm('删除这篇文档？')) return
-    deleteDocument(id)
     refresh()
   }
 
@@ -116,22 +72,12 @@ export function useReadingHome() {
   }
 
   return {
-    // State
-    collections, sorted, showNewCol, newColName, expandedCol,
-    showNewDoc, newDocTitle, newDocContent, newDocFormat,
+    collections, sorted, showNewCol, newColName,
     sortBy, setSortBy,
     query, setQuery, searchResults,
     recentDocs, continueDoc, stats,
-    // Refs
-    fileInputRef: useRef(null),
-    // Setters
-    setShowNewCol, setNewColName, setExpandedCol,
-    setShowNewDoc, setNewDocTitle, setNewDocContent, setNewDocFormat,
-    setImportTarget,
-    // Handlers
+    setShowNewCol, setNewColName,
     refresh,
     handleAddCollection, handleDeleteCollection,
-    handleAddDocument, handleDeleteDocument,
-    handleFileImport,
   }
 }

@@ -15,6 +15,7 @@ import Settings from './pages/Settings'
 import SetDetail from './pages/SetDetail'
 import ReadingHome from './reading/pages/ReadingHome'
 import Reader from './reading/pages/Reader'
+import CollectionDetail from './reading/pages/CollectionDetail'
 
 export default function App() {
   return (
@@ -36,6 +37,7 @@ export default function App() {
         <Route path="/settings" element={<Settings />} />
         <Route path="/reading" element={<ReadingHome />} />
         <Route path="/reading/doc/:id" element={<Reader />} />
+        <Route path="/collection/:id" element={<CollectionDetail />} />
       </Routes>
       </ErrorBoundary>
     </HashRouter>
