@@ -4,40 +4,74 @@ import { App } from '@capacitor/app'
 import { isNative } from './platform'
 import { getDocument } from '../reading/lib/storage'
 
-const PARENT_MAP = {
-  '/': null,
-  '/settings': '/',
-  '/import': '/',
-  '/prompt-guide': '/import',
-  '/wrong': '/',
-  '/starred': '/',
-  '/search': '/',
+// Declarative route hierarchy: [childPattern, parentPattern]
+// Ordered: more specific routes first. :param segments match any value.
+// To add a new route, append a [child, parent] pair — no logic changes needed.
+const ROUTES = [
+  ['/review/:id',          '/deck/:id'],
+  ['/browse/:id',          '/deck/:id'],
+  ['/deck/:id',            '/'],
+
+  ['/quiz/:subject',       '/set/:subject'],
+  ['/quiz-review/:subject','/set/:subject'],
+  ['/set/:subject',        '/'],
+
+  ['/reading/doc/:id',     '/collection/:id'],
+  ['/collection/:id',      '/'],
+  ['/reading',             '/'],
+
+  ['/prompt-guide',        '/import'],
+  ['/import',              '/'],
+
+  ['/settings',            '/'],
+  ['/wrong',               '/'],
+  ['/starred',             '/'],
+  ['/search',              '/'],
+]
+
+function matchRoute(pattern, pathname) {
+  const segs = pattern.split('/')
+  const paths = pathname.split('/')
+  if (segs.length !== paths.length) return false
+  for (let i = 0; i < segs.length; i++) {
+    if (segs[i].startsWith(':')) continue
+    if (segs[i] !== paths[i]) return false
+  }
+  return true
+}
+
+function resolve(pattern, pathname) {
+  return pattern.replace(/:(\w+)/g, (_, key) => {
+    const idx = pattern.split('/').findIndex(s => s === `:${key}`)
+    return pathname.split('/')[idx] || `:${key}`
+  })
 }
 
 function getParent(pathname, searchParams) {
-  if (pathname.startsWith('/deck/')) return '/'
-  if (pathname.startsWith('/review/')) {
-    const id = pathname.split('/')[2]
-    return `/deck/${id}`
+  for (const [child, parent] of ROUTES) {
+    if (!matchRoute(child, pathname)) continue
+
+    // Resolve :params in parent from current pathname
+    let resolved = resolve(parent, pathname)
+
+    // Special: /reading/doc/:id parent is /collection/:id — need actual doc data
+    if (parent === '/collection/:id') {
+      const docId = pathname.split('/')[3]
+      const doc = docId ? getDocument(docId) : null
+      resolved = doc ? `/collection/${doc.collectionId}` : '/reading'
+    }
+
+    // Special: /import?deckId=X → parent is /deck/X, not /
+    if (child === '/import' && searchParams) {
+      const deckId = searchParams.get('deckId')
+      if (deckId) resolved = `/deck/${deckId}`
+    }
+
+    return resolved
   }
-  if (pathname.startsWith('/browse/')) {
-    const id = pathname.split('/')[2]
-    return `/deck/${id}`
-  }
-  if (pathname.startsWith('/quiz/') || pathname.startsWith('/quiz-review/')) return '/'
-  if (pathname.startsWith('/set/')) return '/'
-  if (pathname.startsWith('/reading/doc/')) {
-    const docId = pathname.split('/')[3]
-    const doc = docId ? getDocument(docId) : null
-    return doc ? `/collection/${doc.collectionId}` : '/reading'
-  }
-  if (pathname.startsWith('/collection/')) return '/'
-  if (pathname === '/reading') return '/'
-  if (pathname === '/import' && searchParams) {
-    const deckId = searchParams.get('deckId')
-    if (deckId) return `/deck/${deckId}`
-  }
-  return PARENT_MAP[pathname] ?? '/'
+
+  // Root or unknown → no parent
+  return pathname === '/' ? null : '/'
 }
 
 export function useBackButton() {
