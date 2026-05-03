@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom'
-import { useEffect, useCallback } from 'react'
+import { useEffect, useCallback, useRef } from 'react'
 import { App } from '@capacitor/app'
 import { isNative } from './platform'
 
@@ -41,6 +41,12 @@ export function useBackButton() {
   const searchParams = new URLSearchParams(search)
   const parent = getParent(pathname, searchParams)
 
+  // Use refs so the native listener (registered once) always reads current values
+  const parentRef = useRef(parent)
+  parentRef.current = parent
+  const navigateRef = useRef(navigate)
+  navigateRef.current = navigate
+
   const goBack = useCallback(() => {
     if (parent) {
       navigate(parent)
@@ -50,16 +56,26 @@ export function useBackButton() {
   useEffect(() => {
     if (!isNative()) return
 
-    const listener = App.addListener('backButton', () => {
-      if (parent) {
-        navigate(parent)
+    let removed = false
+    let handle = null
+
+    App.addListener('backButton', () => {
+      if (removed) return
+      const p = parentRef.current
+      if (p) {
+        navigateRef.current(p)
       } else {
         App.exitApp()
       }
+    }).then(h => {
+      if (!removed) handle = h
     })
 
-    return () => { listener.then(l => l.remove()) }
-  }, [parent, navigate])
+    return () => {
+      removed = true
+      if (handle) handle.remove()
+    }
+  }, []) // register once — refs keep values current
 
   return { goBack, parent }
 }
