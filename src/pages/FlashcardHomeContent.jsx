@@ -130,16 +130,22 @@ export function FlashcardHomeContent() {
 
       {/* Continue review card */}
       {!editing && reviewSession && (
-        <div className="bg-bg-card rounded-lg p-4 border cursor-pointer"
-          style={{ borderColor: 'var(--accent-line)' }}
-          onClick={() => navigate(`/review/${reviewSession.deckId}`)}>
-          <div className="flex items-center justify-between">
-            <div className="font-mono text-[10px] text-accent tracking-wider">继续复习</div>
-            <button onClick={(e) => { e.stopPropagation(); dismissReviewSession() }}
-              className="text-ink-3 hover:text-ink text-xs">✕</button>
+        <div className="deck group" onClick={() => navigate(`/review/${reviewSession.deckId}`)}>
+          <div className={`deck-spine ${DECK_COLORS[Math.abs(reviewSession.deckName.charCodeAt(0)) % 4]}`}>
+            <span className="glyph">{reviewSession.deckName.charAt(0)}</span>
           </div>
-          <div className="font-zh text-[15px] text-ink font-medium mt-1">{reviewSession.deckName}</div>
-          <div className="font-mono text-[11px] text-ink-3 mt-1">{reviewSession.dueCount} 张待复习</div>
+          <div className="deck-meta">
+            <div className="deck-name">{reviewSession.deckName}</div>
+            <div className="deck-stats">
+              <span className="due">继续复习</span>
+              <span className="dot">·</span>
+              <span>{reviewSession.dueCount} 张待复习</span>
+            </div>
+          </div>
+          <div className="deck-cta">
+            <button onClick={(e) => { e.stopPropagation(); dismissReviewSession() }}
+              className="text-ink-3 hover:text-ink text-xs px-1">✕</button>
+          </div>
         </div>
       )}
 

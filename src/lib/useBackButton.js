@@ -2,6 +2,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useEffect, useCallback, useRef } from 'react'
 import { App } from '@capacitor/app'
 import { isNative } from './platform'
+import { getDocument } from '../reading/lib/storage'
 
 const PARENT_MAP = {
   '/': null,
@@ -25,8 +26,12 @@ function getParent(pathname, searchParams) {
   }
   if (pathname.startsWith('/quiz/') || pathname.startsWith('/quiz-review/')) return '/'
   if (pathname.startsWith('/set/')) return '/'
-  if (pathname.startsWith('/reading/doc/')) return '/reading'
-  if (pathname.startsWith('/collection/')) return '/reading'
+  if (pathname.startsWith('/reading/doc/')) {
+    const docId = pathname.split('/')[3]
+    const doc = docId ? getDocument(docId) : null
+    return doc ? `/collection/${doc.collectionId}` : '/reading'
+  }
+  if (pathname.startsWith('/collection/')) return '/'
   if (pathname === '/reading') return '/'
   if (pathname === '/import' && searchParams) {
     const deckId = searchParams.get('deckId')
@@ -63,9 +68,7 @@ export function useBackButton() {
       if (removed) return
       const p = parentRef.current
       if (p) {
-        // Use history back to respect actual navigation flow, not route hierarchy.
-        // This fixes: Home(Tab) → /collection/:id → back → Home (not /reading).
-        navigateRef.current(-1)
+        navigateRef.current(p)
       } else {
         App.exitApp()
       }

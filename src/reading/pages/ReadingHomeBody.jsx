@@ -53,13 +53,22 @@ export default function ReadingHomeBody({ h }) {
           })()}
 
           {h.continueDoc && (
-            <div className="bg-bg-card rounded-lg p-4 border cursor-pointer"
-              style={{ borderColor: 'var(--accent-line)' }}
-              onClick={() => navigate(`/reading/doc/${h.continueDoc.id}`)}>
-              <div className="font-mono text-[10px] text-accent tracking-wider mb-1">继续阅读</div>
-              <div className="font-zh text-[15px] text-ink font-medium">{h.continueDoc.title}</div>
-              <div className="mt-2 h-1 rounded-full overflow-hidden" style={{ background: 'var(--bg-raised)' }}>
-                <div className="h-full rounded-full" style={{ width: `${h.continueDoc.scrollPct}%`, background: 'var(--accent)' }} />
+            <div className="deck group" onClick={() => navigate(`/reading/doc/${h.continueDoc.id}`)}>
+              <div className={`deck-spine ${['h0','h1','h2','h3'][Math.abs(h.continueDoc.title.charCodeAt(0)) % 4]}`}>
+                <span className="glyph">{h.continueDoc.title.charAt(0)}</span>
+              </div>
+              <div className="deck-meta">
+                <div className="deck-name">{h.continueDoc.title}</div>
+                <div className="deck-stats">
+                  <span className="due">继续阅读</span>
+                  <span className="dot">·</span>
+                  <span>{h.continueDoc.scrollPct}%</span>
+                </div>
+              </div>
+              <div className="deck-cta">
+                <div className="h-1 w-12 rounded-full overflow-hidden" style={{ background: 'var(--bg-raised)' }}>
+                  <div className="h-full rounded-full" style={{ width: `${h.continueDoc.scrollPct}%`, background: 'var(--accent)' }} />
+                </div>
               </div>
             </div>
           )}
