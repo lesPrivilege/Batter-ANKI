@@ -64,17 +64,6 @@ export default function ReadingHomeBody({ h }) {
             </div>
           )}
 
-          {(h.stats.totalMinutes > 0 || h.stats.docsCompleted > 0) && (
-            <div className="bg-bg-card rounded-lg p-3 flex items-center justify-center gap-8 text-center"
-              style={{ border: '1px solid var(--border-soft)' }}>
-              <div><div className="font-disp text-xl text-ink">{h.stats.totalMinutes}</div><div className="font-mono text-[9px] text-ink-3">分钟</div></div>
-              <div style={{ width: 1, height: 32, background: 'var(--border-soft)' }} />
-              <div><div className="font-disp text-xl text-ink">{h.stats.docsCompleted}</div><div className="font-mono text-[9px] text-ink-3">完成</div></div>
-              <div style={{ width: 1, height: 32, background: 'var(--border-soft)' }} />
-              <div><div className="font-disp text-xl text-accent">{h.stats.streakDays}</div><div className="font-mono text-[9px] text-ink-3">连续天</div></div>
-            </div>
-          )}
-
           {h.collections.length > 0 && (
             <div className="flex items-center gap-2">
               <div className="seg" style={{ display: 'inline-flex', width: 'auto' }}>

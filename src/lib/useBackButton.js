@@ -63,7 +63,9 @@ export function useBackButton() {
       if (removed) return
       const p = parentRef.current
       if (p) {
-        navigateRef.current(p)
+        // Use history back to respect actual navigation flow, not route hierarchy.
+        // This fixes: Home(Tab) → /collection/:id → back → Home (not /reading).
+        navigateRef.current(-1)
       } else {
         App.exitApp()
       }
