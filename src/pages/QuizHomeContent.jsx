@@ -94,7 +94,7 @@ function SubjectCard({ subject, onChange }) {
       </div>
       <div className="deck-cta" style={{ gap: 6 }}>
         <button
-          className="hidden group-hover:inline-flex items-center justify-center w-7 h-7 rounded-md text-ink-3 hover:text-danger hover:bg-danger-soft transition-colors flex-shrink-0"
+          className="inline-flex items-center justify-center w-7 h-7 rounded-md text-ink-3 opacity-40 hover:opacity-100 hover:text-danger hover:bg-danger-soft transition-colors flex-shrink-0"
           onClick={(e) => {
             e.stopPropagation()
             if (confirm(`删除科目「${getSubjectDisplayName(subject)}」及其全部题目与进度？`)) {
