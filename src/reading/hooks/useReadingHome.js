@@ -11,7 +11,7 @@ export function useReadingHome() {
   const [collections, setCollections] = useState([])
   const [showNewCol, setShowNewCol] = useState(false)
   const [newColName, setNewColName] = useState('')
-  const [sortBy, setSortBy] = useState('order')
+  const [sortBy, setSortBy] = useState('created')
   const [query, setQuery] = useState('')
   const [searchResults, setSearchResults] = useState([])
   const [recentDocs, setRecentDocs] = useState([])
@@ -59,17 +59,20 @@ export function useReadingHome() {
   // ── Sort collections ────────────────────────────────
 
   const sorted = [...collections]
-  if (sortBy === 'recent') {
-    sorted.sort((a, b) => {
+  // Pin always first, then sort within each group
+  sorted.sort((a, b) => {
+    if (a.pinned && !b.pinned) return -1
+    if (!a.pinned && b.pinned) return 1
+    if (sortBy === 'recent') {
       const aDocs = getDocumentsByCollection(a.id)
       const bDocs = getDocumentsByCollection(b.id)
       const aMax = aDocs.reduce((max, d) => d.lastReadAt > max ? d.lastReadAt : max, '')
       const bMax = bDocs.reduce((max, d) => d.lastReadAt > max ? d.lastReadAt : max, '')
       return bMax.localeCompare(aMax)
-    })
-  } else if (sortBy === 'created') {
-    sorted.sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-  }
+    }
+    // created: newest first
+    return b.createdAt.localeCompare(a.createdAt)
+  })
 
   return {
     collections, sorted, showNewCol, newColName,

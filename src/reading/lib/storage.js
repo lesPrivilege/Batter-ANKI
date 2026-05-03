@@ -24,7 +24,7 @@ export function addCollection(name, icon = '📖') {
     id: crypto.randomUUID(),
     name,
     icon,
-    order: collections.length,
+    pinned: false,
     createdAt: new Date().toISOString(),
   }
   collections.push(collection)
@@ -95,6 +95,16 @@ export function deleteDocument(id) {
 
 // ── Reading Progress ─────────────────────────────────
 
+export function toggleCollectionPin(id) {
+  const collections = getCollections()
+  const col = collections.find(c => c.id === id)
+  if (col) col.pinned = !col.pinned
+  save(KEYS.COLLECTIONS, collections)
+  return col?.pinned ?? false
+}
+
+// ── Reading Progress ─────────────────────────────────
+
 export function updateReadingProgress(id, scrollPct) {
   updateDocument(id, {
     scrollPct,
@@ -114,28 +124,6 @@ export function getRecentDocuments(limit = 5) {
 export function getContinueReading() {
   return getDocuments()
     .find(d => d.lastReadAt && d.scrollPct > 0 && d.scrollPct < 100) || null
-}
-
-// ── Collection Reorder ───────────────────────────────
-
-export function moveCollectionUp(id) {
-  const collections = getCollections()
-  const idx = collections.findIndex(c => c.id === id)
-  if (idx <= 0) return
-  const temp = collections[idx]
-  collections[idx] = collections[idx - 1]
-  collections[idx - 1] = temp
-  save(KEYS.COLLECTIONS, collections)
-}
-
-export function moveCollectionDown(id) {
-  const collections = getCollections()
-  const idx = collections.findIndex(c => c.id === id)
-  if (idx < 0 || idx >= collections.length - 1) return
-  const temp = collections[idx]
-  collections[idx] = collections[idx + 1]
-  collections[idx + 1] = temp
-  save(KEYS.COLLECTIONS, collections)
 }
 
 // ── Settings ─────────────────────────────────────────

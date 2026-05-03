@@ -67,7 +67,7 @@ export default function ReadingHomeBody({ h }) {
           {h.collections.length > 0 && (
             <div className="flex items-center gap-2">
               <div className="seg" style={{ display: 'inline-flex', width: 'auto' }}>
-                {[{ key: 'order', label: '默认' }, { key: 'recent', label: '最近' }, { key: 'created', label: '创建' }].map(s => (
+                {[{ key: 'created', label: '创建' }, { key: 'recent', label: '最近' }].map(s => (
                   <button key={s.key} onClick={() => h.setSortBy(s.key)} className={h.sortBy === s.key ? 'on' : ''}>{s.label}</button>
                 ))}
               </div>
@@ -93,7 +93,10 @@ export default function ReadingHomeBody({ h }) {
                   <span className="glyph">{glyph}</span>
                 </div>
                 <div className="deck-meta">
-                  <div className="deck-name">{col.name}</div>
+                  <div className="deck-name">
+                    {col.name}
+                    {col.pinned && <span className="deck-pin">◆</span>}
+                  </div>
                   <div className="deck-stats">
                     <span>{docs.length} 篇文档</span>
                   </div>

@@ -1,8 +1,8 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useState, useEffect, useRef } from 'react'
-import { getCollection, getDocumentsByCollection, addDocument, deleteDocument, deleteCollection } from '../lib/storage'
+import { getCollection, getDocumentsByCollection, addDocument, deleteDocument, deleteCollection, toggleCollectionPin } from '../lib/storage'
 import { readFileAsDocument } from '../lib/importer'
-import { BackIcon, UploadIcon, PlusIcon, TrashIcon, MoreIcon } from '../../components/Icons'
+import { BackIcon, UploadIcon, PlusIcon, TrashIcon, MoreIcon, PinIcon } from '../../components/Icons'
 import { useBackButton } from '../../lib/useBackButton'
 
 export default function CollectionDetail() {
@@ -77,6 +77,12 @@ export default function CollectionDetail() {
     refresh()
   }
 
+  const handleTogglePin = () => {
+    setShowMenu(false)
+    toggleCollectionPin(id)
+    refresh()
+  }
+
   const handleDeleteCollection = () => {
     setShowMenu(false)
     if (!confirm(`删除集合「${col?.name}」及其所有文档？此操作不可撤销。`)) return
@@ -110,6 +116,10 @@ export default function CollectionDetail() {
                 <button className="fixed inset-0 z-10 cursor-default" onClick={() => setShowMenu(false)} aria-label="Close menu" />
                 <div className="absolute right-0 top-9 z-20 min-w-[168px] rounded-md bg-bg-card shadow-lg overflow-hidden"
                   role="menu" style={{ border: '1px solid var(--border-soft)' }}>
+                  <button onClick={handleTogglePin}
+                    className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left text-[13px] font-body text-ink-2 hover:bg-bg-raised hover:text-ink transition-colors" role="menuitem">
+                    <PinIcon size={15} /> {col.pinned ? '取消置顶' : '置顶集合'}
+                  </button>
                   <button onClick={handleDeleteCollection}
                     className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left text-[13px] font-body text-danger hover:bg-bg-raised transition-colors" role="menuitem">
                     <TrashIcon size={15} /> 删除集合
