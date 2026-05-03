@@ -2,7 +2,9 @@
 // Accepts h (useReadingHome return) as props so both wrappers share one hook instance
 import { useNavigate, Link } from 'react-router-dom'
 import { getDocumentsByCollection } from '../lib/storage'
-import { PlusIcon, TrashIcon, UploadIcon, LayersIcon, ArrowRIcon } from '../../components/Icons'
+import { getWeeklyMinutes } from '../lib/stats'
+import { PlusIcon, TrashIcon, UploadIcon, LayersIcon, ArrowRIcon, SparkIcon } from '../../components/Icons'
+import { HeroSection } from '../../components/HeroSection'
 
 export default function ReadingHomeBody({ h }) {
   const navigate = useNavigate()
@@ -30,6 +32,26 @@ export default function ReadingHomeBody({ h }) {
 
       {!h.query.trim() && (
         <>
+          {/* Hero — weekly reading chart */}
+          {(() => {
+            const weekly = getWeeklyMinutes()
+            const maxCount = Math.max(1, ...weekly.chart.map(d => d.count))
+            return (
+              <HeroSection
+                label="本周 · THIS WEEK"
+                right={[{ icon: <SparkIcon size={14} />, text: `${weekly.totalThisWeek} 分钟`, warn: true }]}
+                metrics={[
+                  { value: weekly.totalThisWeek, label: 'MIN', zhLabel: '分钟', accent: true },
+                  { value: h.stats.docsCompleted, label: 'DONE', zhLabel: '完成' },
+                  { value: h.collections.reduce((sum, c) => sum + getDocumentsByCollection(c.id).length, 0), label: 'DOCS', zhLabel: '文档' },
+                ]}
+                chartData={weekly.chart}
+                chartColor="teal"
+                chartMax={maxCount}
+              />
+            )
+          })()}
+
           {h.continueDoc && (
             <div className="bg-bg-card rounded-lg p-4 border cursor-pointer"
               style={{ borderColor: 'var(--accent-line)' }}

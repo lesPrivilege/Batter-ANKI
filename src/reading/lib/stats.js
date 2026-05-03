@@ -113,3 +113,32 @@ export function getReadingStats() {
     streakDays: stats.streakDays,
   }
 }
+
+const DAY_LABELS = ['日', '一', '二', '三', '四', '五', '六']
+
+export function getWeeklyMinutes() {
+  const stats = load(KEY, getDefaultStats())
+  const now = Date.now()
+  const daySlots = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(now)
+    d.setDate(d.getDate() - (6 - i))
+    const dayKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    return { dayKey, dow: d.getDay(), minutes: 0, isToday: i === 6 }
+  })
+
+  for (const s of stats.sessions) {
+    const d = new Date(s.startedAt)
+    const dayKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    const slot = daySlots.find(sl => sl.dayKey === dayKey)
+    if (slot) slot.minutes += s.minutesRead || 0
+  }
+
+  return {
+    totalThisWeek: daySlots.reduce((sum, s) => sum + s.minutes, 0),
+    chart: daySlots.map(s => ({
+      count: s.minutes,
+      isToday: s.isToday,
+      label: DAY_LABELS[s.dow],
+    })),
+  }
+}

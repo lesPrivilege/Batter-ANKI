@@ -26,6 +26,16 @@ export default function CollectionDetail() {
 
   useEffect(() => { refresh() }, [id])
 
+  // ── Continue doc ─────────────────────────────────────
+
+  const continueDoc = docs.length > 0
+    ? docs.reduce((best, d) => {
+        const t = d.lastReadAt || d.createdAt
+        const bestT = best.lastReadAt || best.createdAt
+        return t > bestT ? d : best
+      })
+    : null
+
   // ── Sort ───────────────────────────────────────────
 
   const sorted = [...docs]
@@ -180,14 +190,32 @@ export default function CollectionDetail() {
         )}
       </main>
 
-      {/* Bottom bar */}
+      {/* Fixed bottom bar */}
       <div className="flex-shrink-0 px-[18px] pb-[14px] flex flex-col gap-2" style={{ background: 'var(--bg)' }}>
-        <div className="bottom-actions">
-          <button onClick={() => fileInputRef.current?.click()} className="btn btn-ghost">
-            <UploadIcon size={16} /> 导入文档
+        <div className="dd-cta" style={{ margin: 0 }}>
+          {continueDoc ? (
+            <button className="dd-cta-main" onClick={() => navigate(`/reading/doc/${continueDoc.id}`)}>
+              <div className="left">
+                <span className="lead">{continueDoc.title}</span>
+                <span className="sub">CONTINUE · 继续阅读</span>
+              </div>
+              <span className="arr">→</span>
+            </button>
+          ) : (
+            <div className="dd-cta-main" style={{ opacity: 0.5, cursor: 'default' }}>
+              <div className="left">
+                <span className="lead">暂无文档</span>
+                <span className="sub">IMPORT · 请先导入</span>
+              </div>
+            </div>
+          )}
+        </div>
+        <div className="dd-secondary" style={{ margin: 0 }}>
+          <button onClick={() => fileInputRef.current?.click()} className="dd-action">
+            <UploadIcon size={18} /><span className="lab">导入</span>
           </button>
-          <button onClick={() => setShowNewDoc(v => !v)} className="btn btn-primary">
-            <PlusIcon size={16} /> 新建文档
+          <button onClick={() => setShowNewDoc(v => !v)} className="dd-action">
+            <PlusIcon size={18} /><span className="lab">新建</span>
           </button>
         </div>
       </div>

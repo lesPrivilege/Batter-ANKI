@@ -119,49 +119,6 @@ export default function SetDetail() {
           </div>
         </div>
 
-        {/* Primary CTA */}
-        <div style={{ padding: '12px 0 0' }}>
-          <div className="dd-cta">
-            {typeCounts.choice > 0 ? (
-              <button className="dd-cta-main teal" onClick={() => navigate(`/quiz/${subject}`)}>
-                <div className="left">
-                  <span className="lead"><span className="num">{typeCounts.choice + typeCounts.review}</span>题</span>
-                  <span className="sub">BEGIN · 开始练习</span>
-                </div>
-                <span className="arr">→</span>
-              </button>
-            ) : typeCounts.review > 0 ? (
-              <button className="dd-cta-main teal" onClick={() => navigate(`/quiz-review/${subject}`)}>
-                <div className="left">
-                  <span className="lead"><span className="num">{typeCounts.review}</span>题</span>
-                  <span className="sub">BEGIN · 开始练习</span>
-                </div>
-                <span className="arr">→</span>
-              </button>
-            ) : (
-              <div className="dd-cta-main teal" style={{ opacity: 0.5, cursor: 'default' }}>
-                <div className="left">
-                  <span className="lead">暂无题目</span>
-                  <span className="sub">IMPORT · 请先导入</span>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Secondary actions */}
-        <div style={{ padding: '8px 0 0' }}>
-          <div className="dd-secondary">
-            <Link to={`/wrong?subject=${subject}`} className="dd-action">
-              <RefreshIcon size={18} /><span className="lab">错题</span>
-            </Link>
-            <Link to={`/starred?subject=${subject}`} className="dd-action">
-              <StarIcon size={18} /><span className="lab">收藏</span>
-            </Link>
-            <Link to="/import?tab=json" className="dd-action"><UploadIcon size={18} /><span className="lab">导入</span></Link>
-          </div>
-        </div>
-
         {/* Filter chips */}
         <div style={{ padding: '10px 0 0' }}>
           <div className="filters">
@@ -232,6 +189,45 @@ export default function SetDetail() {
           </div>
         </div>
       </main>
+
+      {/* Fixed bottom bar */}
+      <div className="flex-shrink-0 px-[18px] pb-[14px] flex flex-col gap-2" style={{ background: 'var(--bg)' }}>
+        <div className="dd-cta" style={{ margin: 0 }}>
+          {typeCounts.choice > 0 ? (
+            <button className="dd-cta-main teal" onClick={() => navigate(`/quiz/${subject}`)}>
+              <div className="left">
+                <span className="lead"><span className="num">{typeCounts.choice + typeCounts.review}</span>题</span>
+                <span className="sub">BEGIN · 开始练习</span>
+              </div>
+              <span className="arr">→</span>
+            </button>
+          ) : typeCounts.review > 0 ? (
+            <button className="dd-cta-main teal" onClick={() => navigate(`/quiz-review/${subject}`)}>
+              <div className="left">
+                <span className="lead"><span className="num">{typeCounts.review}</span>题</span>
+                <span className="sub">BEGIN · 开始练习</span>
+              </div>
+              <span className="arr">→</span>
+            </button>
+          ) : (
+            <div className="dd-cta-main teal" style={{ opacity: 0.5, cursor: 'default' }}>
+              <div className="left">
+                <span className="lead">暂无题目</span>
+                <span className="sub">IMPORT · 请先导入</span>
+              </div>
+            </div>
+          )}
+        </div>
+        <div className="dd-secondary" style={{ margin: 0 }}>
+          <Link to={`/wrong?subject=${subject}`} className="dd-action">
+            <RefreshIcon size={18} /><span className="lab">错题</span>
+          </Link>
+          <Link to={`/starred?subject=${subject}`} className="dd-action">
+            <StarIcon size={18} /><span className="lab">收藏</span>
+          </Link>
+          <Link to="/import?tab=json" className="dd-action"><UploadIcon size={18} /><span className="lab">导入</span></Link>
+        </div>
+      </div>
     </div>
   )
 }
