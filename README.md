@@ -1,45 +1,20 @@
 # Mnemos
 
-间隔重复记忆 + 题目练习 app。SM-2 算法 + 题库系统，覆盖闪卡复习与选择题/解答题练习。
+間隔重複記憶 + 題庫練習 + 閱讀。SM-2 算法驅動閃卡複習，支持選擇題/解答題練習，內建 markdown 文檔閱讀器。
 
-## 工作流
+## 技術棧
 
-```
-学习材料 → chatbot + prompt 模板 → .md / .json → 导入 → SM-2 复习 / 题库练习
-```
+React 18 · Vite 6 · Tailwind 3 · Capacitor 8 · marked + KaTeX + DOMPurify
 
-两种数据通道：
-- **闪卡**：AI 生成结构化 .md，导入后按间隔重复复习（SM-2 算法）
-- **题库**：`questions.json`（支持 choice + review 题型），导入后可练习选择题、解答题，自动记录错题
+## 三個模塊
 
-## 技术栈
+| 模塊 | 入口 | 功能 |
+|------|------|------|
+| 記憶 | Home tab 1 | SM-2 閃卡複習、卡組管理、撤銷 |
+| 練習 | Home tab 2 | 選擇題/解答題、錯題本、收藏 |
+| 閱讀 | Home tab 3 | 文檔導入/管理/全屏閱讀、高亮、書籤 |
 
-| 层 | 选型 |
-|---|---|
-| 框架 | React 18 |
-| 构建 | Vite 6 |
-| 样式 | Tailwind 3 + CSS 自定义属性（oklch 色值） |
-| 移动端 | Capacitor 8（Android） |
-| 字体 | Inter + Instrument Serif + Noto Serif SC + JetBrains Mono |
-| 渲染 | marked + KaTeX + DOMPurify |
-| 存储 | localStorage（主数据 + 进度 + 收藏 + 复习日志） |
-
-## 功能
-
-| 模块 | 说明 |
-|------|------|
-| 闪卡复习 | SM-2 间隔重复，4 级评分（Again/Hard/Good/Easy），撤销（Ctrl+Z） |
-| 卡片浏览 | 逐张翻卡浏览，正反面对照，支持 markdown + LaTeX 渲染 |
-| 题库练习 | 选择题作答 + 解答题翻卡自评，四种模式（随机/顺序/未做/错题） |
-| 错题本 | 自动记录连续做错题目，支持按科目筛选 |
-| 收藏 | 星标收藏卡片和题目 |
-| 搜索 | 跨闪卡 + 题库全文搜索（300ms debounce） |
-| 导入 | JSON（题库）、MD（闪卡）、JSON backup 合并/替换 |
-| 导出 | 闪卡 JSON、全量备份（含进度和收藏） |
-| 外观 | Light / Dark 双主题，OKLCH 色值系统 |
-| 复习日志 | `mnemos-review-log` 独立存储，90 天自动清理 |
-
-## 本地开发
+## 開發
 
 ```bash
 npm install
@@ -51,46 +26,31 @@ npm run build        # production build → dist/
 
 ```bash
 ~/Scripts/build-mnemos-apk
-# APK: android/app/build/outputs/apk/debug/app-debug.apk
+# → android/app/build/outputs/apk/debug/app-debug.apk
 ```
 
-## 导入题库
-
-支持 questions.json 格式，通过 `ocr-cleaner` skill 从课本 PDF 清洗生成。777 题全量题库（王道数据结构 2027）可直接导入。
-
-```json
-{
-  "id": "wangdao-ds-ch01-001",
-  "source": "wangdao-ds",
-  "subject": "data-structure",
-  "chapter": "第1章 绪论",
-  "section": "1.1 数据结构的基本概念",
-  "type": "choice",
-  "question": "...",
-  "options": ["A. ...", "B. ...", "C. ...", "D. ..."],
-  "answer": "C",
-  "explanation": "..."
-}
-```
-
-## 项目结构
+## 項目結構
 
 ```
 src/
-  pages/            Home, DeckDetail, Review, Browse, Import, Settings,
-                    PromptGuide, Search, Starred, Wrong,
-                    QuizPage, QuizReview, SetDetail,
-                    FlashcardHomeContent, QuizHomeContent
-  components/       ReviewCard, CardEditor, HeroSection, ErrorBoundary, Icons
-  lib/              scheduler, mdParser, storage, formatSpec, sm2,
-                    renderMarkdown, useBackButton, reviewLog,
-                    dateUtils, cardUtils, utils, platform
-  quiz/             components/RenderMarkdown, lib/questionParser, quizEngine, storage,
-                    subjectMeta, subjectNames
-  styles/           index.css, markdown.css
-android/            Capacitor Android 工程
+  lib/               flashcard 核心（storage, sm2, scheduler, renderMarkdown...）
+  quiz/lib/          quiz 核心（quizEngine, storage, questionParser）
+  reading/lib/       reading 核心（storage, renderDoc, highlights, bookmarks, stats）
+  pages/             UI 頁面（Home, DeckDetail, Review, Browse, Import, Settings...）
+  components/        共享組件（ReviewCard, CardEditor, HeroSection, ErrorBoundary, Icons）
+  styles/            index.css（OKLCH 設計系統）+ markdown.css
 ```
 
-## 制卡 prompt
+## 數據存儲
 
-在 app 内「导入 → 制卡指南」页面可一键复制 prompt 模板，发给任意 AI 生成结构化 .md。
+| Namespace | Keys | 用途 |
+|-----------|------|------|
+| `mnemos-*` | data, daily-limit, review-log, theme, home-tab | flashcard + UI |
+| `examprep-*` | questions, progress, starred, last-session | quiz |
+| `reading-*` | collections, documents, highlights, bookmarks, stats, settings | reading |
+
+## 導入格式
+
+- **閃卡**：結構化 markdown（`# 科目 ## 章節 - 正面 縮進背面`）
+- **題庫**：`questions.json`（choice + review 題型）
+- **閱讀**：`.md` / `.tex` / `.txt`

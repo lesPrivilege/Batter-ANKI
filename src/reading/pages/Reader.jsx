@@ -28,7 +28,7 @@ export default function Reader() {
   const [toc, setToc] = useState([])
   const [settings, setSettings] = useState(getReadingSettings())
   const [activePanel, setActivePanel] = useState(null) // null | 'toc' | 'highlights' | 'bookmarks'
-  const [showBars, setShowBars] = useState(true)
+  const [showBars, setShowBars] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [scrollPct, setScrollPct] = useState(0)
   const [selection, setSelection] = useState(null)
