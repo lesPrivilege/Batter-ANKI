@@ -57,16 +57,26 @@ export function HighlightsPanel({ highlights, onDelete }) {
   )
 }
 
-export function BookmarksPanel({ bookmarks, onJump, onDelete }) {
+export function BookmarksPanel({ bookmarks, onJump, onDelete, onAddBookmark, onExportHighlights }) {
+  const hasHighlights = onExportHighlights != null
   return (
     <div className="reader-panel-inner">
       <div className="panel-header">书签 · BOOKMARKS ({bookmarks.length})</div>
+
+      {/* Add bookmark button */}
+      <button onClick={() => onAddBookmark?.()}
+        className="w-full flex items-center gap-2 px-3 py-2.5 text-left text-[13px] font-body text-ink-2 hover:bg-bg-raised transition-colors border-b"
+        style={{ borderColor: 'var(--border-soft)' }}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M12 5v14M5 12h14" /></svg>
+        添加书签
+      </button>
+
       {bookmarks.length === 0 ? (
         <div className="panel-empty">
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" style={{ color: 'var(--ink-4)', marginBottom: 8 }}>
             <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
           </svg>
-          <div>点击书签图标保存当前位置</div>
+          <div>暂无书签</div>
         </div>
       ) : bookmarks.map(bm => (
         <div key={bm.id}
@@ -82,6 +92,17 @@ export function BookmarksPanel({ bookmarks, onJump, onDelete }) {
           </button>
         </div>
       ))}
+
+      {/* Export highlights */}
+      {hasHighlights && (
+        <div className="border-t" style={{ borderColor: 'var(--border-soft)', marginTop: 'auto' }}>
+          <button onClick={() => onExportHighlights?.()}
+            className="w-full flex items-center gap-2 px-3 py-2.5 text-left text-[13px] font-body text-ink-2 hover:bg-bg-raised transition-colors">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M12 4v12M6 10l6-6 6 6M4 20h16" /></svg>
+            导出高亮
+          </button>
+        </div>
+      )}
     </div>
   )
 }
