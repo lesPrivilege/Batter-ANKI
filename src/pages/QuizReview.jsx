@@ -122,7 +122,7 @@ export default function ReviewQuestion() {
               <div className="cell again"><span className="num">{stats.wrong}</span><span>错误</span></div>
             </div>
             <div style={{ display: 'flex', gap: 8, width: '100%', marginTop: 8 }}>
-              <button className="btn btn-ghost btn-block" onClick={() => navigate('/')}>返回主页</button>
+              <button className="btn btn-ghost btn-block" onClick={() => goBack()}>返回</button>
               {results.some(r => !r.correct) && (
                 <button className="btn btn-accent btn-block" onClick={() => { setMode('wrong'); load('wrong') }}>错题回顾</button>
               )}

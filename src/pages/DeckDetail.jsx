@@ -99,7 +99,7 @@ export default function DeckDetail() {
   }
 
   const handleDeleteDeck = () => {
-    if (confirm('删除此卡组及其所有卡片？')) {
+    if (confirm('删除此卡组及其所有卡片？此操作不可撤销。')) {
       deleteDeck(id)
       navigate('/')
     }
@@ -116,7 +116,7 @@ export default function DeckDetail() {
 
   const handleBatchDelete = () => {
     if (selected.size === 0) return
-    if (!confirm(`删除 ${selected.size} 张卡片？`)) return
+    if (!confirm(`删除 ${selected.size} 张卡片？此操作不可撤销。`)) return
     deleteCards([...selected])
     setSelected(new Set())
     setEditing(false)
@@ -359,7 +359,7 @@ export default function DeckDetail() {
               </button>
             )}
             <button onClick={() => {
-              if (!confirm(`删除卡组内全部 ${cards.length} 张卡片？`)) return
+              if (!confirm(`删除卡组内全部 ${cards.length} 张卡片？此操作不可撤销。`)) return
               deleteCards(cards.map((c) => c.id))
               setSelected(new Set())
               setEditing(false)
@@ -474,7 +474,7 @@ function CardRow({ card, editing, selected, onToggleSelect, onEdit, onDelete, is
         <div className="hidden group-hover:flex gap-1 shrink-0 ml-1">
           <button onClick={(e) => { e.stopPropagation(); onEdit() }}
             className="text-[11px] px-1.5 py-0.5 rounded border text-ink-2" style={{ borderColor: 'var(--border)' }}>编辑</button>
-          <button onClick={(e) => { e.stopPropagation(); if (confirm('删除这张卡片？')) onDelete() }}
+          <button onClick={(e) => { e.stopPropagation(); if (confirm('删除这张卡片？此操作不可撤销。')) onDelete() }}
             className="text-[11px] px-1.5 py-0.5 rounded border text-danger" style={{ borderColor: 'color-mix(in oklch, var(--danger) 30%, transparent)' }}>删除</button>
         </div>
       </div>

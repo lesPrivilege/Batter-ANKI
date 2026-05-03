@@ -188,10 +188,16 @@ export default function Reader() {
         onMouseUp={handleMouseUp} onTouchEnd={handleTouchEnd}
         onMouseMove={resetHideTimer} onTouchStart={resetHideTimer}
         style={{ paddingBottom: 'max(40px, env(safe-area-inset-bottom))' }}>
-        <div className="card-content" style={{
-          maxWidth: 680, margin: '0 auto', padding: settings.margins,
-          fontSize: settings.fontSize, lineHeight: settings.lineHeight,
-        }} dangerouslySetInnerHTML={{ __html: html }} />
+        {html ? (
+          <div className="card-content" style={{
+            maxWidth: 680, margin: '0 auto', padding: settings.margins,
+            fontSize: settings.fontSize, lineHeight: settings.lineHeight,
+          }} dangerouslySetInnerHTML={{ __html: html }} />
+        ) : (
+          <div className="flex items-center justify-center h-full text-ink-3 font-zh text-sm tracking-[0.04em]">
+            加载中...
+          </div>
+        )}
       </div>
 
       {/* Bottom progress bar */}

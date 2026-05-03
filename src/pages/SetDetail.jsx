@@ -158,7 +158,7 @@ export default function SetDetail() {
             <Link to={`/starred?subject=${subject}`} className="dd-action">
               <StarIcon size={18} /><span className="lab">收藏</span>
             </Link>
-            <Link to="/import" className="dd-action"><UploadIcon size={18} /><span className="lab">导入</span></Link>
+            <Link to="/import?tab=json" className="dd-action"><UploadIcon size={18} /><span className="lab">导入</span></Link>
           </div>
         </div>
 

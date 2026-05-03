@@ -62,7 +62,7 @@ export default function CollectionDetail() {
   }
 
   const handleDeleteDocument = (docId) => {
-    if (!confirm('删除这篇文档？')) return
+    if (!confirm('删除这篇文档？此操作不可撤销。')) return
     deleteDocument(docId)
     refresh()
   }

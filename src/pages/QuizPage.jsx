@@ -124,7 +124,7 @@ export default function Quiz() {
               <div className="cell again"><span className="num">{results.length - correct}</span><span>错误</span></div>
             </div>
             <div className="flex gap-2 w-full mt-2">
-              <button className="btn btn-ghost btn-block" onClick={() => navigate('/')}>返回主页</button>
+              <button className="btn btn-ghost btn-block" onClick={() => goBack()}>返回</button>
               {results.some(r => !r.correct) && (
                 <button className="btn btn-accent btn-block" onClick={() => { setMode('wrong'); load('wrong') }}>错题回顾</button>
               )}

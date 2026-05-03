@@ -125,6 +125,7 @@ export default function Browse() {
         <div className="empty">
           <div className="glyph">∅</div>
           <div className="msg">暂无卡片</div>
+          <div className="motto-zh">导入或新建卡片</div>
         </div>
       </div>
     )
