@@ -1,6 +1,6 @@
 // Shared body for ReadingHome and ReadingHomeContent
 // Accepts h (useReadingHome return) as props so both wrappers share one hook instance
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { getDocumentsByCollection, moveCollectionUp, moveCollectionDown } from '../lib/storage'
 import { PlusIcon, TrashIcon, UploadIcon, LayersIcon } from '../../components/Icons'
 
@@ -126,19 +126,37 @@ export default function ReadingHomeBody({ h }) {
             </form>
           )}
 
-          {h.showNewCol ? (
-            <form onSubmit={h.handleAddCollection} className="flex gap-2">
-              <input value={h.newColName} onChange={e => h.setNewColName(e.target.value)} placeholder="集合名称" autoFocus
-                className="flex-1 px-3 py-2.5 rounded-md border bg-bg-card text-ink font-zh text-sm outline-none focus:border-accent"
-                style={{ borderColor: 'var(--border)' }} />
-              <button type="submit" disabled={!h.newColName.trim()} className="btn btn-primary disabled:opacity-40">创建</button>
-              <button type="button" onClick={() => { h.setShowNewCol(false); h.setNewColName('') }} className="btn btn-ghost">取消</button>
-            </form>
-          ) : (
-            <button onClick={() => h.setShowNewCol(true)} className="btn btn-primary"><PlusIcon size={16} /> 新建集合</button>
-          )}
         </>
       )}
+
+      {/* Bottom actions */}
+      <div className="bottom-actions">
+        {h.showNewCol ? (
+          <form onSubmit={h.handleAddCollection} className="col-span-2 flex gap-2">
+            <input value={h.newColName} onChange={e => h.setNewColName(e.target.value)} placeholder="集合名称" autoFocus
+              className="flex-1 px-3 py-2.5 rounded-md border bg-bg-card text-ink font-zh text-sm outline-none focus:border-accent"
+              style={{ borderColor: 'var(--border)' }} />
+            <button type="submit" disabled={!h.newColName.trim()}
+              className="px-4 py-2.5 rounded-md font-medium text-sm font-body bg-ink text-bg active:scale-[0.97] transition-transform disabled:opacity-40">
+              创建
+            </button>
+            <button type="button" onClick={() => { h.setShowNewCol(false); h.setNewColName('') }}
+              className="px-4 py-2.5 rounded-md font-body text-sm border text-ink-2 active:scale-[0.97] transition-transform"
+              style={{ borderColor: 'var(--border)' }}>
+              取消
+            </button>
+          </form>
+        ) : (
+          <>
+            <Link to="/import?tab=reading" className="btn btn-ghost">
+              <UploadIcon size={16} /> 导入
+            </Link>
+            <button onClick={() => h.setShowNewCol(true)} className="btn btn-primary">
+              <PlusIcon size={16} /> 新建集合
+            </button>
+          </>
+        )}
+      </div>
 
       <input ref={h.fileInputRef} type="file" accept=".md,.tex,.txt" onChange={h.handleFileImport} className="hidden" />
     </>

@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { getSubjectStats, getSubjectList, getChapterList, loadLastSession, loadQuestions, loadProgress, deleteSubject } from '../quiz/lib/storage'
+import { getSubjectStats, getSubjectList, getChapterList, loadLastSession, loadQuestions, loadProgress, deleteSubject, addQuestions } from '../quiz/lib/storage'
+import { parseQuestionsJson } from '../quiz/lib/questionParser'
 import { getSubjectDisplayName } from '../quiz/lib/subjectNames'
 import { SUBJECT_HUE, SUBJECT_GLYPH } from '../quiz/lib/subjectMeta'
-import { ArrowRIcon, UploadIcon, SparkIcon } from '../components/Icons'
+import { ArrowRIcon, UploadIcon, SparkIcon, PlusIcon, PasteIcon } from '../components/Icons'
 import { HeroSection } from '../components/HeroSection'
 
 function getTimeAgo(ts) {
@@ -151,6 +152,8 @@ export function QuizHomeContent() {
   const [wrongCount, setWrongCount] = useState(0)
   const [totalQs, setTotalQs] = useState(0)
   const [weekStats, setWeekStats] = useState({ doneThisWeek: 0, correctRate: 0, chart: [] })
+  const [showNewSubject, setShowNewSubject] = useState(false)
+  const [newSubjectJson, setNewSubjectJson] = useState('')
 
   const refresh = () => {
     setSubjects(getSubjectList())
@@ -162,6 +165,25 @@ export function QuizHomeContent() {
   }
 
   useEffect(() => { refresh() }, [])
+
+  const handleNewSubject = (e) => {
+    e.preventDefault()
+    if (!newSubjectJson.trim()) return
+    try {
+      const result = parseQuestionsJson(newSubjectJson)
+      if (result.questions.length === 0) {
+        alert('未识别到题目。请确认 JSON 格式是否正确。')
+        return
+      }
+      const r = addQuestions(result.questions)
+      alert(`导入完成！新增: ${r.added}，重复跳过: ${r.duplicates}`)
+      setNewSubjectJson('')
+      setShowNewSubject(false)
+      refresh()
+    } catch {
+      alert('导入失败: JSON 格式错误')
+    }
+  }
 
   return (
     <div className="scr">
@@ -206,9 +228,32 @@ export function QuizHomeContent() {
 
       {/* Bottom actions */}
       <div className="bottom-actions">
-        <Link to="/import?tab=json" className="btn btn-primary" style={{ gridColumn: 'span 2' }}>
-          <UploadIcon size={16} /> 导入题库
-        </Link>
+        {showNewSubject ? (
+          <form onSubmit={handleNewSubject} className="col-span-2 flex flex-col gap-2">
+            <textarea value={newSubjectJson} onChange={(e) => setNewSubjectJson(e.target.value)}
+              placeholder='[&#10;  {"id":"...","type":"choice","subject":"...","chapter":"...","question":"...","options":["A.","B.","C.","D."],"answer":"C","explanation":"..."}&#10;]'
+              className="w-full p-3 rounded-md border bg-bg-card text-ink font-mono text-xs outline-none focus:border-accent resize-none"
+              style={{ borderColor: 'var(--border)', minHeight: 80 }} autoFocus />
+            <div className="flex gap-2">
+              <button type="button" onClick={() => { setShowNewSubject(false); setNewSubjectJson('') }}
+                className="flex-1 py-2.5 rounded-md font-body text-sm border text-ink-2 active:scale-[0.97] transition-transform"
+                style={{ borderColor: 'var(--border)' }}>取消</button>
+              <button type="submit" disabled={!newSubjectJson.trim()}
+                className="flex-1 py-2.5 rounded-md font-medium text-sm font-body bg-ink text-bg active:scale-[0.97] transition-transform disabled:opacity-40">
+                导入
+              </button>
+            </div>
+          </form>
+        ) : (
+          <>
+            <Link to="/import?tab=json" className="btn btn-ghost">
+              <UploadIcon size={16} /> 导入
+            </Link>
+            <button onClick={() => setShowNewSubject(true)} className="btn btn-primary">
+              <PlusIcon size={16} /> 新建题库
+            </button>
+          </>
+        )}
       </div>
     </div>
   )
