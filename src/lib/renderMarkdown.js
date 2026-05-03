@@ -114,21 +114,20 @@ marked.use({
 })
 
 const SANITIZE_CONFIG = {
-  ALLOWED_TAGS: ['p','br','strong','em','code','pre','ul','ol','li','table','thead','tbody','tr','th','td','blockquote','hr','span','div','a','h1','h2','h3','h4'],
-  ALLOWED_ATTR: ['class','href','target','rel'],
+  ALLOWED_TAGS: ['p','br','strong','em','code','pre','ul','ol','li','table','thead','tbody','tr','th','td','blockquote','hr','span','div','a','h1','h2','h3','h4','img'],
+  ALLOWED_ATTR: ['class','href','target','rel','src','alt','title','width','height'],
 }
 
 export function preloadKatex() {
   ensureKatex('$')
 }
 
-export default function renderMarkdown(raw) {
-  const html = marked.parse(raw)
-  return DOMPurify.sanitize(html, SANITIZE_CONFIG)
-}
-
 export async function renderMarkdownAsync(raw) {
   await ensureKatex(raw)
-  const html = marked.parse(raw)
-  return DOMPurify.sanitize(html, SANITIZE_CONFIG)
+  try {
+    const html = marked.parse(raw)
+    return DOMPurify.sanitize(html, SANITIZE_CONFIG)
+  } catch {
+    return DOMPurify.sanitize(`<p>${String(raw)}</p>`, SANITIZE_CONFIG)
+  }
 }

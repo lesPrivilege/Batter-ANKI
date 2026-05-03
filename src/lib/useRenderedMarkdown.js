@@ -6,9 +6,9 @@ export function useRenderedMarkdown(raw) {
 
   useEffect(() => {
     let cancelled = false
-    renderMarkdownAsync(raw).then((result) => {
-      if (!cancelled) setHtml(result)
-    })
+    renderMarkdownAsync(raw)
+      .then((result) => { if (!cancelled) setHtml(result) })
+      .catch(() => { if (!cancelled) setHtml('') })
     return () => { cancelled = true }
   }, [raw])
 

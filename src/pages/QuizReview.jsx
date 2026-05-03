@@ -1,0 +1,292 @@
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
+import { getQuizQuestions, markQuestion } from '../quiz/lib/quizEngine'
+import { saveLastSession, toggleStar, isStarred, deleteQuestion } from '../quiz/lib/storage'
+import { getSubjectDisplayName } from '../quiz/lib/subjectNames'
+import RenderMarkdown from '../quiz/components/RenderMarkdown'
+import { BackIcon, CheckIcon, MoreIcon, TrashIcon } from '../components/Icons'
+import { addReviewEntry } from '../lib/reviewLog'
+import { useBackButton } from '../lib/useBackButton'
+import '../styles/markdown.css'
+
+const MODES = [
+  { key: 'random', label: '随机' },
+  { key: 'sequential', label: '顺序' },
+  { key: 'new', label: '未做' },
+  { key: 'wrong', label: '错题' },
+]
+
+export default function ReviewQuestion() {
+  const { subject } = useParams()
+  const [searchParams] = useSearchParams()
+  const chapter = searchParams.get('chapter')
+  const navigate = useNavigate()
+  const { goBack } = useBackButton()
+
+  const [mode, setMode] = useState('random')
+  const [questions, setQuestions] = useState([])
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [flipped, setFlipped] = useState(false)
+  const [stats, setStats] = useState({ wrong: 0, correct: 0 })
+  const [results, setResults] = useState([])
+  const [finished, setFinished] = useState(false)
+  const [starred, setStarred] = useState(false)
+  const [showMenu, setShowMenu] = useState(false)
+  const touchStartX = useRef(null)
+
+  const load = useCallback((m) => {
+    const loaded = getQuizQuestions({ subject, chapter, type: 'review', mode: m, limit: 20 })
+    setQuestions(loaded)
+    setCurrentIndex(0)
+    setFlipped(false)
+    setStats({ wrong: 0, correct: 0 })
+    setResults([])
+    setFinished(false)
+    if (loaded.length > 0) {
+      saveLastSession({ subject, chapter, route: `/quiz-review/${subject}${chapter ? `?chapter=${encodeURIComponent(chapter)}` : ''}` })
+    }
+  }, [subject, chapter])
+
+  useEffect(() => { load(mode) }, [subject, chapter, mode, load])
+
+  const currentQuestion = questions[currentIndex]
+  useEffect(() => {
+    if (currentQuestion) setStarred(isStarred(currentQuestion.id))
+  }, [currentQuestion?.id])
+
+  const handleRate = (correct) => {
+    if (!currentQuestion) return
+    const prog = markQuestion(currentQuestion.id, correct)
+    setStats(prev => ({
+      wrong: prev.wrong + (correct ? 0 : 1),
+      correct: prev.correct + (correct ? 1 : 0),
+    }))
+    setResults(prev => [...prev, { id: currentQuestion.id, correct, wrongStreak: prog.wrongStreak }])
+    addReviewEntry({ type: 'quiz', correct, itemId: currentQuestion.id, subject })
+
+    if (currentIndex + 1 < questions.length) {
+      setCurrentIndex(currentIndex + 1)
+      setFlipped(false)
+    } else {
+      setFinished(true)
+    }
+  }
+
+  const handleToggleStar = () => {
+    if (!currentQuestion) return
+    setStarred(toggleStar(currentQuestion.id))
+  }
+
+  const handleDeleteQuestion = () => {
+    if (!currentQuestion) return
+    setShowMenu(false)
+    if (!confirm('删除这道题目？此操作不可撤销。')) return
+    const idToDelete = currentQuestion.id
+    deleteQuestion(idToDelete)
+    const remaining = questions.filter(q => q.id !== idToDelete)
+    setQuestions(remaining)
+    if (remaining.length === 0) {
+      setFinished(true)
+      return
+    }
+    if (currentIndex >= remaining.length) setCurrentIndex(remaining.length - 1)
+    setFlipped(false)
+  }
+
+  // Done screen
+  if (finished) {
+    const total = results.length
+    const correctRate = total > 0 ? Math.round(stats.correct / total * 100) : 0
+    const newWrong = results.filter(r => !r.correct && r.wrongStreak === 1).length
+
+    return (
+      <div className="page-fixed" style={{ background: 'var(--bg)' }}>
+        <div className="topbar">
+          <button className="tb-btn" onClick={() => goBack()} aria-label="Back"><BackIcon /></button>
+        </div>
+        <div className="page-scroll">
+          <div className="done-wrap">
+            <div className="done-mark"><CheckIcon size={32} /></div>
+            <div className="done-title">一组练毕</div>
+            <div className="done-stats">
+              <span>已练 <span className="v">{total}</span></span>
+              <span>掌握率 <span className="v">{correctRate}%</span></span>
+            </div>
+            {newWrong > 0 && (
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--danger)' }}>
+                新增错题 {newWrong}
+              </div>
+            )}
+            <div className="done-grid two">
+              <div className="cell good"><span className="num">{stats.correct}</span><span>正确</span></div>
+              <div className="cell again"><span className="num">{stats.wrong}</span><span>错误</span></div>
+            </div>
+            <div style={{ display: 'flex', gap: 8, width: '100%', marginTop: 8 }}>
+              <button className="btn btn-ghost btn-block" onClick={() => navigate('/')}>返回主页</button>
+              {results.some(r => !r.correct) && (
+                <button className="btn btn-accent btn-block" onClick={() => { setMode('wrong'); load('wrong') }}>错题回顾</button>
+              )}
+              <button className="btn btn-primary btn-block" onClick={() => load(mode)}>再来一组</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // No questions
+  if (questions.length === 0) {
+    return (
+      <div className="page-fixed" style={{ background: 'var(--bg)' }}>
+        <div className="topbar">
+          <button className="tb-btn" onClick={() => goBack()} aria-label="Back"><BackIcon /></button>
+          <h1 className="zh" style={{ flex: 1, paddingLeft: 4 }}>{chapter || getSubjectDisplayName(subject)}</h1>
+        </div>
+        <div className="page-scroll">
+          <div className="empty">
+            <div className="glyph">?</div>
+            <div className="msg">暂无题目</div>
+            <div className="motto-zh">无匹配题目</div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  const frontContent = currentQuestion.question || currentQuestion.id
+
+  let backContent = currentQuestion.answer || currentQuestion.explanation || '暂无解析'
+  if (currentQuestion.solution_path) {
+    backContent = `**参考答案路径:**\n\`\`\`\n${currentQuestion.solution_path}\n\`\`\`\n\n${backContent}`
+  }
+
+  const handleTouchStart = (e) => { touchStartX.current = e.touches[0].clientX }
+  const handleTouchEnd = (e) => {
+    if (touchStartX.current === null) return
+    const dx = e.changedTouches[0].clientX - touchStartX.current
+    if (Math.abs(dx) > 80) {
+      if (!flipped) {
+        setFlipped(true)
+      } else {
+        if (dx > 0) handleRate(true)
+        else handleRate(false)
+      }
+    }
+    touchStartX.current = null
+  }
+
+  return (
+    <div className="page-fixed" style={{ background: 'var(--bg)' }}
+      onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+      {/* Topbar */}
+      <div className="topbar">
+        <button className="tb-btn" onClick={() => goBack()} aria-label="Back"><BackIcon /></button>
+        <span className="font-mono text-[11px]">
+          <span style={{ color: 'var(--ink)', fontWeight: 600 }}>{String(currentIndex + 1).padStart(2, '0')}</span>
+          <span style={{ color: 'var(--ink-3)' }}> / {String(questions.length).padStart(2, '0')}</span>
+        </span>
+        <div className="tb-actions">
+          <button className="tb-btn" onClick={handleToggleStar} style={{ color: starred ? 'var(--accent)' : 'var(--ink-3)' }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill={starred ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"><path d="M12 3l2.7 5.9 6.3.6-4.8 4.5 1.5 6.5L12 17l-5.7 3.5 1.5-6.5L3 9.5l6.3-.6z" /></svg>
+          </button>
+          <div className="relative">
+            <button className="tb-btn" onClick={() => setShowMenu(o => !o)}
+              aria-haspopup="menu" aria-expanded={showMenu}>
+              <MoreIcon size={18} />
+            </button>
+            {showMenu && (
+              <>
+                <button className="fixed inset-0 z-10 cursor-default" onClick={() => setShowMenu(false)} aria-label="Close menu" />
+                <div className="absolute right-0 top-9 z-20 min-w-[160px] rounded-md bg-bg-card shadow-lg overflow-hidden"
+                  role="menu"
+                  style={{ border: '1px solid var(--border-soft)' }}>
+                  <button onClick={handleDeleteQuestion}
+                    className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left text-[13px] font-body text-danger hover:bg-bg-raised transition-colors" role="menuitem">
+                    <TrashIcon size={15} /> 删除题目
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Mode chips */}
+      <div className="px-[18px] pt-2 pb-1 flex gap-1.5 flex-wrap">
+        {MODES.map(m => (
+          <button key={m.key} onClick={() => setMode(m.key)}
+            className={`chip ${mode === m.key ? 'on' : ''}`}>
+            {m.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Progress */}
+      <div className="rv-progress">
+        <div className="bar" style={{ width: `${(currentIndex / questions.length) * 100}%` }} />
+      </div>
+
+      {/* Meta */}
+      <div className="rv-meta">
+        <span className="crumb">
+          <span className="q-tag review">解答</span>
+          {currentQuestion.chapter}
+        </span>
+        <span className="pos">
+          <span className="now">{String(currentIndex + 1).padStart(2, '0')}</span> / {String(questions.length).padStart(2, '0')}
+        </span>
+      </div>
+
+      {/* Scrollable card area */}
+      <div className="rv-card-wrap page-scroll">
+        <div className="rv-card flip-card" onClick={() => !flipped && setFlipped(true)}
+          style={{ flex: 1, minHeight: 0 }}>
+          <div className={`flip-inner ${flipped ? 'flipped' : ''}`}>
+            {/* FRONT */}
+            <div className="flip-face">
+              <span className="corner">
+                <span className="num">{String(currentIndex + 1).padStart(2, '0')}</span>
+                <span>解答 · ESSAY</span>
+              </span>
+              <div className="body">
+                <div className="front-q">
+                  <RenderMarkdown content={frontContent} />
+                </div>
+              </div>
+              <div className="ornament" />
+            </div>
+
+            {/* BACK */}
+            <div className="flip-face flip-back-face">
+              <span className="corner">
+                <span className="num">{String(currentIndex + 1).padStart(2, '0')}</span>
+                <span>参考答案 · KEY</span>
+              </span>
+              <div className="body back">
+                <div className="back-a">
+                  <RenderMarkdown content={backContent} />
+                </div>
+              </div>
+              <div className="ornament" />
+            </div>
+          </div>
+        </div>
+        {!flipped && <div className="rv-flip-hint">作答后轻点翻面 · TAP TO REVEAL</div>}
+      </div>
+
+      {/* Rate buttons — only functional after flip, fixed height prevents card resize */}
+      <div className="rate shrink-0" style={{ paddingBottom: 'max(18px, env(safe-area-inset-bottom))' }}>
+        <button className="rate-btn rate-again"
+          onClick={() => flipped && handleRate(false)}
+          style={{ visibility: flipped ? 'visible' : 'hidden', cursor: flipped ? 'pointer' : 'default' }}>
+          <span>未答出</span><span className="iv">MISSED</span>
+        </button>
+        <button className="rate-btn rate-easy"
+          onClick={() => flipped && handleRate(true)}
+          style={{ visibility: flipped ? 'visible' : 'hidden', cursor: flipped ? 'pointer' : 'default' }}>
+          <span>已掌握</span><span className="iv">GOT IT</span>
+        </button>
+      </div>
+    </div>
+  )
+}

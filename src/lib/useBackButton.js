@@ -8,9 +8,12 @@ const PARENT_MAP = {
   '/settings': '/',
   '/import': '/',
   '/prompt-guide': '/import',
+  '/wrong': '/',
+  '/starred': '/',
+  '/search': '/',
 }
 
-export function getParent(pathname, searchParams) {
+function getParent(pathname, searchParams) {
   if (pathname.startsWith('/deck/')) return '/'
   if (pathname.startsWith('/review/')) {
     const id = pathname.split('/')[2]
@@ -20,6 +23,8 @@ export function getParent(pathname, searchParams) {
     const id = pathname.split('/')[2]
     return `/deck/${id}`
   }
+  if (pathname.startsWith('/quiz/') || pathname.startsWith('/quiz-review/')) return '/'
+  if (pathname.startsWith('/set/')) return '/'
   if (pathname === '/import' && searchParams) {
     const deckId = searchParams.get('deckId')
     if (deckId) return `/deck/${deckId}`

@@ -39,13 +39,3 @@ export const PROMPT_TEMPLATE = `你是一个知识结构化助手。请将我提
 - 不要添加引用、脚注、来源标注或任何 [1] [2] 格式的引用标记
 - 公式用 LaTeX：行内公式用反引号包裹 \`$公式$\`，块级公式用 \`$$公式$$\``
 
-export const PARSER_RULES = {
-  h1: '科目名 — 跳过，不生成卡片。用于提取 deck name',
-  h2: '大章节 → chapter 字段',
-  h3: '小节 → section 字段',
-  bullet: '知识点标题 → front（卡片正面）',
-  indent: '释义内容 → back（卡片背面）',
-  indentBullet: '子知识点 → 归入父级，不单独成卡',
-  noH2: 'chapter 取文件名或 deck name',
-  noH3: 'section 为空字符串',
-}

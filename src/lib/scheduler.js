@@ -1,17 +1,24 @@
 // 到期判定 + 排序逻辑
 import { getDailyLimit, loadData } from './storage'
-import { localToday, isoToLocalDate } from './dateUtils'
+import { localToday, isoToLocalDate, formatLocalDate } from './dateUtils'
 import { isRecall } from './cardUtils'
 
 function dateAfterDays(days) {
   const d = new Date()
   d.setDate(d.getDate() + days)
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+  return formatLocalDate(d)
 }
 
 function getFutureDistribution(cards) {
+  // 7 entries: today + next 6 days. Today's count uses dueDate <= today
+  // (anything overdue still shows up under today, the soonest column).
   const futureDistribution = []
-  for (let i = 1; i <= 7; i++) {
+  const today = localToday()
+  futureDistribution.push({
+    date: today,
+    count: cards.filter((c) => c.dueDate <= today).length,
+  })
+  for (let i = 1; i <= 6; i++) {
     const dateStr = dateAfterDays(i)
     const count = cards.filter((c) => c.dueDate === dateStr).length
     futureDistribution.push({ date: dateStr, count })
@@ -74,5 +81,5 @@ export function getAllDeckStats() {
       reviewedToday,
       futureDistribution: getFutureDistribution(recallCards),
     }
-  }).sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0))
+  })
 }

@@ -1,6 +1,5 @@
 /**
- * Markdown parser — implements rules defined in src/lib/formatSpec.js (PARSER_RULES)
- * Do not modify parsing logic without updating formatSpec.js
+ * Markdown parser — rules mirror formatSpec.js PROMPT_TEMPLATE
  */
 import { localToday } from './dateUtils'
 

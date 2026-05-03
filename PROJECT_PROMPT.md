@@ -125,54 +125,79 @@ cp app/build/outputs/apk/debug/app-debug.apk ~/Downloads/mnemos-v{version}-debug
 
 - Python 3.14 的 Path.glob() 不接受绝对路径，用 Path.exists() 替代
 
-## 当前状态 (v0.3.1)
+## 当前状态 (v1.0.0)
 
 ### 已完成
 
-- 3 页面 SPA：Home / DeckDetail / Review
-- SM-2 算法 + localStorage 持久化
-- recall/reference 双类型卡片
+- 13 路由 SPA：Home / DeckDetail / Review / Browse / QuizPage / QuizReview / SetDetail / Import / Wrong / Starred / Search / PromptGuide / Settings
+- SM-2 间隔重复 + Quiz 练习双模式
+- recall/reference 双类型卡片 + choice/review 双类型题目
 - 大纲视图（chapter → section 两级折叠）
-- JSON 导入/导出
-- 深色模式
-- Capacitor Android 配置
-- Debug APK 构建成功（16MB，含中文字体）
-- **设计迁移完成**：暖棕色板 + DM Sans + Noto Serif SC + shadows
+- Markdown + KaTeX 渲染管线（marked + DOMPurify）
+- JSON / MD 导入 + 预览 + 去重
+- 深色模式（oklch 色板，light warm parchment + dark blue-grey）
+- 键盘快捷键（Browse / Review）
+- Capacitor Android APK 构建
+- 14 屏设计原型（stage shell + phone frames）
 
-### 待开发（标记但不做，等指令）
+### 待开发（按需求驱动）
 
-- [ ] UI 进一步打磨（streak、搜索、键盘快捷键等，参考 design/anki-v1.html）
-- [ ] Markdown 渲染：卡片正反面支持 markdown 语法
-- [ ] LLM 集成解耦：app 内配置 API key（localStorage，不进 bundle），运行时调用
-- [ ] md-to-cards 管线集成：md → reader → extractor → writer → 导入
-- [ ] 中间格式解耦（等第二个消费端）
-- [ ] FSRS 升级（等 SM-2 不够用）
-- [ ] 跨设备同步
+- [ ] 日历视图 / 复习回顾
+- [ ] 环状进度图 / 学习计划
+- [ ] 批量管理章节目录
+- [ ] 跨设备同步（iCloud / Git / Supabase）
+- [ ] FSRS 算法升级
+- [ ] 导入去重增强（模糊匹配）
 
 ## 文件结构
 
 ```
 src/
-  App.jsx              ← HashRouter 路由
-  main.jsx             ← 入口 + @fontsource (DM Sans + Noto Serif SC)
+  App.jsx              ← HashRouter 路由（13 条）
+  main.jsx             ← 入口 + @fontsource 字体加载
   pages/
-    Home.jsx           ← deck 列表、统计、导入导出
-    DeckDetail.jsx     ← 大纲视图 + 卡片 CRUD
-    Review.jsx         ← 翻卡复习 + SM-2 评分
+    Home.jsx           ← Tab 切换（记忆/练习）
+    FlashcardHomeContent.jsx  ← 记忆卡首页（hero + 卡组列表）
+    QuizHomeContent.jsx       ← 练习首页（hero + 科目列表）
+    DeckDetail.jsx     ← 大纲视图 + 卡片 CRUD + 预览
+    Review.jsx         ← 翻卡复习 + SM-2 评分 + 键盘快捷键
+    Browse.jsx         ← 顺序浏览 + 3D 翻卡
+    QuizPage.jsx       ← 选择题练习
+    QuizReview.jsx     ← 解答题练习
+    SetDetail.jsx      ← 科目详情 + 章节分解
+    Import.jsx         ← JSON/MD 导入 + 预览
+    Wrong.jsx          ← 错题本
+    Starred.jsx        ← 收藏
+    Search.jsx         ← 全局搜索
+    PromptGuide.jsx    ← 制卡 prompt 模板
+    Settings.jsx       ← 主题/统计/导出/危险操作
   components/
-    ReviewCard.jsx     ← 翻卡交互
+    ReviewCard.jsx     ← 翻卡交互（flipped 状态由父组件管理）
     CardEditor.jsx     ← 卡片编辑表单
-    StatsBar.jsx       ← 7 日到期分布条形图
+    Icons.jsx          ← 内联 SVG 图标库
   lib/
     sm2.js             ← SM-2 算法
     scheduler.js       ← 到期判定 + 排序
     storage.js         ← localStorage CRUD
+    mdParser.js        ← Markdown → 卡片解析
+    formatSpec.js      ← Prompt 模板 + 格式规范（单一来源）
+    renderMarkdown.js  ← marked + KaTeX + DOMPurify
+    cardUtils.js       ← 卡片类型判断
+    dateUtils.js       ← 日期工具
+    platform.js        ← Capacitor 平台检测
+    useBackButton.js   ← Android 返回键
+    useRenderedMarkdown.js ← 异步 markdown 渲染 hook
+    utils.js           ← shuffle / downloadBlob
+  quiz/
+    components/RenderMarkdown.jsx
+    lib/quizEngine.js, storage.js, questionParser.js, subjectMeta.js, subjectNames.js
   styles/
-    index.css          ← Tailwind + CSS 变量（OKLCh 暖棕，light/dark）
-design/
-  anki-v1.html         ← Claude 设计稿 v1（归档，含 streak/搜索/快捷键等新功能）
-data/                  ← 测试用 JSON（不打包进 APK）
-capacitor.config.ts    ← appId: com.lesprivilege.minisrs
+    index.css          ← 设计系统（oklch 色板 + 组件类）
+    markdown.css       ← 卡片内容排版
+design/                ← 设计稿归档
+scripts/               ← 图标/启动画面生成脚本
+android/               ← Capacitor Android 工程
+mnemos-prototype.html  ← 14 屏设计原型（单文件）
 CHANGELOG.md           ← 版本变更记录
 PROJECT_PROMPT.md      ← 本文件
 ```

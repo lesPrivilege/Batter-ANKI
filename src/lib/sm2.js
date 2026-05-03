@@ -1,3 +1,5 @@
+import { formatLocalDate } from './dateUtils'
+
 // SM-2 间隔重复算法
 // quality 映射: Again=1, Hard=2, Good=4, Easy=5
 
@@ -28,7 +30,7 @@ export function sm2(card, quality) {
 
   const today = new Date()
   today.setDate(today.getDate() + newInterval)
-  const dueDate = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`
+  const dueDate = formatLocalDate(today)
 
   return {
     easiness: newE,
@@ -37,12 +39,4 @@ export function sm2(card, quality) {
     dueDate,
     updatedAt: new Date().toISOString(),
   }
-}
-
-// 评分常量
-export const RATING = {
-  AGAIN: 1,
-  HARD: 2,
-  GOOD: 4,
-  EASY: 5,
 }

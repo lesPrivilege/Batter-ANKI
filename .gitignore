@@ -2,4 +2,5 @@ node_modules/
 dist/
 data/
 .DS_Store
-batter-anki.zip
+*.apk
+mnemos-prototype.html

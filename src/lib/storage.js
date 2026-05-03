@@ -19,7 +19,15 @@ export function loadData() {
 }
 
 export function saveData(data) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+  } catch (e) {
+    if (e.name === 'QuotaExceededError' || e.code === 22) {
+      alert('储存空间已满，请导出备份后清理数据')
+    } else {
+      throw e
+    }
+  }
 }
 
 function normalizeData(data) {
@@ -132,6 +140,16 @@ export function updateCardSM2(id, sm2Result) {
   return updateCard(id, sm2Result)
 }
 
+export function getCardSM2(id) {
+  const card = getCard(id)
+  if (!card) return null
+  return { easiness: card.easiness, interval: card.interval, repetitions: card.repetitions, dueDate: card.dueDate }
+}
+
+export function restoreCardSM2(id, sm2State) {
+  return updateCard(id, sm2State)
+}
+
 export function deleteCard(id) {
   const data = loadData()
   data.cards = data.cards.filter((c) => c.id !== id)
@@ -160,12 +178,22 @@ export function exportDeck(deckId) {
 }
 
 export function importData(jsonString) {
-  const data = typeof jsonString === 'string' ? JSON.parse(jsonString) : jsonString
-  saveData(normalizeData(data))
+  try {
+    const data = typeof jsonString === 'string' ? JSON.parse(jsonString) : jsonString
+    const normalized = normalizeData(data)
+    saveData(normalized)
+    return { ok: true }
+  } catch (e) {
+    return { ok: false, error: e.message }
+  }
 }
 
 export function parseImportData(jsonString) {
-  return normalizeData(JSON.parse(jsonString))
+  try {
+    return normalizeData(JSON.parse(jsonString))
+  } catch {
+    throw new Error('Invalid JSON backup format')
+  }
 }
 
 export function mergeData(importedData) {
@@ -219,6 +247,7 @@ export function togglePin(id) {
   const deck = d.decks.find(x => x.id === id)
   if (deck) deck.pinned = !deck.pinned
   saveData(d)
+  return deck?.pinned ?? false
 }
 
 export function toggleStar(id) {
@@ -226,4 +255,20 @@ export function toggleStar(id) {
   const card = d.cards.find(x => x.id === id)
   if (card) card.starred = !card.starred
   saveData(d)
+  return card?.starred ?? false
+}
+
+export function resetDeckProgress(deckId) {
+  const data = loadData()
+  const today = localToday()
+  for (const card of data.cards) {
+    if (card.deckId === deckId) {
+      card.easiness = 2.5
+      card.interval = 0
+      card.repetitions = 0
+      card.dueDate = today
+      card.updatedAt = new Date().toISOString()
+    }
+  }
+  saveData(data)
 }

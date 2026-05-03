@@ -1,24 +1,39 @@
 import { HashRouter, Routes, Route } from 'react-router-dom'
+import ErrorBoundary from './components/ErrorBoundary'
 import Home from './pages/Home'
-import ImportPage from './pages/ImportPage'
+import ImportPage from './pages/Import'
 import DeckDetail from './pages/DeckDetail'
 import Review from './pages/Review'
 import Browse from './pages/Browse'
+import QuizPage from './pages/QuizPage'
+import QuizReview from './pages/QuizReview'
+import Wrong from './pages/Wrong'
+import Starred from './pages/Starred'
+import Search from './pages/Search'
 import PromptGuide from './pages/PromptGuide'
 import Settings from './pages/Settings'
+import SetDetail from './pages/SetDetail'
 
 export default function App() {
   return (
     <HashRouter>
+      <ErrorBoundary>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/import" element={<ImportPage />} />
         <Route path="/deck/:id" element={<DeckDetail />} />
         <Route path="/review/:id" element={<Review />} />
         <Route path="/browse/:id" element={<Browse />} />
+        <Route path="/quiz/:subject" element={<QuizPage />} />
+        <Route path="/quiz-review/:subject" element={<QuizReview />} />
+        <Route path="/set/:subject" element={<SetDetail />} />
+        <Route path="/wrong" element={<Wrong />} />
+        <Route path="/starred" element={<Starred />} />
+        <Route path="/search" element={<Search />} />
+        <Route path="/import" element={<ImportPage />} />
         <Route path="/prompt-guide" element={<PromptGuide />} />
         <Route path="/settings" element={<Settings />} />
       </Routes>
+      </ErrorBoundary>
     </HashRouter>
   )
 }

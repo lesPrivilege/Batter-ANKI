@@ -1,4 +1,4 @@
-import { useParams, Link } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { getCards, toggleStar } from '../lib/storage'
 import { useRenderedMarkdown } from '../lib/useRenderedMarkdown'
@@ -19,8 +19,8 @@ function CardFace({ card }) {
           <div className="absolute top-[14px] left-4 font-mono text-[9px] tracking-[0.18em] text-ink-3 uppercase flex gap-1.5 items-center">
             <span style={{ color: 'var(--accent)', fontWeight: 600, letterSpacing: '0.02em' }}>Q</span><span>FRONT</span>
           </div>
-          <div className="flex-1 flex flex-col items-center justify-center text-center gap-3.5 p-2">
-            <div className="card-content font-zh text-[22px] font-medium leading-relaxed tracking-wide"
+          <div className="flex-1 flex flex-col items-stretch justify-start text-left gap-3.5 p-2 pt-8 pb-6">
+            <div className="card-content font-zh text-[18px] font-medium leading-relaxed tracking-wide"
               style={{ color: 'var(--ink)' }}
               dangerouslySetInnerHTML={{ __html: frontHtml }} />
           </div>
@@ -35,8 +35,9 @@ function CardFace({ card }) {
           <div className="absolute top-[14px] left-4 font-mono text-[9px] tracking-[0.18em] text-ink-3 uppercase flex gap-1.5 items-center">
             <span style={{ color: 'var(--accent)', fontWeight: 600, letterSpacing: '0.02em' }}>A</span><span>BACK</span>
           </div>
-          <div className="flex-1 flex flex-col items-center justify-start text-center gap-3.5 p-2 pt-8">
-            <div className="card-content font-zh text-[18px] text-ink-2"
+              <div className="flex-1 flex flex-col items-stretch justify-start text-left gap-3.5 p-2 pt-8 pb-6">
+            <div className="card-content font-zh text-[16px] text-ink-2"
+              style={{ maxHeight: '20vh', overflowY: 'auto' }}
               dangerouslySetInnerHTML={{ __html: frontHtml }} />
             <div className="w-full px-2 flex items-center gap-2.5 font-mono text-[9px] text-ink-3 tracking-[0.18em] uppercase">
               <span className="flex-1 h-px" style={{ background: 'var(--border-soft)' }} />
@@ -44,6 +45,7 @@ function CardFace({ card }) {
               <span className="flex-1 h-px" style={{ background: 'var(--border-soft)' }} />
             </div>
             <div className="card-content font-zh text-base leading-[1.85] text-teal text-left self-stretch tracking-wide"
+              style={{ maxHeight: '35vh', overflowY: 'auto' }}
               dangerouslySetInnerHTML={{ __html: backHtml }} />
           </div>
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-8 h-px"
@@ -113,27 +115,28 @@ export default function Browse() {
 
   if (!cards.length) {
     return (
-      <div className="flex flex-col min-h-screen bg-bg">
-        <header className="sticky top-0 z-10 flex items-center px-[18px] h-[52px] bg-bg border-b" style={{ borderColor: 'var(--border-soft)' }}>
-          <button onClick={goBack} className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-ink-2 hover:bg-bg-raised hover:text-ink transition-colors">
+      <div className="page-fill">
+        <header className="topbar">
+          <button onClick={goBack} className="tb-btn">
             <BackIcon />
           </button>
           <h1 className="flex-1 font-zh text-[17px] font-medium text-ink pl-1">Browse</h1>
         </header>
-        <div className="flex-1 flex items-center justify-center text-ink-2 text-sm">No cards in this deck.</div>
+        <div className="empty">
+          <div className="glyph">∅</div>
+          <div className="msg">暂无卡片</div>
+        </div>
       </div>
     )
   }
 
   const card = cards[currentIndex]
-  const isEnd = currentIndex === cards.length - 1 && flipped
 
   return (
-    <div className="flex flex-col min-h-screen bg-bg">
+    <div className="page-fill">
       {/* Header */}
-      <header className="sticky top-0 z-10 flex items-center justify-between px-[18px] h-[52px]
-        bg-bg border-b" style={{ borderColor: 'var(--border-soft)' }}>
-        <button onClick={goBack} className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-ink-2 hover:bg-bg-raised hover:text-ink transition-colors">
+      <header className="topbar">
+        <button onClick={goBack} className="tb-btn">
           <BackIcon />
         </button>
         <span className="font-mono text-[11px]">
@@ -144,7 +147,7 @@ export default function Browse() {
           toggleStar(card.id)
           setCards(prev => prev.map((c, i) => i === currentIndex ? { ...c, starred: !c.starred } : c))
         }}
-          className="w-8 h-8 inline-flex items-center justify-center rounded-lg hover:bg-bg-raised transition-colors"
+          className="tb-btn"
           style={{ color: card.starred ? 'var(--accent)' : 'var(--ink-3)' }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill={card.starred ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round">
             <path d="M12 3l2.7 5.9 6.3.6-4.8 4.5 1.5 6.5L12 17l-5.7 3.5 1.5-6.5L3 9.5l6.3-.6z"/>
@@ -187,17 +190,6 @@ export default function Browse() {
         </div>
       </div>
 
-      {/* End of cards */}
-      {isEnd && (
-        <div className="flex justify-center pb-3">
-          <Link to={`/deck/${id}`}
-            className="px-6 py-2 rounded-md border text-ink-2 font-medium text-sm font-body active:scale-[0.97] transition-transform"
-            style={{ borderColor: 'var(--border)' }}>
-            Back to deck
-          </Link>
-        </div>
-      )}
-
       {/* Navigation */}
       <div className="grid grid-cols-2 gap-2 px-[18px] pb-[18px]">
         <button onClick={goPrev} disabled={currentIndex === 0}
@@ -205,7 +197,7 @@ export default function Browse() {
           style={{ borderColor: 'var(--border)' }}>
           <ArrowLIcon size={16} /> 上一张
         </button>
-        <button onClick={goNext} disabled={isEnd}
+        <button onClick={goNext} disabled={currentIndex >= cards.length - 1}
           className="inline-flex items-center justify-center gap-1.5 py-3 rounded-md font-medium text-sm font-body border text-ink-2 active:scale-[0.97] transition-all disabled:opacity-30"
           style={{ borderColor: 'var(--border)' }}>
           下一张 <ArrowRIcon size={16} />
