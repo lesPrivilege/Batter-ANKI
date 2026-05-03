@@ -1,24 +1,25 @@
 // Reader — slim shell using extracted components
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { getDocument, updateReadingProgress, getReadingSettings, updateReadingSettings } from '../lib/storage'
+import { useBackButton } from '../../lib/useBackButton'
 import { renderDoc, extractToc } from '../lib/renderDoc'
 import { getHighlightsByDoc, addHighlight, deleteHighlight } from '../lib/highlights'
 import { getBookmarksByDoc, addBookmark, deleteBookmark } from '../lib/bookmarks'
 import { startSession, endSession, markDocCompleted } from '../lib/stats'
 import ReaderToolbar from '../components/ReaderToolbar'
-import { TocPanel, HighlightsPanel, BookmarksPanel, SettingsPanel } from '../components/ReaderPanels'
+import { TocPanel, HighlightsPanel, BookmarksPanel } from '../components/ReaderPanels'
 import '../../styles/markdown.css'
 import '../styles/reader.css'
 
 export default function Reader() {
   const { id } = useParams()
-  const navigate = useNavigate()
+  const { goBack } = useBackButton()
   const [doc, setDoc] = useState(null)
   const [html, setHtml] = useState('')
   const [toc, setToc] = useState([])
   const [settings, setSettings] = useState(getReadingSettings())
-  const [activePanel, setActivePanel] = useState(null) // null | 'toc' | 'highlights' | 'bookmarks' | 'settings'
+  const [activePanel, setActivePanel] = useState(null) // null | 'toc' | 'highlights' | 'bookmarks'
   const [showBars, setShowBars] = useState(true)
   const [scrollPct, setScrollPct] = useState(0)
   const [selection, setSelection] = useState(null)
@@ -33,7 +34,7 @@ export default function Reader() {
 
   useEffect(() => {
     const d = getDocument(id)
-    if (!d) { navigate('/reading'); return }
+    if (!d) { goBack(); return }
     setDoc(d)
     renderDoc(d.content, d.format).then(h => { setHtml(h); setToc(extractToc(h)) })
     setHighlights(getHighlightsByDoc(id))
@@ -47,8 +48,11 @@ export default function Reader() {
   useEffect(() => {
     if (!doc || !scrollRef.current) return
     const el = scrollRef.current
-    el.scrollTop = (doc.scrollPct / 100) * (el.scrollHeight - el.clientHeight || 1)
-    setScrollPct(doc.scrollPct || 0)
+    // Wait for layout after innerHTML is applied
+    requestAnimationFrame(() => {
+      el.scrollTop = (doc.scrollPct / 100) * (el.scrollHeight - el.clientHeight || 1)
+      setScrollPct(doc.scrollPct || 0)
+    })
   }, [html])
 
   // ── Scroll + completion ─────────────────────────────
@@ -107,7 +111,7 @@ export default function Reader() {
   }, [])
 
   const handleMouseUp = useCallback(() => setTimeout(getSelection, 10), [getSelection])
-  const handleTouchEnd = useCallback(() => setTimeout(getSelection, 150), [getSelection])
+  const handleTouchEnd = useCallback(() => setTimeout(getSelection, 50), [getSelection])
 
   const handleSaveHighlight = () => {
     if (!selection || !doc) return
@@ -119,8 +123,19 @@ export default function Reader() {
     const snippet = (start > 0 ? '...' : '') + rendered.slice(start, end) + (end < rendered.length ? '...' : '')
     addHighlight(doc.id, selection.text, snippet)
     setHighlights(getHighlightsByDoc(doc.id))
+    // Flash the selected text before clearing selection
+    try {
+      const sel = window.getSelection()
+      if (sel && sel.rangeCount > 0) {
+        const range = sel.getRangeAt(0)
+        const mark = document.createElement('mark')
+        mark.style.cssText = 'background:var(--accent-soft);border-radius:2px;padding:0 1px'
+        range.surroundContents(mark)
+      }
+    } catch { /* selection crosses element boundary — ignore */ }
     setSelection(null)
     window.getSelection()?.removeAllRanges()
+    setActivePanel('highlights')
     showToast('已保存高亮')
   }
 
@@ -148,7 +163,7 @@ export default function Reader() {
   if (!doc) return null
 
   return (
-    <div className="page-fixed" style={{ background: 'var(--bg)' }}>
+    <div className="page-fixed" style={{ background: 'var(--bg)', maxWidth: 'none' }}>
       {/* Top progress bar */}
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'var(--bg-raised)', zIndex: 10 }}>
         <div style={{ height: '100%', background: 'var(--accent)', width: `${scrollPct}%`, transition: 'width 150ms' }} />
@@ -157,7 +172,7 @@ export default function Reader() {
       <ReaderToolbar
         title={doc.title} showBars={showBars} activePanel={activePanel}
         bookmarks={bookmarks} selection={selection}
-        onBack={() => navigate('/reading')} onTogglePanel={togglePanel}
+        onBack={goBack} onTogglePanel={togglePanel}
         onAddBookmark={handleAddBookmark} onSaveHighlight={handleSaveHighlight}
       />
 
@@ -171,10 +186,6 @@ export default function Reader() {
       <div className={`reader-panel ${activePanel === 'bookmarks' ? 'open' : ''}`}>
         <BookmarksPanel bookmarks={bookmarks} onJump={handleJumpToBookmark} onDelete={handleDeleteBookmark} />
       </div>
-      <div className={`reader-panel right ${activePanel === 'settings' ? 'open' : ''}`} style={{ width: 200 }}>
-        <SettingsPanel settings={settings} onUpdate={handleUpdateSettings} />
-      </div>
-
       {/* Backdrop to close panels */}
       <div
         className={`reader-backdrop ${activePanel ? 'visible' : ''}`}
@@ -198,6 +209,45 @@ export default function Reader() {
             加载中...
           </div>
         )}
+      </div>
+
+      {/* Settings bar — fixed bottom */}
+      <div style={{
+        flexShrink: 0,
+        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16,
+        padding: '10px 18px max(10px, env(safe-area-inset-bottom))',
+        background: 'var(--bg)', borderTop: '1px solid var(--border-soft)',
+        transition: 'opacity 200ms', opacity: showBars ? 1 : 0,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <span className="font-mono text-[9px] text-ink-3 w-5 text-right">{settings.fontSize}</span>
+          <button onClick={() => handleUpdateSettings({ fontSize: Math.max(14, settings.fontSize - 1) })}
+            className="w-6 h-6 rounded flex items-center justify-center text-ink-3 hover:text-ink text-xs border"
+            style={{ borderColor: 'var(--border)' }}>A-</button>
+          <button onClick={() => handleUpdateSettings({ fontSize: Math.min(24, settings.fontSize + 1) })}
+            className="w-6 h-6 rounded flex items-center justify-center text-ink-3 hover:text-ink text-xs border"
+            style={{ borderColor: 'var(--border)' }}>A+</button>
+        </div>
+        <div style={{ width: 1, height: 20, background: 'var(--border-soft)' }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <span className="font-mono text-[9px] text-ink-3 w-5 text-right">{settings.lineHeight.toFixed(1)}</span>
+          <button onClick={() => handleUpdateSettings({ lineHeight: Math.max(1.4, +(settings.lineHeight - 0.1).toFixed(1)) })}
+            className="w-6 h-6 rounded flex items-center justify-center text-ink-3 hover:text-ink text-xs border"
+            style={{ borderColor: 'var(--border)' }}>-</button>
+          <button onClick={() => handleUpdateSettings({ lineHeight: Math.min(2.2, +(settings.lineHeight + 0.1).toFixed(1)) })}
+            className="w-6 h-6 rounded flex items-center justify-center text-ink-3 hover:text-ink text-xs border"
+            style={{ borderColor: 'var(--border)' }}>+</button>
+        </div>
+        <div style={{ width: 1, height: 20, background: 'var(--border-soft)' }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <span className="font-mono text-[9px] text-ink-3 w-5 text-right">{settings.margins}</span>
+          <button onClick={() => handleUpdateSettings({ margins: Math.max(12, settings.margins - 4) })}
+            className="w-6 h-6 rounded flex items-center justify-center text-ink-3 hover:text-ink text-xs border"
+            style={{ borderColor: 'var(--border)' }}>-</button>
+          <button onClick={() => handleUpdateSettings({ margins: Math.min(40, settings.margins + 4) })}
+            className="w-6 h-6 rounded flex items-center justify-center text-ink-3 hover:text-ink text-xs border"
+            style={{ borderColor: 'var(--border)' }}>+</button>
+        </div>
       </div>
 
       {/* Bottom progress bar */}

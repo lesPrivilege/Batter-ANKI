@@ -87,7 +87,7 @@ export default function CollectionDetail() {
     setShowMenu(false)
     if (!confirm(`删除集合「${col?.name}」及其所有文档？此操作不可撤销。`)) return
     deleteCollection(id)
-    navigate('/reading')
+    navigate('/')
   }
 
   // ── Not found ──────────────────────────────────────

@@ -1,5 +1,5 @@
 // Reader toolbar — topbar + floating highlight button
-import { BackIcon, BookmarkIcon, PencilIcon, SettingsIcon } from '../../components/Icons'
+import { BackIcon, BookmarkIcon, PencilIcon } from '../../components/Icons'
 
 export default function ReaderToolbar({
   title, showBars, activePanel, bookmarks,
@@ -9,7 +9,6 @@ export default function ReaderToolbar({
     { key: 'toc', label: 'TOC' },
     { key: 'highlights', icon: 'pencil' },
     { key: 'bookmarks', icon: 'bookmark', count: bookmarks.length },
-    { key: 'settings', icon: 'settings' },
   ]
 
   return (
@@ -39,8 +38,6 @@ export default function ReaderToolbar({
               <PencilIcon size={16} />
             ) : p.icon === 'bookmark' ? (
               <BookmarkIcon size={16} filled={activePanel === p.key} />
-            ) : p.icon === 'settings' ? (
-              <SettingsIcon size={16} />
             ) : p.count != null ? (
               <span className="font-mono text-[10px]">{p.count}</span>
             ) : (
