@@ -41,7 +41,7 @@ export default function Reader() {
     setBookmarks(getBookmarksByDoc(id))
     startSession(id)
     return () => endSession()
-  }, [id, navigate])
+  }, [id, goBack])
 
   // ── Restore scroll ──────────────────────────────────
 
