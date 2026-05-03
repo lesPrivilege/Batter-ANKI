@@ -5,6 +5,8 @@ import { parseQuestionsJson, getQuestionsStats } from '../quiz/lib/questionParse
 import { getSubjectDisplayName } from '../quiz/lib/subjectNames'
 import { addDeck, addCard, getCards, getDecks, importData, mergeData, parseImportData, loadData } from '../lib/storage'
 import { parseMdToCards } from '../lib/mdParser'
+import { getCollections, addCollection, addDocument } from '../reading/lib/storage'
+import { readFileAsDocument, ACCEPT as READING_ACCEPT } from '../reading/lib/importer'
 import { BackIcon, UploadIcon, PasteIcon } from '../components/Icons'
 import { useBackButton } from '../lib/useBackButton'
 
@@ -15,9 +17,17 @@ export default function Import() {
   const fileInputRef = useRef(null)
   const [importTab, setImportTab] = useState(() => {
     const tab = searchParams.get('tab')
-    return tab === 'md' ? 'md' : 'json'
+    if (tab === 'md') return 'md'
+    if (tab === 'reading') return 'reading'
+    return 'json'
   })
   const [dragging, setDragging] = useState(false)
+
+  // ---- Reading import state ----
+  const [readingPreview, setReadingPreview] = useState(null)
+  const [readingCollection, setReadingCollection] = useState('')
+  const [readingCollections, setReadingCollections] = useState([])
+  const [readingNewColName, setReadingNewColName] = useState('')
 
   // ---- JSON (quiz) state ----
   const [previewData, setPreviewData] = useState(null)
@@ -88,6 +98,9 @@ export default function Import() {
     setJsonPreviewData(null)
     setJsonMode('merge')
     setSkipDup(false)
+    setReadingPreview(null)
+    setReadingCollection('')
+    setReadingNewColName('')
   }
 
   // ---- JSON handlers (quiz) ----
@@ -183,6 +196,41 @@ export default function Import() {
     }
     reset()
     navigate('/')
+  }
+
+  // ---- Reading handlers ----
+  const handleReadingFile = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    try {
+      const doc = await readFileAsDocument(file)
+      setReadingPreview(doc)
+      setReadingCollections(getCollections())
+    } catch {
+      alert('导入失败')
+    }
+    e.target.value = ''
+  }
+
+  const handleConfirmReading = () => {
+    if (!readingPreview) return
+    let colId = readingCollection
+
+    // Create new collection if needed
+    if (!colId) {
+      if (readingNewColName.trim()) {
+        const col = addCollection(readingNewColName.trim())
+        colId = col.id
+      } else {
+        alert('请选择或创建一个集合')
+        return
+      }
+    }
+
+    addDocument(colId, readingPreview.title, readingPreview.content, readingPreview.format)
+    alert(`导入完成！\n文档: ${readingPreview.title}\n格式: ${readingPreview.format.toUpperCase()}`)
+    reset()
+    navigate('/reading')
   }
 
   // ---- Preview mode: JSON quiz ----
@@ -363,6 +411,50 @@ export default function Import() {
     )
   }
 
+  // ---- Preview mode: Reading document ----
+  if (readingPreview) {
+    return (
+      <div className="page-fill">
+        <header className="topbar">
+          <button onClick={reset} className="tb-btn"><BackIcon /></button>
+          <h1 className="flex-1 font-zh text-[17px] font-medium text-ink pl-1">阅读文档预览</h1>
+        </header>
+        <main className="flex-1 overflow-y-auto p-[18px] flex flex-col gap-4">
+          <div className="settings-card">
+            <div className="lbl">文档信息</div>
+            <div className="kv-row"><span className="k">标题</span><span className="v">{readingPreview.title}</span></div>
+            <div className="kv-row"><span className="k">格式</span><span className="v">{readingPreview.format.toUpperCase()}</span></div>
+            <div className="kv-row"><span className="k">大小</span><span className="v">{readingPreview.content.length} 字符</span></div>
+          </div>
+
+          <div className="settings-card">
+            <div className="lbl">导入到集合</div>
+            <select value={readingCollection} onChange={e => setReadingCollection(e.target.value)}
+              className="w-full py-[9px] px-3 rounded-md border bg-bg text-ink font-zh text-sm outline-none focus:border-accent"
+              style={{ borderColor: 'var(--border)' }}>
+              <option value="">选择集合...</option>
+              {readingCollections.map(c => (
+                <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
+              ))}
+            </select>
+            <div className="mt-2 flex items-center gap-2">
+              <span className="font-zh text-[11px] text-ink-3">或新建</span>
+              <input value={readingNewColName} onChange={e => setReadingNewColName(e.target.value)}
+                placeholder="新集合名称"
+                className="flex-1 py-[6px] px-2 rounded border bg-bg text-ink font-zh text-xs outline-none focus:border-accent"
+                style={{ borderColor: 'var(--border)' }} />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <button onClick={reset} className="btn btn-ghost btn-block">取消</button>
+            <button onClick={handleConfirmReading} className="btn btn-primary btn-block">确认导入</button>
+          </div>
+        </main>
+      </div>
+    )
+  }
+
   // ---- Import mode ----
   return (
     <div className="page-fill">
@@ -381,6 +473,9 @@ export default function Import() {
           </button>
           <button onClick={() => setImportTab('md')} className={importTab === 'md' ? 'on' : ''}>
             记忆卡 · MD
+          </button>
+          <button onClick={() => setImportTab('reading')} className={importTab === 'reading' ? 'on' : ''}>
+            阅读 · DOC
           </button>
         </div>
 
@@ -410,6 +505,25 @@ export default function Import() {
             </div>
             <input ref={fileInputRef} type="file" accept=".json" onChange={handleJsonFile} className="hidden" />
           </>
+        ) : importTab === 'reading' ? (
+          <>
+            <div className="settings-card">
+              <div className="lbl">文件导入 · FILE</div>
+              <div onClick={() => fileInputRef.current?.click()}
+                className={`dropzone ${dragging ? 'dragging' : ''}`}>
+                <div className="icon"><UploadIcon size={18} /></div>
+                <div className="label">点击选择文件</div>
+                <div className="ext">.MD · .TEX · .TXT</div>
+              </div>
+            </div>
+            <div className="settings-card">
+              <div className="lbl">支持格式 · FORMAT</div>
+              <div className="kv-row"><span className="k">Markdown</span><span className="v">.md</span></div>
+              <div className="kv-row"><span className="k">LaTeX</span><span className="v">.tex</span></div>
+              <div className="kv-row"><span className="k">纯文本</span><span className="v">.txt</span></div>
+            </div>
+            <input ref={fileInputRef} type="file" accept={READING_ACCEPT} onChange={handleReadingFile} className="hidden" />
+          </>
         ) : (
           <>
             <div className="settings-card">
@@ -436,13 +550,14 @@ export default function Import() {
           </>
         )}
 
-        {importTab === 'md' ? (
+        {importTab === 'md' && (
           <div className="text-[13px] text-ink-2 leading-relaxed font-zh text-center py-2 tracking-[0.04em]">
             不知如何准备？ <Link to="/prompt-guide" style={{ color: 'var(--accent)' }}>查看制卡指南 →</Link>
           </div>
-        ) : (
-          <div className="text-[13px] text-ink-3 leading-relaxed font-zh text-center py-2 tracking-[0.04em]" style={{ opacity: 0.5, cursor: 'not-allowed' }}>
-            题库制备指南 · 即将推出
+        )}
+        {importTab === 'reading' && (
+          <div className="text-[13px] text-ink-3 leading-relaxed font-zh text-center py-2 tracking-[0.04em]">
+            导入后可在「阅读」模块管理
           </div>
         )}
       </main>

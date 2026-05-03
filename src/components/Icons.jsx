@@ -30,6 +30,8 @@ export const XIcon = (p) => <Icon d="M18 6L6 18M6 6l12 12" {...p} />
 
 export const RefreshIcon = (p) => <Icon d={["M23 4v6h-6M1 20v-6h6","M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"]} {...p} />
 export const FlameIcon = (p) => <Icon d="M12 2c0 0-5 4.5-5 9a5 5 0 0010 0c0-4.5-5-9-5-9zm0 12a2 2 0 110-4 2 2 0 010 4z" sw={1.4} fill="currentColor" {...p} />
+export const PencilIcon = (p) => <Icon d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" {...p} />
+export const BookmarkIcon = ({ filled, ...p }) => <Icon d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" fill={filled ? 'currentColor' : 'none'} {...p} />
 
 export function MnemosMark({ size=22, color='currentColor', accent }) {
   const c = color

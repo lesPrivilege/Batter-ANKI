@@ -1,6 +1,4 @@
-import type { CapacitorConfig } from '@capacitor/cli';
-
-const config: CapacitorConfig = {
+export default {
   appId: 'com.lesprivilege.mnemos',
   appName: 'Mnemos',
   webDir: 'dist',
@@ -18,5 +16,3 @@ const config: CapacitorConfig = {
     },
   },
 };
-
-export default config;

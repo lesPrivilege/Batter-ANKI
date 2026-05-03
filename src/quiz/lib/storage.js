@@ -63,7 +63,7 @@ export function saveProgress(progress) {
   localStorage.setItem(STORAGE_KEYS.PROGRESS, JSON.stringify(progress))
 }
 
-export function getQuestionProgress(questionId) {
+function getQuestionProgress(questionId) {
   return loadProgress()[questionId] || defaultProgress()
 }
 
@@ -93,7 +93,7 @@ export function recordAttempt(questionId, correct) {
   return prog
 }
 
-export function resetProgress(questionId) {
+function resetProgress(questionId) {
   const p = loadProgress()
   delete p[questionId]
   saveProgress(p)

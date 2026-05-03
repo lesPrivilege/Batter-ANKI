@@ -2,12 +2,15 @@ import { useState, useRef, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { FlashcardHomeContent } from './FlashcardHomeContent'
 import { QuizHomeContent } from './QuizHomeContent'
+import ReadingHomeContent from '../reading/pages/ReadingHomeContent'
 import { SearchIcon, SettingsIcon, MnemosMark } from '../components/Icons'
 
 export default function Home() {
   const [tab, setTab] = useState(() => {
     const saved = sessionStorage.getItem('mnemos-home-tab')
-    return saved === 'quiz' ? 1 : 0
+    if (saved === 'quiz') return 1
+    if (saved === 'reading') return 2
+    return 0
   })
   const [drag, setDrag] = useState(null)
   const tabsRef = useRef(null)
@@ -15,7 +18,7 @@ export default function Home() {
   const switchTab = (t) => {
     setTab(t)
     setDrag(null)
-    sessionStorage.setItem('mnemos-home-tab', t === 1 ? 'quiz' : 'flashcard')
+    sessionStorage.setItem('mnemos-home-tab', ['flashcard', 'quiz', 'reading'][t])
   }
 
   const onPanStart = useCallback((e) => {
@@ -44,8 +47,11 @@ export default function Home() {
     if (!drag) return
     if (drag.locked === 'x') {
       const W = tabsRef.current?.offsetWidth || 324
-      if (drag.dx < -W * 0.18 && tab === 0) switchTab(1)
-      else if (drag.dx > W * 0.18 && tab === 1) switchTab(0)
+      if (drag.dx < -W * 0.18) {
+        if (tab < 2) switchTab(tab + 1)
+      } else if (drag.dx > W * 0.18) {
+        if (tab > 0) switchTab(tab - 1)
+      }
     }
     setDrag(null)
   }, [drag, tab])
@@ -78,6 +84,10 @@ export default function Home() {
             <span className="zh">练习</span>
             <span className="en">PRACTICE</span>
           </button>
+          <button className={`tabs-tab ${tab === 2 ? 'on' : ''}`} onClick={() => switchTab(2)}>
+            <span className="zh">阅读</span>
+            <span className="en">READING</span>
+          </button>
         </div>
       </div>
 
@@ -96,6 +106,9 @@ export default function Home() {
           </div>
           <div className="tab-pane">
             {tab === 1 && <QuizHomeContent />}
+          </div>
+          <div className="tab-pane">
+            {tab === 2 && <ReadingHomeContent />}
           </div>
         </div>
       </div>

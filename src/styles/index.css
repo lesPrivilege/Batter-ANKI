@@ -870,11 +870,6 @@ input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin
 .cta-pill:active { transform: scale(0.96); }
 .cta-pill:hover { opacity: 0.85; }
 .cta-pill .arr { font-family: inherit; font-size: 13px; line-height: 1; }
-.cta-done {
-  width: 26px; height: 26px; border-radius: 50%;
-  display: inline-flex; align-items: center; justify-content: center;
-  background: var(--good-soft); color: var(--good);
-}
 .deck-pin {
   font-size: 10px; color: var(--accent);
   margin-left: 2px;
@@ -1066,11 +1061,6 @@ input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
 }
-.line-clamp-3 {
-  display: -webkit-box; -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical; overflow: hidden;
-}
-
 /* ─────── Collapsible explain ─────── */
 .qa-explain-toggle {
   display: flex; align-items: center; justify-content: space-between;

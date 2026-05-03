@@ -121,7 +121,7 @@ function normalizeOptions(options) {
 /**
  * 合并多个 JSON 文件的题目
  */
-export function mergeQuestionFiles(files) {
+function mergeQuestionFiles(files) {
   const merged = {
     questions: [],
     errors: [],
@@ -150,7 +150,7 @@ export function mergeQuestionFiles(files) {
 /**
  * 验证题目数据完整性
  */
-export function validateQuestion(question) {
+function validateQuestion(question) {
   const errors = []
   if (!question.id) errors.push('缺少 id')
   if (!question.type) errors.push('缺少 type')
