@@ -5,6 +5,7 @@ import { getAllDeckStats } from '../lib/scheduler'
 import { addDeck, deleteDecks, togglePin, loadData } from '../lib/storage'
 import { localToday, isoToLocalDate, localDow, formatLocalDate } from '../lib/dateUtils'
 import { HeroSection } from '../components/HeroSection'
+import { loadReviewSession, clearReviewSession } from '../lib/reviewSession'
 
 const DAY_LABELS = ['日', '一', '二', '三', '四', '五', '六']
 
@@ -101,6 +102,8 @@ export function FlashcardHomeContent() {
   const maxCount = Math.max(1, ...weekChart.map((d) => d.count))
   const streak = useMemo(() => computeStreak(), [])
   const starredCount = useMemo(() => loadData().cards.filter(c => c.starred).length, [])
+  const [reviewSession, setReviewSession] = useState(() => loadReviewSession())
+  const dismissReviewSession = () => { clearReviewSession(); setReviewSession(null) }
 
   const DECK_COLORS = ['h0', 'h1', 'h2', 'h3']
 
@@ -123,6 +126,21 @@ export function FlashcardHomeContent() {
           chartColor=""
           chartMax={maxCount}
         />
+      )}
+
+      {/* Continue review card */}
+      {!editing && reviewSession && (
+        <div className="bg-bg-card rounded-lg p-4 border cursor-pointer"
+          style={{ borderColor: 'var(--accent-line)' }}
+          onClick={() => navigate(`/review/${reviewSession.deckId}`)}>
+          <div className="flex items-center justify-between">
+            <div className="font-mono text-[10px] text-accent tracking-wider">继续复习</div>
+            <button onClick={(e) => { e.stopPropagation(); dismissReviewSession() }}
+              className="text-ink-3 hover:text-ink text-xs">✕</button>
+          </div>
+          <div className="font-zh text-[15px] text-ink font-medium mt-1">{reviewSession.deckName}</div>
+          <div className="font-mono text-[11px] text-ink-3 mt-1">{reviewSession.dueCount} 张待复习</div>
+        </div>
       )}
 
       {/* Decks section header */}

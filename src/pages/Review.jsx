@@ -9,6 +9,7 @@ import { shuffle } from '../lib/utils'
 import { isRecall } from '../lib/cardUtils'
 import { useBackButton } from '../lib/useBackButton'
 import { addReviewEntry } from '../lib/reviewLog'
+import { saveReviewSession, clearReviewSession } from '../lib/reviewSession'
 
 function predictInterval(card, quality) {
   const result = sm2(card, quality)
@@ -34,14 +35,22 @@ export default function Review() {
   useEffect(() => {
     const deck = getDeck(id)
     setDeckName(deck?.name || '')
+    let cards
     if (reviewAll) {
-      const allCards = getCards(id).filter(c => isRecall(c))
-      setDueCards(shuffle(allCards))
+      cards = shuffle(getCards(id).filter(c => isRecall(c)))
     } else {
-      setDueCards(shuffle(getDueCards(id)))
+      cards = shuffle(getDueCards(id))
     }
+    setDueCards(cards)
     setStats({ again: 0, hard: 0, good: 0, easy: 0 })
     setFlipped(false)
+
+    return () => {
+      // Save session if review was in progress (not completed)
+      if (cards.length > 0) {
+        saveReviewSession({ deckId: id, deckName: deck?.name || '', dueCount: cards.length })
+      }
+    }
   }, [id, reviewAll])
 
   const showToast = useCallback((msg) => {
@@ -138,6 +147,11 @@ export default function Review() {
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [handleKeyDown])
+
+  // Clear saved session when review completes
+  useEffect(() => {
+    if (dueCards.length === 0) clearReviewSession()
+  }, [dueCards.length])
 
   // Done screen
   if (dueCards.length === 0) {

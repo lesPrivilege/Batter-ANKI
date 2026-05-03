@@ -80,6 +80,9 @@ export default function ReadingHomeBody({ h }) {
 
           {h.sorted.map((col) => {
             const docs = getDocumentsByCollection(col.id)
+            const lastDoc = docs.length > 0
+              ? docs.reduce((best, d) => ((d.lastReadAt || '') > (best.lastReadAt || '') ? d : best))
+              : null
             const COLORS = ['h0', 'h1', 'h2', 'h3']
             const hueClass = COLORS[Math.abs(col.name.charCodeAt(0)) % 4]
             const glyph = col.name.charAt(0)
@@ -104,9 +107,14 @@ export default function ReadingHomeBody({ h }) {
                       <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" />
                     </svg>
                   </button>
-                  <button className="cta-pill" onClick={(e) => { e.stopPropagation(); navigate(`/collection/${col.id}`) }}>
-                    阅读<span className="arr">→</span>
-                  </button>
+                  {docs.length > 0 && (
+                    <button className="cta-pill" onClick={(e) => {
+                      e.stopPropagation()
+                      navigate(lastDoc?.lastReadAt ? `/reading/doc/${lastDoc.id}` : `/collection/${col.id}`)
+                    }}>
+                      阅读<span className="arr">→</span>
+                    </button>
+                  )}
                 </div>
               </div>
             )

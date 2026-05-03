@@ -106,7 +106,14 @@ function SubjectCard({ subject, onChange }) {
             <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" />
           </svg>
         </button>
-        <ArrowRIcon size={12} style={{ color: 'var(--ink-3)' }} />
+        {stats.total > 0 && (
+          <button className="cta-pill" onClick={(e) => {
+            e.stopPropagation()
+            navigate(typeCounts.choice > 0 ? `/quiz/${subject}` : `/quiz-review/${subject}`)
+          }}>
+            练习<span className="arr">→</span>
+          </button>
+        )}
       </div>
     </div>
   )
