@@ -58,6 +58,11 @@ export default function Import() {
 
   const handleFileDrop = (file) => {
     const ext = file.name.split('.').pop().toLowerCase()
+    // reading-compatible formats (including .md when on reading tab)
+    if (importTab === 'reading' && ['md', 'tex', 'txt'].includes(ext)) {
+      processReadingFile(file)
+      return
+    }
     const reader = new FileReader()
     reader.onload = (ev) => {
       if (ext === 'json') {
@@ -199,9 +204,7 @@ export default function Import() {
   }
 
   // ---- Reading handlers ----
-  const handleReadingFile = async (e) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+  const processReadingFile = async (file) => {
     try {
       const doc = await readFileAsDocument(file)
       setReadingPreview(doc)
@@ -209,7 +212,19 @@ export default function Import() {
     } catch {
       alert('导入失败')
     }
+  }
+
+  const handleReadingFile = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    await processReadingFile(file)
     e.target.value = ''
+  }
+
+  const handleReadingPaste = () => {
+    if (!pasteMd.trim()) return
+    const fakeFile = new File([pasteMd], 'pasted.md', { type: 'text/markdown' })
+    processReadingFile(fakeFile)
   }
 
   const handleConfirmReading = () => {
@@ -510,11 +525,22 @@ export default function Import() {
             <div className="settings-card">
               <div className="lbl">文件导入 · FILE</div>
               <div onClick={() => fileInputRef.current?.click()}
+                onDragOver={handleDropzoneDragOver} onDragLeave={handleDropzoneDragLeave} onDrop={handleDropzoneDrop}
                 className={`dropzone ${dragging ? 'dragging' : ''}`}>
                 <div className="icon"><UploadIcon size={18} /></div>
-                <div className="label">点击选择文件</div>
+                <div className="label">点击选择 · 或拖入文件</div>
                 <div className="ext">.MD · .TEX · .TXT</div>
               </div>
+            </div>
+            <div className="settings-card">
+              <div className="lbl">粘贴内容</div>
+              <textarea className="textarea" value={pasteMd} onChange={(e) => setPasteMd(e.target.value)}
+                placeholder="直接粘贴 Markdown 内容" />
+              <button onClick={handleReadingPaste} disabled={!pasteMd.trim()}
+                className="inline-flex items-center justify-center gap-1.5 py-2.5 rounded-md font-body text-sm font-medium active:scale-[0.97] transition-transform disabled:opacity-40"
+                style={{ background: 'var(--accent-soft)', color: 'var(--accent)', border: '1px solid var(--accent-line)' }}>
+                <PasteIcon size={16} /> 预览文档
+              </button>
             </div>
             <div className="settings-card">
               <div className="lbl">支持格式 · FORMAT</div>
