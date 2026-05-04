@@ -46,8 +46,18 @@ export function updateCollection(id, fields) {
 export function deleteCollection(id) {
   const collections = getCollections()
   const docs = getDocuments()
+  const docIds = new Set(docs.filter(d => d.collectionId === id).map(d => d.id))
+
   save(KEYS.COLLECTIONS, collections.filter(c => c.id !== id))
   save(KEYS.DOCUMENTS, docs.filter(d => d.collectionId !== id))
+
+  // Clean up orphan highlights and bookmarks for deleted documents
+  if (docIds.size > 0) {
+    const highlights = load('reading-highlights', [])
+    const bookmarks = load('reading-bookmarks', [])
+    save('reading-highlights', highlights.filter(h => !docIds.has(h.docId)))
+    save('reading-bookmarks', bookmarks.filter(b => !docIds.has(b.docId)))
+  }
 }
 
 // ── Documents ────────────────────────────────────────
@@ -92,8 +102,6 @@ export function updateDocument(id, fields) {
 export function deleteDocument(id) {
   save(KEYS.DOCUMENTS, getDocuments().filter(d => d.id !== id))
 }
-
-// ── Reading Progress ─────────────────────────────────
 
 export function toggleCollectionPin(id) {
   const collections = getCollections()

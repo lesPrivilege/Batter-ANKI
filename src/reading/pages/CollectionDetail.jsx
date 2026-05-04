@@ -2,7 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useState, useEffect, useRef } from 'react'
 import { getCollection, getDocumentsByCollection, addDocument, deleteDocument, deleteCollection, toggleCollectionPin } from '../lib/storage'
 import { readFileAsDocument } from '../lib/importer'
-import { BackIcon, UploadIcon, PlusIcon, TrashIcon, MoreIcon, PinIcon } from '../../components/Icons'
+import { BackIcon, UploadIcon, PlusIcon, TrashIcon, MoreIcon, PinIcon, LayersIcon } from '../../components/Icons'
 import { useBackButton } from '../../lib/useBackButton'
 
 export default function CollectionDetail() {
@@ -95,7 +95,7 @@ export default function CollectionDetail() {
   if (!col) {
     return (
       <div className="page-fill items-center justify-center text-ink-2">
-        Collection not found
+        集合未找到
       </div>
     )
   }
@@ -156,7 +156,7 @@ export default function CollectionDetail() {
         <div style={{ padding: '8px 0 24px' }}>
           {docs.length === 0 ? (
             <div className="empty">
-              <div className="glyph">∅</div>
+              <div className="glyph"><LayersIcon size={32} style={{ color: 'var(--ink-4)' }} /></div>
               <div className="msg">暂无文档</div>
               <div className="motto-zh">导入或新建文档</div>
             </div>
@@ -164,7 +164,7 @@ export default function CollectionDetail() {
             <div className="card-list">
               {sorted.map(doc => (
                 <div key={doc.id} className="card-row group"
-                  onClick={() => navigate(`/reading/doc/${doc.id}`)}>
+                  onClick={() => navigate(`/reading/doc/${doc.id}?col=${id}`)}>
                   <span className="dot-bullet" />
                   <span className="front">{doc.title}</span>
                   <span className="font-mono text-[10px] text-ink-3 shrink-0">{doc.format.toUpperCase()}</span>

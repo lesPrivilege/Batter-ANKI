@@ -2,7 +2,6 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useEffect, useCallback, useRef } from 'react'
 import { App } from '@capacitor/app'
 import { isNative } from './platform'
-import { getDocument } from '../reading/lib/storage'
 
 // Declarative route hierarchy: [childPattern, parentPattern]
 // Ordered: more specific routes first. :param segments match any value.
@@ -54,11 +53,10 @@ function getParent(pathname, searchParams) {
     // Resolve :params in parent from current pathname
     let resolved = resolve(parent, pathname)
 
-    // Special: /reading/doc/:id parent is /collection/:id — need actual doc data
+    // Special: /reading/doc/:id parent is /collection/:id — resolve from ?col= param
     if (parent === '/collection/:id') {
-      const docId = pathname.split('/')[3]
-      const doc = docId ? getDocument(docId) : null
-      resolved = doc ? `/collection/${doc.collectionId}` : '/reading'
+      const colId = searchParams.get('col')
+      resolved = colId ? `/collection/${colId}` : '/reading'
     }
 
     // Special: /import?deckId=X → parent is /deck/X, not /

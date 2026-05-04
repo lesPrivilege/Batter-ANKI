@@ -21,7 +21,7 @@ export default function ReadingHomeBody({ h }) {
             {h.searchResults.map(({ doc, snippet }) => (
               <div key={doc.id} className="bg-bg-card rounded-lg p-3 border cursor-pointer hover:border-accent transition-colors"
                 style={{ borderColor: 'var(--border-soft)' }}
-                onClick={() => navigate(`/reading/doc/${doc.id}`)}>
+                onClick={() => navigate(`/reading/doc/${doc.id}?col=${doc.collectionId}`)}>
                 <div className="font-zh text-[14px] text-ink font-medium truncate">{doc.title}</div>
                 {snippet && <div className="font-zh text-[11px] text-ink-3 mt-1 line-clamp-2">{snippet}</div>}
               </div>
@@ -53,7 +53,7 @@ export default function ReadingHomeBody({ h }) {
           })()}
 
           {h.continueDoc && !h.dismissedContinue && (
-            <div className="deck group" onClick={() => navigate(`/reading/doc/${h.continueDoc.id}`)}>
+            <div className="deck group" onClick={() => navigate(`/reading/doc/${h.continueDoc.id}?col=${h.continueDoc.collectionId}`)}>
               <div className={`deck-spine ${['h0','h1','h2','h3'][Math.abs(h.continueDoc.title.charCodeAt(0)) % 4]}`}>
                 <span className="glyph">{h.continueDoc.title.charAt(0)}</span>
               </div>
@@ -121,7 +121,7 @@ export default function ReadingHomeBody({ h }) {
                   {docs.length > 0 && (
                     <button className="cta-pill" onClick={(e) => {
                       e.stopPropagation()
-                      navigate(lastDoc?.lastReadAt ? `/reading/doc/${lastDoc.id}` : `/collection/${col.id}`)
+                      navigate(lastDoc?.lastReadAt ? `/reading/doc/${lastDoc.id}?col=${col.id}` : `/collection/${col.id}`)
                     }}>
                       阅读<span className="arr">→</span>
                     </button>
