@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo } from 'react'
+import { useState, useRef, useMemo, useEffect } from 'react'
 import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { addQuestions } from '../quiz/lib/storage'
 import { parseQuestionsJson, getQuestionsStats } from '../quiz/lib/questionParser'
@@ -22,6 +22,11 @@ export default function Import() {
     return 'json'
   })
   const [dragging, setDragging] = useState(false)
+
+  // Reset scroll when tab changes (#root is the scroll container)
+  useEffect(() => {
+    document.getElementById('root')?.scrollTo(0, 0)
+  }, [importTab])
 
   // ---- Reading import state ----
   const [readingPreview, setReadingPreview] = useState(null)
@@ -480,7 +485,7 @@ export default function Import() {
         <h1 className="flex-1 font-zh text-[17px] font-medium text-ink pl-1">导入</h1>
       </header>
 
-      <main className="flex-1 overflow-y-auto p-[18px] flex flex-col gap-4" key={importTab}>
+      <main className="flex-1 overflow-y-auto p-[18px] flex flex-col gap-4">
         {/* Tab toggle */}
         <div className="seg">
           <button onClick={() => setImportTab('json')} className={importTab === 'json' ? 'on' : ''}>
