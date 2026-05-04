@@ -1,20 +1,28 @@
 import { useState } from 'react'
-import { PROMPT_TEMPLATE } from '../lib/formatSpec'
+import { PROMPT_TEMPLATE, VOCAB_PROMPT_TEMPLATE } from '../lib/formatSpec'
 import { BackIcon, CopyIcon, CheckIcon } from '../components/Icons'
 import { useBackButton } from '../lib/useBackButton'
 
+const TEMPLATES = {
+  general: { label: '通用知识', template: PROMPT_TEMPLATE },
+  vocab: { label: '单词制卡', template: VOCAB_PROMPT_TEMPLATE },
+}
+
 export default function PromptGuide() {
   const { goBack } = useBackButton()
+  const [tab, setTab] = useState('general')
   const [copied, setCopied] = useState(false)
+
+  const current = TEMPLATES[tab].template
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(PROMPT_TEMPLATE)
+      await navigator.clipboard.writeText(current)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch {
       const ta = document.createElement('textarea')
-      ta.value = PROMPT_TEMPLATE
+      ta.value = current
       document.body.appendChild(ta)
       ta.select()
       document.execCommand('copy')
@@ -24,7 +32,7 @@ export default function PromptGuide() {
     }
   }
 
-  const lines = PROMPT_TEMPLATE.split('\n')
+  const lines = current.split('\n')
 
   return (
     <div className="page-fill">
@@ -39,6 +47,14 @@ export default function PromptGuide() {
         <p className="text-[13px] text-ink-2 leading-[1.8] font-zh tracking-[0.02em]">
           复制下方 prompt 给任意 AI（Claude · GPT · DeepSeek · Kimi），附上学习材料，即可得到可导入的 .md。
         </p>
+
+        <div className="seg">
+          {Object.entries(TEMPLATES).map(([key, t]) => (
+            <button key={key} onClick={() => setTab(key)} className={tab === key ? 'on' : ''}>
+              {t.label}
+            </button>
+          ))}
+        </div>
 
         <button onClick={handleCopy}
           className={`w-full inline-flex items-center justify-center gap-1.5 py-2.5 rounded-md font-body text-sm font-medium active:scale-[0.97] transition-transform
