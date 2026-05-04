@@ -119,18 +119,19 @@ const DAY_LABELS = ['日', '一', '二', '三', '四', '五', '六']
 export function getWeeklyMinutes() {
   const stats = load(KEY, getDefaultStats())
   const now = Date.now()
-  const daySlots = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(now)
-    d.setDate(d.getDate() - (6 - i))
-    const dayKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-    return { dayKey, dow: d.getDay(), minutes: 0, isToday: i === 6 }
-  })
+  const weekAgo = now - 7 * 86400000
+
+  // Fixed Sun→Sat axis, matching flashcard + quiz charts
+  const daySlots = Array.from({ length: 7 }, (_, dow) => ({
+    dow,
+    minutes: 0,
+    isToday: dow === new Date().getDay(),
+  }))
 
   for (const s of stats.sessions) {
-    const d = new Date(s.startedAt)
-    const dayKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-    const slot = daySlots.find(sl => sl.dayKey === dayKey)
-    if (slot) slot.minutes += s.minutesRead || 0
+    if (s.startedAt < weekAgo) continue
+    const dow = new Date(s.startedAt).getDay()
+    daySlots[dow].minutes += s.minutesRead || 0
   }
 
   return {
