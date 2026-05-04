@@ -10,6 +10,7 @@ import { SUBJECT_HUE } from '../quiz/lib/subjectMeta'
 import { DAILY_LIMIT_KEY, exportData as exportFlashcardData } from '../lib/storage'
 import { getAllDeckStats } from '../lib/scheduler'
 import { localToday } from '../lib/dateUtils'
+import { exportReadingData } from '../reading/lib/backup'
 import { BackIcon, SunIcon, MoonIcon, DownloadIcon, MnemosMark } from '../components/Icons'
 import { useBackButton } from '../lib/useBackButton'
 import { downloadBlob } from '../lib/utils'
@@ -72,11 +73,13 @@ export default function Settings() {
   const handleExportAll = () => {
     const flashcardJson = exportFlashcardData()
     const quizJson = exportQuizData()
+    const reading = exportReadingData()
     const merged = {
       version: 1,
       exportedAt: new Date().toISOString(),
       flashcard: JSON.parse(flashcardJson),
       quiz: JSON.parse(quizJson),
+      reading,
     }
     const blob = new Blob([JSON.stringify(merged, null, 2)], { type: 'application/json' })
     downloadBlob(blob, `mnemos-full-backup-${localToday()}.json`)

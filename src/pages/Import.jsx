@@ -1,11 +1,12 @@
 import { useState, useRef, useMemo, useEffect } from 'react'
 import { useNavigate, useSearchParams, Link } from 'react-router-dom'
-import { addQuestions } from '../quiz/lib/storage'
+import { addQuestions, importData as importQuizData, mergeImportData as mergeQuizData } from '../quiz/lib/storage'
 import { parseQuestionsJson, getQuestionsStats } from '../quiz/lib/questionParser'
 import { getSubjectDisplayName } from '../quiz/lib/subjectNames'
 import { addDeck, addCard, getCards, getDecks, importData, mergeData, parseImportData, loadData } from '../lib/storage'
 import { parseMdToCards } from '../lib/mdParser'
 import { getCollections, addCollection, addDocument } from '../reading/lib/storage'
+import { importReadingData, mergeReadingData } from '../reading/lib/backup'
 import { readFileAsDocument, ACCEPT as READING_ACCEPT } from '../reading/lib/importer'
 import { BackIcon, UploadIcon, PasteIcon } from '../components/Icons'
 import { useBackButton } from '../lib/useBackButton'
@@ -199,10 +200,14 @@ export default function Import() {
   const handleConfirmJsonBackup = () => {
     if (!jsonPreviewData) return
     if (jsonMode === 'replace') {
-      if (!confirm('替换全部会覆盖当前所有卡组和卡片，此操作不可撤销。')) return
+      if (!confirm('替换全部会覆盖当前所有数据，此操作不可撤销。')) return
       importData(jsonPreviewData)
+      if (jsonPreviewData.quiz) importQuizData(JSON.stringify(jsonPreviewData.quiz))
+      if (jsonPreviewData.reading) importReadingData(jsonPreviewData.reading)
     } else {
       mergeData(jsonPreviewData)
+      if (jsonPreviewData.quiz) mergeQuizData(JSON.stringify(jsonPreviewData.quiz))
+      if (jsonPreviewData.reading) mergeReadingData(jsonPreviewData.reading)
     }
     reset()
     navigate('/')
