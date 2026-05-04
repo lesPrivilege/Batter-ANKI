@@ -480,7 +480,7 @@ export default function Import() {
         <h1 className="flex-1 font-zh text-[17px] font-medium text-ink pl-1">导入</h1>
       </header>
 
-      <main className="flex-1 overflow-y-auto p-[18px] flex flex-col gap-4">
+      <main className="flex-1 overflow-y-auto p-[18px] flex flex-col gap-4" key={importTab}>
         {/* Tab toggle */}
         <div className="seg">
           <button onClick={() => setImportTab('json')} className={importTab === 'json' ? 'on' : ''}>
