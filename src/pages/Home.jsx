@@ -8,9 +8,10 @@ import { SearchIcon, SettingsIcon, MnemosMark } from '../components/Icons'
 export default function Home() {
   const [tab, setTab] = useState(() => {
     const saved = sessionStorage.getItem('mnemos-home-tab')
-    if (saved === 'quiz') return 1
+    if (saved === 'flashcard') return 1
     if (saved === 'reading') return 2
-    return 0
+    if (saved === 'quiz') return 0
+    return 1 // default: 记忆 (middle)
   })
   const [drag, setDrag] = useState(null)
   const tabsRef = useRef(null)
@@ -18,7 +19,7 @@ export default function Home() {
   const switchTab = (t) => {
     setTab(t)
     setDrag(null)
-    sessionStorage.setItem('mnemos-home-tab', ['flashcard', 'quiz', 'reading'][t])
+    sessionStorage.setItem('mnemos-home-tab', ['quiz', 'flashcard', 'reading'][t])
   }
 
   const onPanStart = useCallback((e) => {
@@ -77,12 +78,12 @@ export default function Home() {
       <div style={{ padding: '12px 0 0' }}>
         <div className="tabs-head">
           <button className={`tabs-tab ${tab === 0 ? 'on' : ''}`} onClick={() => switchTab(0)}>
-            <span className="zh">记忆</span>
-            <span className="en">RECALL</span>
-          </button>
-          <button className={`tabs-tab ${tab === 1 ? 'on' : ''}`} onClick={() => switchTab(1)}>
             <span className="zh">练习</span>
             <span className="en">PRACTICE</span>
+          </button>
+          <button className={`tabs-tab ${tab === 1 ? 'on' : ''}`} onClick={() => switchTab(1)}>
+            <span className="zh">记忆</span>
+            <span className="en">RECALL</span>
           </button>
           <button className={`tabs-tab ${tab === 2 ? 'on' : ''}`} onClick={() => switchTab(2)}>
             <span className="zh">阅读</span>
@@ -102,10 +103,10 @@ export default function Home() {
           transition: drag?.locked === 'x' ? 'none' : 'transform 360ms cubic-bezier(.2,.8,.2,1)',
         }}>
           <div className="tab-pane">
-            {tab === 0 && <FlashcardHomeContent />}
+            {tab === 0 && <QuizHomeContent />}
           </div>
           <div className="tab-pane">
-            {tab === 1 && <QuizHomeContent />}
+            {tab === 1 && <FlashcardHomeContent />}
           </div>
           <div className="tab-pane">
             {tab === 2 && <ReadingHomeContent />}
