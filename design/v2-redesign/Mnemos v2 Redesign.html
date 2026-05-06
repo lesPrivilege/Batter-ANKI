@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Mnemos · v2.0 Redesign</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="atoms.jsx"></script>
+<script type="text/babel" src="data.jsx"></script>
+<script type="text/babel" src="home.jsx"></script>
+<script type="text/babel" src="details.jsx"></script>
+<script type="text/babel" src="study.jsx"></script>
+<script type="text/babel" src="reader.jsx"></script>
+<script type="text/babel" src="misc.jsx"></script>
+
+<script type="text/babel">
+const { useState, useEffect, useMemo } = React;
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "darkWarmth": 35,
+  "tabPlacement": "top",
+  "activityLayout": "rings",
+  "showAllScreens": true
+}/*EDITMODE-END*/;
+
+// Per-phone navigation hook
+const usePhoneNav = (initial = "home") => {
+  const [stack, setStack] = useState([{ scr: initial, ctx: null }]);
+  const cur = stack[stack.length - 1];
+  const nav = (scr, ctx) => setStack(s => [...s, { scr, ctx: ctx || null }]);
+  const back = () => setStack(s => s.length > 1 ? s.slice(0, -1) : s);
+  const reset = (scr) => setStack([{ scr, ctx: null }]);
+  return { cur, nav, back, reset };
+};
+
+// Render a screen given a route
+const ScreenRouter = ({ phoneId, initial, theme, onTheme, tabPlacement }) => {
+  const { cur, nav, back, reset } = usePhoneNav(initial);
+  const [tab, setTab] = useState(initial === "home-recall" ? "recall" : initial === "home-reading" ? "reading" : "practice");
+
+  let inner;
+  switch (cur.scr) {
+    case "home":
+    case "home-practice":
+    case "home-recall":
+    case "home-reading":
+      inner = <HomeScreen tab={tab} setTab={setTab} nav={nav} theme={theme} onTheme={onTheme} tabPlacement={tabPlacement}/>;
+      break;
+    case "deckdetail":
+      inner = <DeckDetail d={cur.ctx || DATA.decks[0]} nav={nav} onBack={back}/>;
+      break;
+    case "setdetail":
+      inner = <SetDetail s={cur.ctx || DATA.subjects[0]} nav={nav} onBack={back}/>;
+      break;
+    case "collectiondetail":
+      inner = <CollectionDetail c={cur.ctx || DATA.collections[0]} nav={nav} onBack={back}/>;
+      break;
+    case "review":
+      inner = <ReviewScreen d={cur.ctx} onBack={back} nav={nav}/>;
+      break;
+    case "quiz":
+      inner = <QuizScreen s={cur.ctx} onBack={back}/>;
+      break;
+    case "reader":
+      inner = <ReaderScreen docId={cur.ctx?.docId || "doc2"} onBack={back}/>;
+      break;
+    case "activity":
+      inner = <ActivityScreen onBack={back}/>;
+      break;
+    case "import":
+      inner = <ImportScreen onBack={back}/>;
+      break;
+    case "settings":
+      inner = <SettingsScreen onBack={back} theme={theme} onTheme={onTheme} onActivity={() => nav("activity")}/>;
+      break;
+    case "search":
+      inner = <SearchScreen onBack={back}/>;
+      break;
+    case "prompt":
+      inner = <PromptGuideScreen onBack={back}/>;
+      break;
+    default:
+      inner = <HomeScreen tab={tab} setTab={setTab} nav={nav} theme={theme} onTheme={onTheme} tabPlacement={tabPlacement}/>;
+  }
+  return inner;
+};
+
+// Top-level App
+const App = () => {
+  const [tweaks, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  const [globalTheme, setGlobalTheme] = useState(null); // override per-phone if set
+
+  // Apply dark warmth (hue) globally to dark mode
+  useEffect(() => {
+    let style = document.getElementById("dark-warmth-override");
+    if (!style) {
+      style = document.createElement("style");
+      style.id = "dark-warmth-override";
+      document.head.appendChild(style);
+    }
+    const h = tweaks.darkWarmth;
+    style.textContent = `
+      .phone-screen.dark .phone-screen-inner, .phone-screen.dark {
+        --bg:            oklch(16% 0.014 ${h});
+        --bg-card:       oklch(20% 0.016 ${h});
+        --bg-raised:     oklch(24% 0.018 ${h});
+        --bg-sunken:     oklch(13% 0.012 ${h});
+        --border:        oklch(30% 0.018 ${h});
+        --border-soft:   oklch(26% 0.014 ${h});
+        --border-strong: oklch(42% 0.022 ${h});
+        --code-bg:       oklch(13% 0.012 ${h});
+        --code-border:   oklch(26% 0.014 ${h});
+      }
+    `;
+  }, [tweaks.darkWarmth]);
+
+  // Each phone defines: id, label, screen, theme(default), description
+  const PHONES = useMemo(() => {
+    const all = [
+      { id: "home-r", label: "首页 · 记忆", scr: "home-recall", theme: "light", section: "home" },
+      { id: "home-p", label: "首页 · 练习", scr: "home-practice", theme: "light", section: "home" },
+      { id: "home-rd", label: "首页 · 阅读", scr: "home-reading", theme: "light", section: "home" },
+      { id: "home-dark", label: "首页 · 深色", scr: "home-recall", theme: "dark", section: "home" },
+
+      { id: "dd", label: "卡组详情", scr: "deckdetail", theme: "light", section: "detail" },
+      { id: "sd", label: "题库详情", scr: "setdetail", theme: "light", section: "detail" },
+      { id: "cd", label: "阅读集合", scr: "collectiondetail", theme: "light", section: "detail" },
+
+      { id: "rv", label: "复习 · 正面", scr: "review", theme: "light", section: "study" },
+      { id: "qz", label: "练习 · 选择题", scr: "quiz", theme: "light", section: "study" },
+      { id: "rv-dark", label: "复习 · 深色", scr: "review", theme: "dark", section: "study" },
+
+      { id: "rd", label: "阅读器", scr: "reader", theme: "light", section: "reader" },
+      { id: "rd-dark", label: "阅读器 · 深色", scr: "reader", theme: "dark", section: "reader" },
+
+      { id: "act", label: "活动仪表板", scr: "activity", theme: "light", section: "system" },
+      { id: "act-dark", label: "活动 · 深色", scr: "activity", theme: "dark", section: "system" },
+      { id: "imp", label: "导入", scr: "import", theme: "light", section: "system" },
+      { id: "set", label: "设置", scr: "settings", theme: "light", section: "system" },
+      { id: "search", label: "全局搜索", scr: "search", theme: "light", section: "system" },
+      { id: "prompt", label: "制卡指南", scr: "prompt", theme: "light", section: "system" },
+    ];
+    return tweaks.showAllScreens ? all : all.slice(0, 8);
+  }, [tweaks.showAllScreens]);
+
+  // theme per-phone (clickable toggle)
+  const [phoneThemes, setPhoneThemes] = useState({});
+  const themeOf = (p) => phoneThemes[p.id] || p.theme;
+  const toggleTheme = (id) => setPhoneThemes(s => ({...s, [id]: (s[id] || PHONES.find(p=>p.id===id).theme) === "dark" ? "light" : "dark"}));
+
+  const sections = [
+    { id: "home",   num: "I",   ttl: <>首页 <em>· Home</em></>, desc: "三个子系统共享同一首页结构：HeroSection 显示阶段统计、ContinueCard 提示进行中的会话、卡片列表按时间排序。" },
+    { id: "detail", num: "II",  ttl: <>详情 <em>· Detail</em></>, desc: "卡组、题库、阅读集合统一为「主 CTA · 四宫格次操作 · 内容大纲」三段式。深色 CTA 即视觉锚点。" },
+    { id: "study",  num: "III", ttl: <>研学 <em>· Study</em></>, desc: "翻卡 · 评分 · 答题 · 解析。两套相同的进度条 + 卡片 + 操作行结构，仅色调与组件不同。" },
+    { id: "reader", num: "IV",  ttl: <>阅读 <em>· Reader</em></>, desc: "全屏沉浸式。点击切换工具栏；浮动玻璃工具条；左滑面板（目录/高亮/书签）；选词浮动按钮。双击段落模拟选词。" },
+    { id: "system", num: "V",   ttl: <>系统 <em>· System</em></>, desc: "活动仪表板（三色环 + 35 日热力图 + 90 日总览）、导入、设置、全局搜索、制卡提示词。" },
+  ];
+
+  return (
+    <>
+      <div className="stage">
+        <div className="stage-head">
+          <div>
+            <div className="stage-title">Mnemos · <em>v2.0</em></div>
+            <div className="stage-sub">REDESIGN · 18 SCREENS · 3 SUBSYSTEMS</div>
+          </div>
+          <div className="stage-meta">
+            <div><b>记忆 · RECALL</b> · SM-2 间隔重复</div>
+            <div><b>练习 · PRACTICE</b> · 选择 + 解答</div>
+            <div><b>阅读 · READING</b> · 高亮 / 书签 / 导出</div>
+          </div>
+        </div>
+
+        {sections.map(sec => {
+          const phones = PHONES.filter(p => p.section === sec.id);
+          if (!phones.length) return null;
+          return (
+            <React.Fragment key={sec.id}>
+              <div className="grid">
+                <div className="section-marker">
+                  <span className="num">§ {sec.num}</span>
+                  <span className="ttl">{sec.ttl}</span>
+                  <span className="line"/>
+                  <span className="desc">{sec.desc}</span>
+                </div>
+                {phones.map((p, i) => (
+                  <Phone
+                    key={p.id}
+                    label={p.label}
+                    num={i + 1}
+                    theme={themeOf(p)}
+                    onTheme={() => toggleTheme(p.id)}
+                    screenLabel={p.label}
+                  >
+                    <ScreenRouter
+                      phoneId={p.id}
+                      initial={p.scr}
+                      theme={themeOf(p)}
+                      onTheme={() => toggleTheme(p.id)}
+                      tabPlacement={tweaks.tabPlacement}
+                    />
+                  </Phone>
+                ))}
+              </div>
+            </React.Fragment>
+          );
+        })}
+
+        <div style={{maxWidth: 1800, margin: "60px auto 0", padding: "32px 8px 0", borderTop: "1px solid #2a241e", display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 24, flexWrap: "wrap"}}>
+          <div>
+            <div style={{fontFamily: "var(--font-disp)", fontStyle: "italic", color: "#ad9b81", fontSize: 18}}>memoria principium</div>
+            <div style={{fontFamily: "var(--font-mono)", fontSize: 10, color: "#5a5046", letterSpacing: 0.16, textTransform: "uppercase", marginTop: 4}}>记忆乃万事之始</div>
+          </div>
+          <div style={{fontFamily: "var(--font-mono)", fontSize: 10, color: "#5a5046", letterSpacing: 0.14, textAlign: "right", lineHeight: 1.7}}>
+            <div>HUE · 80 (PARCHMENT) · {tweaks.darkWarmth} (DARK)</div>
+            <div>OKLCH · 4 SPINE COLORS · 6 CODE TOKENS</div>
+            <div>NOTO SERIF SC · INSTRUMENT SERIF · INTER · JETBRAINS MONO</div>
+          </div>
+        </div>
+      </div>
+
+      <TweaksPanel title="Tweaks">
+        <TweakSection title="深色模式色调 · DARK WARMTH">
+          <TweakSlider label="hue" value={tweaks.darkWarmth} min={0} max={280} step={5}
+            onChange={(v) => setTweak("darkWarmth", v)}
+            help="35 = 温暖砚墨 (推荐)。250 = v1.1.0 冷蓝灰。220-230 = 折中" />
+        </TweakSection>
+        <TweakSection title="标签栏位置 · TAB PLACEMENT">
+          <TweakRadio value={tweaks.tabPlacement} options={[{value:"top",label:"顶部"},{value:"bottom",label:"底部"}]} onChange={(v)=>setTweak("tabPlacement", v)}/>
+        </TweakSection>
+        <TweakSection title="活动仪表 · ACTIVITY LAYOUT">
+          <TweakSelect value={tweaks.activityLayout} options={[
+            {value:"both", label:"环 + 热力图"},
+            {value:"rings", label:"仅三色环"},
+            {value:"heatmap", label:"仅热力图"},
+          ]} onChange={(v)=>setTweak("activityLayout", v)}/>
+        </TweakSection>
+        <TweakSection title="显示范围">
+          <TweakToggle label="全部 18 屏" value={tweaks.showAllScreens} onChange={(v)=>setTweak("showAllScreens", v)}/>
+        </TweakSection>
+      </TweaksPanel>
+    </>
+  );
+};
+
+// dark class apply per phone
+const styleApply = document.createElement("style");
+styleApply.textContent = `.phone-screen.dark .phone-screen-inner { color-scheme: dark; }`;
+document.head.appendChild(styleApply);
+
+// Apply :root.dark scoped overrides to .phone-screen.dark
+const styleScope = document.createElement("style");
+styleScope.textContent = `
+.phone-screen.dark {
+  --bg:            oklch(16% 0.014 35);
+  --bg-card:       oklch(20% 0.016 35);
+  --bg-raised:     oklch(24% 0.018 35);
+  --bg-sunken:     oklch(13% 0.012 35);
+  --border:        oklch(30% 0.018 35);
+  --border-soft:   oklch(26% 0.014 35);
+  --border-strong: oklch(42% 0.022 35);
+  --ink:           oklch(94% 0.012 80);
+  --ink-2:         oklch(74% 0.014 80);
+  --ink-3:         oklch(56% 0.014 80);
+  --ink-4:         oklch(40% 0.014 80);
+  --accent:        oklch(74% 0.13 65);
+  --accent-soft:   oklch(28% 0.06 50);
+  --accent-line:   oklch(44% 0.10 60);
+  --teal:          oklch(74% 0.10 195);
+  --teal-soft:     oklch(26% 0.05 195);
+  --teal-line:     oklch(44% 0.08 195);
+  --good:          oklch(74% 0.13 155);
+  --good-soft:     oklch(24% 0.05 155);
+  --warn:          oklch(76% 0.13 75);
+  --warn-soft:     oklch(26% 0.05 75);
+  --danger:        oklch(72% 0.15 28);
+  --danger-soft:   oklch(26% 0.06 28);
+  --plum:          oklch(72% 0.12 320);
+  --code-bg:       oklch(13% 0.012 35);
+  --code-border:   oklch(26% 0.014 35);
+  --tk-key:        oklch(74% 0.14 320);
+  --tk-str:        oklch(74% 0.11 155);
+  --tk-num:        oklch(76% 0.13 60);
+  --tk-com:        oklch(50% 0.014 80);
+  --tk-fn:         oklch(74% 0.11 240);
+  --tk-op:         oklch(82% 0.014 80);
+  --shadow-sm:     0 1px 2px #0008;
+  --shadow-md:     0 1px 3px #0008, 0 6px 24px #0006;
+  --shadow-lg:     0 4px 12px #000a, 0 16px 40px #0008;
+}
+.phone-screen.dark .reader-prose .hl { background: oklch(28% 0.06 60); }
+`;
+document.head.appendChild(styleScope);
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
