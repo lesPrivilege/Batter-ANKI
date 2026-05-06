@@ -97,7 +97,7 @@ function SubjectCard({ subject, onChange }) {
           className="inline-flex items-center justify-center w-7 h-7 rounded-md text-ink-3 opacity-40 hover:opacity-100 hover:text-danger hover:bg-danger-soft transition-colors flex-shrink-0"
           onClick={(e) => {
             e.stopPropagation()
-            if (confirm(`删除科目「${getSubjectDisplayName(subject)}」及其全部题目与进度？`)) {
+            if (confirm(`删除科目「${getSubjectDisplayName(subject)}」及其全部题目与进度？此操作不可撤销。`)) {
               deleteSubject(subject)
               onChange?.()
             }
