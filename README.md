@@ -4,6 +4,33 @@
 
 [Download APK (v1.0.0, 36MB)](https://github.com/lesPrivilege/Mnemos/releases/tag/v1.0.0)
 
+## 真機截圖
+
+Mnemos 已打包為可安裝的 Android App。下列截圖來自真機運行版本，覆蓋記憶、練習、閱讀、導入、制卡提示和設置等核心工作流。
+
+<p align="center">
+  <img src="assets/screenshots/app-home-recall.jpg" width="30%" alt="Recall home" />
+  <img src="assets/screenshots/app-home-practice.jpg" width="30%" alt="Practice home" />
+  <img src="assets/screenshots/app-home-reading.jpg" width="30%" alt="Reading home" />
+</p>
+
+<p align="center">
+  <img src="assets/screenshots/app-quiz-detail.jpg" width="30%" alt="Quiz detail" />
+  <img src="assets/screenshots/app-quiz-question.jpg" width="30%" alt="Quiz question" />
+  <img src="assets/screenshots/app-deck-detail.jpg" width="30%" alt="Deck detail" />
+</p>
+
+<p align="center">
+  <img src="assets/screenshots/app-import-json.jpg" width="30%" alt="Import JSON" />
+  <img src="assets/screenshots/app-import-markdown.jpg" width="30%" alt="Import markdown" />
+  <img src="assets/screenshots/app-prompt-guide.jpg" width="30%" alt="Prompt guide" />
+</p>
+
+<p align="center">
+  <img src="assets/screenshots/app-import-doc.jpg" width="30%" alt="Import document" />
+  <img src="assets/screenshots/app-settings.jpg" width="30%" alt="Settings" />
+</p>
+
 ## 設計判斷
 
 Mnemos 在架構上做了一個明確選擇：**不在程序內集成 LLM API，只消費結構化輸入**。
