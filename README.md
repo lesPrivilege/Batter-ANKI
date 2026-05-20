@@ -2,7 +2,7 @@
 
 间隔重复记忆 + 题库练习 + 阅读。SM-2 算法驱动闪卡复习，支持选择题/解答题练习，内建 markdown 文档阅读器。
 
-[Download APK (v1.0.0, 36MB)](https://github.com/lesPrivilege/Mnemos/releases/tag/v1.0.0)
+[Download APK (v1.0.0, 37MB)](https://github.com/lesPrivilege/Mnemos/releases/tag/v1.0.0)
 
 ## 设计判断
 
