@@ -10,7 +10,11 @@ import { SUBJECT_HUE } from '../quiz/lib/subjectMeta'
 import { DAILY_LIMIT_KEY, exportData as exportFlashcardData } from '../lib/storage'
 import { getAllDeckStats } from '../lib/scheduler'
 import { localToday } from '../lib/dateUtils'
-import { exportReadingData } from '../reading/lib/backup'
+import { exportReadingData, clearReadingStats, clearAllReadingData } from '../reading/lib/backup'
+import { getCollections, getDocuments } from '../reading/lib/storage'
+import { getAllHighlights } from '../reading/lib/highlights'
+import { getAllBookmarks } from '../reading/lib/bookmarks'
+import { getReadingStats } from '../reading/lib/stats'
 import { BackIcon, SunIcon, MoonIcon, DownloadIcon, MnemosMark } from '../components/Icons'
 import { useBackButton } from '../lib/useBackButton'
 import { downloadBlob } from '../lib/utils'
@@ -43,6 +47,7 @@ export default function Settings() {
 
   // Flashcard state
   const [flashcardStats, setFlashcardStats] = useState(null)
+  const [readingInfo, setReadingInfo] = useState(null)
   const [dailyLimit, setDailyLimit] = useState(() => {
     const v = localStorage.getItem(DAILY_LIMIT_KEY)
     return v ?? ''
@@ -60,6 +65,15 @@ export default function Settings() {
     setStorageStats(getStorageStats())
     setSubjects(getSubjectList())
     setFlashcardStats(getAllDeckStats())
+    const rStats = getReadingStats()
+    setReadingInfo({
+      collections: getCollections().length,
+      documents: getDocuments().length,
+      highlights: getAllHighlights().length,
+      bookmarks: getAllBookmarks().length,
+      totalMinutes: rStats.totalMinutes,
+      docsCompleted: rStats.docsCompleted,
+    })
   }
 
   useEffect(() => { refresh() }, [])
@@ -68,6 +82,12 @@ export default function Settings() {
     const json = exportFlashcardData()
     const blob = new Blob([json], { type: 'application/json' })
     downloadBlob(blob, `mnemos-backup-${localToday()}.json`)
+  }
+
+  const handleExportReading = () => {
+    const data = exportReadingData()
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+    downloadBlob(blob, `mnemos-reading-${localToday()}.json`)
   }
 
   const handleExportAll = () => {
@@ -203,6 +223,43 @@ export default function Settings() {
           </div>
         )}
 
+        {/* Reading stats */}
+        {readingInfo && (readingInfo.collections > 0 || readingInfo.totalMinutes > 0) && (
+          <div className="settings-card">
+            <div className="lbl">阅读 · READING</div>
+            <div className="kv-row">
+              <span className="k">文集</span>
+              <span className="v">{readingInfo.collections}</span>
+            </div>
+            <div className="kv-row">
+              <span className="k">文档</span>
+              <span className="v">{readingInfo.documents}</span>
+            </div>
+            <div className="kv-row">
+              <span className="k">高亮</span>
+              <span className="v">{readingInfo.highlights}</span>
+            </div>
+            <div className="kv-row">
+              <span className="k">书签</span>
+              <span className="v">{readingInfo.bookmarks}</span>
+            </div>
+            {readingInfo.totalMinutes > 0 && (
+              <div className="kv-row">
+                <span className="k">累计阅读</span>
+                <span className="v">{readingInfo.totalMinutes >= 60
+                  ? `${Math.floor(readingInfo.totalMinutes / 60)}h ${readingInfo.totalMinutes % 60}m`
+                  : `${readingInfo.totalMinutes}m`}</span>
+              </div>
+            )}
+            {readingInfo.docsCompleted > 0 && (
+              <div className="kv-row">
+                <span className="k">读完</span>
+                <span className="v">{readingInfo.docsCompleted}</span>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Subject management */}
         {subjects.length > 0 && (
           <div className="settings-card">
@@ -270,6 +327,10 @@ export default function Settings() {
               className="btn btn-ghost flex-1 inline-flex items-center justify-center gap-1.5">
               <DownloadIcon size={16} /> 记忆卡
             </button>
+            <button onClick={handleExportReading}
+              className="btn btn-ghost flex-1 inline-flex items-center justify-center gap-1.5">
+              <DownloadIcon size={16} /> 阅读
+            </button>
             <button onClick={handleExportAll}
               className="flex-1 py-2.5 rounded-md font-body text-sm font-medium bg-ink text-bg inline-flex items-center justify-center gap-1.5 active:scale-[0.97] transition-transform">
               <DownloadIcon size={16} /> 全部
@@ -298,6 +359,42 @@ export default function Settings() {
               }`}
               style={showConfirm !== 'questions' ? { background: 'var(--danger-soft)' } : {}}>
               {showConfirm === 'questions' ? '确认删除' : '删除'}
+            </button>
+          </div>
+          <div className="kv-row">
+            <span className="k">重置阅读统计</span>
+            <button onClick={() => {
+              if (showConfirm === 'reading-stats') {
+                clearReadingStats()
+                setShowConfirm(null)
+                refresh()
+              } else {
+                setShowConfirm('reading-stats')
+              }
+            }}
+              className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
+                showConfirm === 'reading-stats' ? 'bg-danger text-white' : 'text-danger'
+              }`}
+              style={showConfirm !== 'reading-stats' ? { background: 'var(--danger-soft)' } : {}}>
+              {showConfirm === 'reading-stats' ? '确认重置' : '重置'}
+            </button>
+          </div>
+          <div className="kv-row">
+            <span className="k">清除全部阅读数据</span>
+            <button onClick={() => {
+              if (showConfirm === 'reading-all') {
+                clearAllReadingData()
+                setShowConfirm(null)
+                refresh()
+              } else {
+                setShowConfirm('reading-all')
+              }
+            }}
+              className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
+                showConfirm === 'reading-all' ? 'bg-danger text-white' : 'text-danger'
+              }`}
+              style={showConfirm !== 'reading-all' ? { background: 'var(--danger-soft)' } : {}}>
+              {showConfirm === 'reading-all' ? '确认删除' : '删除'}
             </button>
           </div>
           {showConfirm && (

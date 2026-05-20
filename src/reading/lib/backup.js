@@ -25,6 +25,20 @@ export function importReadingData(data) {
   }
 }
 
+export function clearReadingStats() {
+  localStorage.removeItem('reading-stats')
+  localStorage.removeItem('reading-active-session')
+  localStorage.removeItem('reading-completed-docs')
+}
+
+export function clearAllReadingData() {
+  for (const key of ALL_KEYS) {
+    localStorage.removeItem(key)
+  }
+  localStorage.removeItem('reading-active-session')
+  localStorage.removeItem('reading-completed-docs')
+}
+
 export function mergeReadingData(data) {
   if (!data || typeof data !== 'object') return
   for (const key of ALL_KEYS) {
